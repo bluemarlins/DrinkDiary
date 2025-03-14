@@ -6,12 +6,11 @@ plugins {
 
 android {
     namespace = "com.bluemarlin.drinkdiary"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.bluemarlin.drinkdiary"
-        minSdk = 30
-        targetSdk = 34
+        minSdk = 31
         versionCode = 1
         versionName = "1.0"
 
@@ -40,7 +39,6 @@ android {
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -49,6 +47,19 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.compose.material)
+
+    implementation(libs.androidx.navigation.runtime.android)
+    implementation(libs.androidx.navigation.compose)
+
+    // Animated Bottom Bar
+    implementation(libs.animated.navigation.bar)
+
+    // Animated Navigation Bar
+    implementation(libs.accompanist.navigation.animation)
+
+    implementation(libs.coil.compose)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">음주일기</string>
+    <string name="title_purchase_date">구매 날짜</string>
+</resources>

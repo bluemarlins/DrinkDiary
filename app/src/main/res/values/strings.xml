@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">DrinkDiary</string>
+    <string name="title_purchase_date">Purchase Date</string>
 </resources>
