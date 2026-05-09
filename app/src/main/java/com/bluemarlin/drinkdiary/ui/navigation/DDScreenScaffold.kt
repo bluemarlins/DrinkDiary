@@ -1,10 +1,22 @@
 package com.bluemarlin.drinkdiary.ui.navigation
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationRail
@@ -17,9 +29,17 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.HazeStyle
+import dev.chrisbanes.haze.haze
+import dev.chrisbanes.haze.hazeChild
 
 enum class DDScreenType {
     TopLevel,
@@ -49,6 +69,7 @@ fun DDScreenScaffold(
     content: @Composable (PaddingValues) -> Unit,
 ) {
     val defaultSnackbarHostState = remember { SnackbarHostState() }
+    val hazeState = remember { HazeState() }
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         val showTopLevelNavigation = screenType == DDScreenType.TopLevel
         val useNavigationRail = showTopLevelNavigation && maxWidth >= 840.dp
@@ -70,6 +91,7 @@ fun DDScreenScaffold(
                     onCollectionClick = onCollectionClick,
                     onSearchClick = onSearchClick,
                     onBackClick = onBackClick,
+                    hazeState = null,
                     floatingActionButton = floatingActionButton,
                     toolbarActions = toolbarActions,
                     snackbarHost = host,
@@ -85,6 +107,7 @@ fun DDScreenScaffold(
                 onCollectionClick = onCollectionClick,
                 onSearchClick = onSearchClick,
                 onBackClick = onBackClick,
+                hazeState = if (showTopLevelNavigation) hazeState else null,
                 floatingActionButton = floatingActionButton,
                 toolbarActions = toolbarActions,
                 snackbarHost = host,
@@ -104,11 +127,13 @@ private fun AppScaffold(
     onCollectionClick: (() -> Unit)?,
     onSearchClick: (() -> Unit)?,
     onBackClick: (() -> Unit)?,
+    hazeState: HazeState?,
     floatingActionButton: @Composable (() -> Unit)?,
     toolbarActions: @Composable RowScope.() -> Unit,
     snackbarHost: @Composable (() -> Unit),
     content: @Composable (PaddingValues) -> Unit,
 ) {
+    val layoutDirection = LocalLayoutDirection.current
     Scaffold(
         topBar = {
             DDTopAppBar(
@@ -124,12 +149,37 @@ private fun AppScaffold(
                     onDashboardClick = onDashboardClick,
                     onCollectionClick = onCollectionClick,
                     onSearchClick = onSearchClick,
+                    hazeState = hazeState,
                 )
             }
         },
         floatingActionButton = floatingActionButton ?: {},
         snackbarHost = snackbarHost,
-        content = content,
+        content = { padding ->
+            if (hazeState != null) {
+                val overlayContentPadding = PaddingValues(
+                    start = padding.calculateStartPadding(layoutDirection),
+                    top = padding.calculateTopPadding(),
+                    end = padding.calculateEndPadding(layoutDirection),
+                    bottom = 0.dp,
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .haze(
+                            state = hazeState,
+                            style = HazeStyle(
+                                tint = MaterialTheme.colorScheme.surface.copy(alpha = 0.08f),
+                                blurRadius = 32.dp,
+                            ),
+                        ),
+                ) {
+                    content(overlayContentPadding)
+                }
+            } else {
+                content(padding)
+            }
+        },
     )
 }
 
@@ -157,14 +207,53 @@ fun DDBottomNavigationBar(
     onDashboardClick: (() -> Unit)?,
     onCollectionClick: (() -> Unit)?,
     onSearchClick: (() -> Unit)?,
+    hazeState: HazeState? = null,
 ) {
-    NavigationBar {
-        AppNavigationItems(
-            selectedTab = selectedTab,
-            onDashboardClick = onDashboardClick,
-            onCollectionClick = onCollectionClick,
-            onSearchClick = onSearchClick,
-        )
+    val shape = RoundedCornerShape(28.dp)
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .navigationBarsPadding()
+            .padding(horizontal = 18.dp, vertical = 10.dp)
+            .height(64.dp)
+            .clip(shape)
+            .then(
+                if (hazeState != null) {
+                    Modifier.hazeChild(
+                        state = hazeState,
+                        shape = shape,
+                        style = HazeStyle(
+                            tint = MaterialTheme.colorScheme.surface.copy(alpha = 0.42f),
+                            blurRadius = 32.dp,
+                        ),
+                    )
+                } else {
+                    Modifier.background(MaterialTheme.colorScheme.surface.copy(alpha = 0.88f), shape)
+                },
+            )
+            .border(
+                width = Dp.Hairline,
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        Color.White.copy(alpha = 0.58f),
+                        Color.White.copy(alpha = 0.12f),
+                    ),
+                ),
+                shape = shape,
+            ),
+    ) {
+        NavigationBar(
+            modifier = Modifier.fillMaxSize(),
+            containerColor = Color.Transparent,
+            tonalElevation = 0.dp,
+        ) {
+            AppNavigationItems(
+                selectedTab = selectedTab,
+                onDashboardClick = onDashboardClick,
+                onCollectionClick = onCollectionClick,
+                onSearchClick = onSearchClick,
+            )
+        }
     }
 }
 

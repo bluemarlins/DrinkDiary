@@ -3,6 +3,7 @@ package com.bluemarlin.drinkdiary.ui.dashboard
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.consumeWindowInsets
@@ -33,6 +34,8 @@ import com.bluemarlin.drinkdiary.ui.component.formatPrice
 import com.bluemarlin.drinkdiary.ui.navigation.DDScreenType
 import com.bluemarlin.drinkdiary.ui.navigation.DDScreenScaffold
 import com.bluemarlin.drinkdiary.ui.navigation.DDTopLevelTab
+
+private val TopLevelBottomContentPadding = 112.dp
 
 @Composable
 fun DashboardRoute(
@@ -92,7 +95,10 @@ private fun DashboardSuccessContent(
     onOpenRecord: (Long) -> Unit,
     onOpenStatus: (CollectionStatus) -> Unit,
 ) {
-    LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    LazyColumn(
+        contentPadding = PaddingValues(bottom = TopLevelBottomContentPadding),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
         item {
             DashboardMetricGrid(
                 summary = summary,

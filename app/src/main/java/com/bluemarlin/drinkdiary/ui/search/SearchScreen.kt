@@ -2,6 +2,7 @@ package com.bluemarlin.drinkdiary.ui.search
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -27,6 +28,8 @@ import com.bluemarlin.drinkdiary.ui.component.DDErrorContent
 import com.bluemarlin.drinkdiary.ui.navigation.DDScreenScaffold
 import com.bluemarlin.drinkdiary.ui.navigation.DDScreenType
 import com.bluemarlin.drinkdiary.ui.navigation.DDTopLevelTab
+
+private val TopLevelBottomContentPadding = 112.dp
 
 @Composable
 fun SearchRoute(
@@ -144,6 +147,7 @@ private fun SearchResultList(
 ) {
     LazyColumn(
         modifier = modifier,
+        contentPadding = PaddingValues(bottom = TopLevelBottomContentPadding),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         items(records, key = { it.id }) { record ->

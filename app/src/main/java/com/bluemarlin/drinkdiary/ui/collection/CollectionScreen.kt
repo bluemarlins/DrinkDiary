@@ -3,6 +3,7 @@ package com.bluemarlin.drinkdiary.ui.collection
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,6 +29,8 @@ import com.bluemarlin.drinkdiary.ui.component.DDLoadingContent
 import com.bluemarlin.drinkdiary.ui.navigation.DDScreenScaffold
 import com.bluemarlin.drinkdiary.ui.navigation.DDScreenType
 import com.bluemarlin.drinkdiary.ui.navigation.DDTopLevelTab
+
+private val TopLevelBottomContentPadding = 112.dp
 
 @Composable
 fun CollectionRoute(
@@ -144,7 +147,11 @@ private fun DrinkRecordList(
     onOpenRecord: (Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    LazyColumn(modifier = modifier, verticalArrangement = Arrangement.spacedBy(10.dp)) {
+    LazyColumn(
+        modifier = modifier,
+        contentPadding = PaddingValues(bottom = TopLevelBottomContentPadding),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
         items(records, key = { it.id }) { record ->
             DDDrinkRecordListItem(record = record, onClick = { onOpenRecord(record.id) })
         }

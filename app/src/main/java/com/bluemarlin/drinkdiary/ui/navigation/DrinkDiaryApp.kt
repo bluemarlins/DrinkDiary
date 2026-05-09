@@ -1,14 +1,19 @@
 package com.bluemarlin.drinkdiary.ui.navigation
 
+import android.app.Activity
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
-import androidx.navigation.NavHostController
+import androidx.navigation3.runtime.NavEntry
+import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.ui.NavDisplay
 import com.bluemarlin.drinkdiary.DrinkDiaryApplication
 import com.bluemarlin.drinkdiary.domain.model.CollectionStatus
 import com.bluemarlin.drinkdiary.ui.collection.CollectionRoute
@@ -22,109 +27,131 @@ import com.bluemarlin.drinkdiary.ui.editor.RecordEditorViewModel
 import com.bluemarlin.drinkdiary.ui.search.SearchRoute
 import com.bluemarlin.drinkdiary.ui.search.SearchViewModel
 
-private object Routes {
-    const val Dashboard = "dashboard"
-    const val Collection = "collection"
-    const val Search = "search"
-    const val CollectionWithStatus = "collection/{status}"
-    const val Detail = "detail/{recordId}"
-    const val EditorNew = "editor/new"
-    const val EditorEdit = "editor/{recordId}"
+private sealed interface AppRoute : NavKey {
+    data object Dashboard : AppRoute
+    data class Collection(val status: CollectionStatus? = null) : AppRoute
+    data object Search : AppRoute
+    data class Detail(val recordId: Long) : AppRoute
+    data class Editor(val recordId: Long? = null) : AppRoute
 }
+
+private const val NavigationSlideDurationMillis = 260
 
 @Composable
 fun DrinkDiaryApp() {
-    val navController = rememberNavController()
-    val appContainer = (LocalContext.current.applicationContext as DrinkDiaryApplication).appContainer
+    val context = LocalContext.current
+    val activity = context as? Activity
+    val appContainer = (context.applicationContext as DrinkDiaryApplication).appContainer
+    val backStack = remember { mutableStateListOf<AppRoute>(AppRoute.Dashboard) }
 
-    NavHost(navController = navController, startDestination = Routes.Dashboard) {
-        composable(Routes.Dashboard) {
-            val viewModel: DashboardViewModel = viewModel(
-                factory = DashboardViewModel.Factory(appContainer.observeDashboardSummaryUseCase),
-            )
-            DashboardRoute(
-                viewModel = viewModel,
-                onAddRecord = { navController.navigate(Routes.EditorNew) },
-                onOpenRecord = { navController.navigate("detail/$it") },
-                onOpenStatus = { navController.navigate("collection/${it.name}") },
-                onCollectionClick = { navController.navigateTopLevel(Routes.Collection) },
-                onSearchClick = { navController.navigateTopLevel(Routes.Search) },
-            )
-        }
-        composable(Routes.Collection) {
-            CollectionEntry(
-                initialStatus = null,
-                onDashboardClick = { navController.navigateTopLevel(Routes.Dashboard) },
-                onSearchClick = { navController.navigateTopLevel(Routes.Search) },
-                onAddRecord = { navController.navigate(Routes.EditorNew) },
-                onOpenRecord = { navController.navigate("detail/$it") },
-            )
-        }
-        composable(
-            route = Routes.CollectionWithStatus,
-            arguments = listOf(navArgument("status") { type = NavType.StringType }),
-        ) { entry ->
-            val status = entry.arguments?.getString("status")?.let(CollectionStatus::fromStorageValue)
-            CollectionEntry(
-                initialStatus = status,
-                onDashboardClick = { navController.navigateTopLevel(Routes.Dashboard) },
-                onSearchClick = { navController.navigateTopLevel(Routes.Search) },
-                onAddRecord = { navController.navigate(Routes.EditorNew) },
-                onOpenRecord = { navController.navigate("detail/$it") },
-            )
-        }
-        composable(Routes.Search) {
-            val viewModel: SearchViewModel = viewModel(
-                key = "search",
-                factory = SearchViewModel.Factory(appContainer.observeSearchResultsUseCase),
-            )
-            SearchRoute(
-                viewModel = viewModel,
-                onDashboardClick = { navController.navigateTopLevel(Routes.Dashboard) },
-                onCollectionClick = { navController.navigateTopLevel(Routes.Collection) },
-                onOpenRecord = { navController.navigate("detail/$it") },
-            )
-        }
-        composable(
-            route = Routes.Detail,
-            arguments = listOf(navArgument("recordId") { type = NavType.LongType }),
-        ) { entry ->
-            val recordId = entry.arguments?.getLong("recordId") ?: return@composable
-            val viewModel: RecordDetailViewModel = viewModel(
-                key = "detail_$recordId",
-                factory = RecordDetailViewModel.Factory(
-                    recordId,
-                    appContainer.observeDrinkRecordUseCase,
-                    appContainer.deleteDrinkRecordUseCase,
-                ),
-            )
-            RecordDetailRoute(
-                recordId = recordId,
-                viewModel = viewModel,
-                onBack = { navController.popBackStack() },
-                onEdit = { navController.navigate("editor/$it") },
-            )
-        }
-        composable(Routes.EditorNew) {
-            EditorEntry(
-                recordId = null,
-                onBack = { navController.popBackStack() },
-                onSaved = { navController.navigateTopLevel(Routes.Collection) },
-            )
-        }
-        composable(
-            route = Routes.EditorEdit,
-            arguments = listOf(navArgument("recordId") { type = NavType.LongType }),
-        ) { entry ->
-            val recordId = entry.arguments?.getLong("recordId") ?: return@composable
-            EditorEntry(
-                recordId = recordId,
-                onBack = { navController.popBackStack() },
-                onSaved = { navController.navigateTopLevel(Routes.Collection) },
-            )
+    fun navigate(route: AppRoute) {
+        backStack.add(route)
+    }
+
+    fun navigateTopLevel(route: AppRoute) {
+        backStack.clear()
+        backStack.add(route)
+    }
+
+    fun goBack() {
+        if (backStack.size > 1) {
+            backStack.removeLastOrNull()
+        } else {
+            activity?.finish()
         }
     }
+
+    NavDisplay(
+        backStack = backStack,
+        onBack = ::goBack,
+        entryProvider = entryProvider {
+            entry<AppRoute.Dashboard> {
+                val viewModel: DashboardViewModel = viewModel(
+                    factory = DashboardViewModel.Factory(appContainer.observeDashboardSummaryUseCase),
+                )
+                DashboardRoute(
+                    viewModel = viewModel,
+                    onAddRecord = { navigate(AppRoute.Editor()) },
+                    onOpenRecord = { navigate(AppRoute.Detail(it)) },
+                    onOpenStatus = { navigateTopLevel(AppRoute.Collection(it)) },
+                    onCollectionClick = { navigateTopLevel(AppRoute.Collection()) },
+                    onSearchClick = { navigateTopLevel(AppRoute.Search) },
+                )
+            }
+            entry<AppRoute.Collection> { route ->
+                CollectionEntry(
+                    initialStatus = route.status,
+                    onDashboardClick = { navigateTopLevel(AppRoute.Dashboard) },
+                    onSearchClick = { navigateTopLevel(AppRoute.Search) },
+                    onAddRecord = { navigate(AppRoute.Editor()) },
+                    onOpenRecord = { navigate(AppRoute.Detail(it)) },
+                )
+            }
+            entry<AppRoute.Search> {
+                val viewModel: SearchViewModel = viewModel(
+                    key = "search",
+                    factory = SearchViewModel.Factory(appContainer.observeSearchResultsUseCase),
+                )
+                SearchRoute(
+                    viewModel = viewModel,
+                    onDashboardClick = { navigateTopLevel(AppRoute.Dashboard) },
+                    onCollectionClick = { navigateTopLevel(AppRoute.Collection()) },
+                    onOpenRecord = { navigate(AppRoute.Detail(it)) },
+                )
+            }
+            entry<AppRoute.Detail>(metadata = detailTransitionMetadata()) { route ->
+                val viewModel: RecordDetailViewModel = viewModel(
+                    key = "detail_${route.recordId}",
+                    factory = RecordDetailViewModel.Factory(
+                        route.recordId,
+                        appContainer.observeDrinkRecordUseCase,
+                        appContainer.deleteDrinkRecordUseCase,
+                    ),
+                )
+                RecordDetailRoute(
+                    recordId = route.recordId,
+                    viewModel = viewModel,
+                    onBack = ::goBack,
+                    onEdit = { navigate(AppRoute.Editor(it)) },
+                )
+            }
+            entry<AppRoute.Editor>(metadata = detailTransitionMetadata()) { route ->
+                EditorEntry(
+                    recordId = route.recordId,
+                    onBack = ::goBack,
+                    onSaved = { navigateTopLevel(AppRoute.Collection()) },
+                )
+            }
+        },
+    )
 }
+
+private fun detailTransitionMetadata(): Map<String, Any> =
+    NavDisplay.transitionSpec {
+        slideInHorizontally(
+            initialOffsetX = { it },
+            animationSpec = tween(NavigationSlideDurationMillis),
+        ) togetherWith slideOutHorizontally(
+            targetOffsetX = { -it / 3 },
+            animationSpec = tween(NavigationSlideDurationMillis),
+        )
+    } + NavDisplay.popTransitionSpec {
+        slideInHorizontally(
+            initialOffsetX = { -it / 3 },
+            animationSpec = tween(NavigationSlideDurationMillis),
+        ) togetherWith slideOutHorizontally(
+            targetOffsetX = { it },
+            animationSpec = tween(NavigationSlideDurationMillis),
+        )
+    } + NavDisplay.predictivePopTransitionSpec {
+        slideInHorizontally(
+            initialOffsetX = { -it / 3 },
+            animationSpec = tween(NavigationSlideDurationMillis),
+        ) togetherWith slideOutHorizontally(
+            targetOffsetX = { it },
+            animationSpec = tween(NavigationSlideDurationMillis),
+        )
+    }
 
 @Composable
 private fun CollectionEntry(
@@ -164,13 +191,4 @@ private fun EditorEntry(
         ),
     )
     RecordEditorRoute(viewModel = viewModel, onBack = onBack, onSaved = onSaved)
-}
-
-private fun NavHostController.navigateTopLevel(route: String) {
-    navigate(route) {
-        popUpTo(graph.startDestinationId) {
-            inclusive = true
-        }
-        launchSingleTop = true
-    }
 }
