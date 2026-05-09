@@ -31,6 +31,11 @@ class DrinkRecordRepositoryImpl(
             records.mapNotNull { it.toDomain() }
         }
 
+    override fun observeSearchResults(query: String): Flow<List<DrinkRecord>> =
+        dao.observeSearchResults(query.toSearchPattern()).map { records ->
+            records.mapNotNull { it.toDomain() }
+        }
+
     override suspend fun save(record: DrinkRecord): AppResult<Long> = runCatching {
         val now = System.currentTimeMillis()
         if (record.id == 0L) {
@@ -56,4 +61,11 @@ class DrinkRecordRepositoryImpl(
     }.getOrElse {
         AppResult.Failure(AppError.Storage)
     }
+
+    private fun String.toSearchPattern(): String =
+        trim()
+            .lowercase()
+            .replace("\\", "\\\\")
+            .replace("%", "\\%")
+            .replace("_", "\\_")
 }

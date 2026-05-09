@@ -98,6 +98,7 @@ class SaveDrinkRecordUseCaseTest {
         override fun observeRecords(filter: DrinkRecordFilter): Flow<List<DrinkRecord>> = emptyFlow()
         override fun observeRecord(id: Long): Flow<DrinkRecord?> = emptyFlow()
         override fun observeRecordsByPeriod(startMillis: Long, endMillis: Long): Flow<List<DrinkRecord>> = emptyFlow()
+        override fun observeSearchResults(query: String): Flow<List<DrinkRecord>> = emptyFlow()
 
         override suspend fun save(record: DrinkRecord): AppResult<Long> {
             savedRecord = record

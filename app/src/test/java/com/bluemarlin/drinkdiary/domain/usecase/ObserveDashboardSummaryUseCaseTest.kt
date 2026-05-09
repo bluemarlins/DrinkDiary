@@ -85,6 +85,7 @@ class ObserveDashboardSummaryUseCaseTest {
         override fun observeRecord(id: Long): Flow<DrinkRecord?> = flowOf(records.firstOrNull { it.id == id })
         override fun observeRecordsByPeriod(startMillis: Long, endMillis: Long): Flow<List<DrinkRecord>> =
             flowOf(records.filter { it.recordedAtMillis in startMillis..endMillis })
+        override fun observeSearchResults(query: String): Flow<List<DrinkRecord>> = flowOf(emptyList())
 
         override suspend fun save(record: DrinkRecord): AppResult<Long> = AppResult.Success(record.id)
         override suspend fun deleteById(id: Long): AppResult<Unit> = AppResult.Success(Unit)

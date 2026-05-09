@@ -8,6 +8,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.navigation.NavHostController
 import com.bluemarlin.drinkdiary.DrinkDiaryApplication
 import com.bluemarlin.drinkdiary.domain.model.CollectionStatus
 import com.bluemarlin.drinkdiary.ui.collection.CollectionRoute
@@ -18,10 +19,13 @@ import com.bluemarlin.drinkdiary.ui.detail.RecordDetailRoute
 import com.bluemarlin.drinkdiary.ui.detail.RecordDetailViewModel
 import com.bluemarlin.drinkdiary.ui.editor.RecordEditorRoute
 import com.bluemarlin.drinkdiary.ui.editor.RecordEditorViewModel
+import com.bluemarlin.drinkdiary.ui.search.SearchRoute
+import com.bluemarlin.drinkdiary.ui.search.SearchViewModel
 
 private object Routes {
     const val Dashboard = "dashboard"
     const val Collection = "collection"
+    const val Search = "search"
     const val CollectionWithStatus = "collection/{status}"
     const val Detail = "detail/{recordId}"
     const val EditorNew = "editor/new"
@@ -43,13 +47,15 @@ fun DrinkDiaryApp() {
                 onAddRecord = { navController.navigate(Routes.EditorNew) },
                 onOpenRecord = { navController.navigate("detail/$it") },
                 onOpenStatus = { navController.navigate("collection/${it.name}") },
-                onCollectionClick = { navController.navigate(Routes.Collection) },
+                onCollectionClick = { navController.navigateTopLevel(Routes.Collection) },
+                onSearchClick = { navController.navigateTopLevel(Routes.Search) },
             )
         }
         composable(Routes.Collection) {
             CollectionEntry(
                 initialStatus = null,
-                onDashboardClick = { navController.navigate(Routes.Dashboard) },
+                onDashboardClick = { navController.navigateTopLevel(Routes.Dashboard) },
+                onSearchClick = { navController.navigateTopLevel(Routes.Search) },
                 onAddRecord = { navController.navigate(Routes.EditorNew) },
                 onOpenRecord = { navController.navigate("detail/$it") },
             )
@@ -61,8 +67,21 @@ fun DrinkDiaryApp() {
             val status = entry.arguments?.getString("status")?.let(CollectionStatus::fromStorageValue)
             CollectionEntry(
                 initialStatus = status,
-                onDashboardClick = { navController.navigate(Routes.Dashboard) },
+                onDashboardClick = { navController.navigateTopLevel(Routes.Dashboard) },
+                onSearchClick = { navController.navigateTopLevel(Routes.Search) },
                 onAddRecord = { navController.navigate(Routes.EditorNew) },
+                onOpenRecord = { navController.navigate("detail/$it") },
+            )
+        }
+        composable(Routes.Search) {
+            val viewModel: SearchViewModel = viewModel(
+                key = "search",
+                factory = SearchViewModel.Factory(appContainer.observeSearchResultsUseCase),
+            )
+            SearchRoute(
+                viewModel = viewModel,
+                onDashboardClick = { navController.navigateTopLevel(Routes.Dashboard) },
+                onCollectionClick = { navController.navigateTopLevel(Routes.Collection) },
                 onOpenRecord = { navController.navigate("detail/$it") },
             )
         }
@@ -119,6 +138,7 @@ fun DrinkDiaryApp() {
 private fun CollectionEntry(
     initialStatus: CollectionStatus?,
     onDashboardClick: () -> Unit,
+    onSearchClick: () -> Unit,
     onAddRecord: () -> Unit,
     onOpenRecord: (Long) -> Unit,
 ) {
@@ -132,6 +152,7 @@ private fun CollectionEntry(
         onAddRecord = onAddRecord,
         onOpenRecord = onOpenRecord,
         onDashboardClick = onDashboardClick,
+        onSearchClick = onSearchClick,
     )
 }
 
@@ -151,4 +172,14 @@ private fun EditorEntry(
         ),
     )
     RecordEditorRoute(viewModel = viewModel, onBack = onBack, onSaved = onSaved)
+}
+
+private fun NavHostController.navigateTopLevel(route: String) {
+    navigate(route) {
+        popUpTo(graph.startDestinationId) {
+            saveState = true
+        }
+        launchSingleTop = true
+        restoreState = true
+    }
 }

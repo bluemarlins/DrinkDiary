@@ -9,6 +9,7 @@ import com.bluemarlin.drinkdiary.domain.usecase.DeleteDrinkRecordUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveDashboardSummaryUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveDrinkRecordUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveDrinkRecordsUseCase
+import com.bluemarlin.drinkdiary.domain.usecase.ObserveSearchResultsUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.SaveDrinkRecordUseCase
 
 class DrinkDiaryApplication : Application() {
@@ -36,4 +37,5 @@ class AppContainer(application: Application) {
     val saveDrinkRecordUseCase = SaveDrinkRecordUseCase(repository)
     val deleteDrinkRecordUseCase = DeleteDrinkRecordUseCase(repository)
     val observeDashboardSummaryUseCase = ObserveDashboardSummaryUseCase(repository)
+    val observeSearchResultsUseCase = ObserveSearchResultsUseCase(repository)
 }

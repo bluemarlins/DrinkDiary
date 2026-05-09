@@ -35,6 +35,7 @@ fun CollectionRoute(
     onAddRecord: () -> Unit,
     onOpenRecord: (Long) -> Unit,
     onDashboardClick: () -> Unit,
+    onSearchClick: () -> Unit,
 ) {
     val state by viewModel.uiState.collectAsState()
     val selectedType by viewModel.selectedType.collectAsState()
@@ -46,6 +47,7 @@ fun CollectionRoute(
         selectedTab = DDTopLevelTab.Collection,
         onDashboardClick = onDashboardClick,
         onCollectionClick = {},
+        onSearchClick = onSearchClick,
         floatingActionButton = { DDAddRecordFab(onClick = onAddRecord) },
     ) { padding ->
         BoxWithConstraints(

@@ -40,6 +40,7 @@ fun DashboardRoute(
     onOpenRecord: (Long) -> Unit,
     onOpenStatus: (CollectionStatus) -> Unit,
     onCollectionClick: () -> Unit,
+    onSearchClick: () -> Unit,
 ) {
     val state by viewModel.uiState.collectAsState()
     val period by viewModel.selectedPeriod.collectAsState()
@@ -50,6 +51,7 @@ fun DashboardRoute(
         selectedTab = DDTopLevelTab.Dashboard,
         onDashboardClick = {},
         onCollectionClick = onCollectionClick,
+        onSearchClick = onSearchClick,
         floatingActionButton = { DDAddRecordFab(onClick = onAddRecord) },
     ) { padding ->
         BoxWithConstraints(

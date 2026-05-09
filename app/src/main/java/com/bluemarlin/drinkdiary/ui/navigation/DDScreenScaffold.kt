@@ -30,6 +30,7 @@ enum class DDScreenType {
 enum class DDTopLevelTab {
     Dashboard,
     Collection,
+    Search,
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -40,6 +41,7 @@ fun DDScreenScaffold(
     selectedTab: DDTopLevelTab? = null,
     onDashboardClick: (() -> Unit)? = null,
     onCollectionClick: (() -> Unit)? = null,
+    onSearchClick: (() -> Unit)? = null,
     onBackClick: (() -> Unit)? = null,
     floatingActionButton: @Composable (() -> Unit)? = null,
     toolbarActions: @Composable RowScope.() -> Unit = {},
@@ -58,6 +60,7 @@ fun DDScreenScaffold(
                     selectedTab = selectedTab,
                     onDashboardClick = onDashboardClick,
                     onCollectionClick = onCollectionClick,
+                    onSearchClick = onSearchClick,
                 )
                 AppScaffold(
                     title = title,
@@ -65,6 +68,7 @@ fun DDScreenScaffold(
                     selectedTab = selectedTab,
                     onDashboardClick = onDashboardClick,
                     onCollectionClick = onCollectionClick,
+                    onSearchClick = onSearchClick,
                     onBackClick = onBackClick,
                     floatingActionButton = floatingActionButton,
                     toolbarActions = toolbarActions,
@@ -79,6 +83,7 @@ fun DDScreenScaffold(
                 selectedTab = selectedTab,
                 onDashboardClick = onDashboardClick,
                 onCollectionClick = onCollectionClick,
+                onSearchClick = onSearchClick,
                 onBackClick = onBackClick,
                 floatingActionButton = floatingActionButton,
                 toolbarActions = toolbarActions,
@@ -97,6 +102,7 @@ private fun AppScaffold(
     selectedTab: DDTopLevelTab?,
     onDashboardClick: (() -> Unit)?,
     onCollectionClick: (() -> Unit)?,
+    onSearchClick: (() -> Unit)?,
     onBackClick: (() -> Unit)?,
     floatingActionButton: @Composable (() -> Unit)?,
     toolbarActions: @Composable RowScope.() -> Unit,
@@ -117,6 +123,7 @@ private fun AppScaffold(
                     selectedTab = selectedTab,
                     onDashboardClick = onDashboardClick,
                     onCollectionClick = onCollectionClick,
+                    onSearchClick = onSearchClick,
                 )
             }
         },
@@ -149,12 +156,14 @@ fun DDBottomNavigationBar(
     selectedTab: DDTopLevelTab?,
     onDashboardClick: (() -> Unit)?,
     onCollectionClick: (() -> Unit)?,
+    onSearchClick: (() -> Unit)?,
 ) {
     NavigationBar {
         AppNavigationItems(
             selectedTab = selectedTab,
             onDashboardClick = onDashboardClick,
             onCollectionClick = onCollectionClick,
+            onSearchClick = onSearchClick,
         )
     }
 }
@@ -164,6 +173,7 @@ private fun AppNavigationRail(
     selectedTab: DDTopLevelTab?,
     onDashboardClick: (() -> Unit)?,
     onCollectionClick: (() -> Unit)?,
+    onSearchClick: (() -> Unit)?,
 ) {
     NavigationRail {
         NavigationRailItem(
@@ -178,6 +188,12 @@ private fun AppNavigationRail(
             icon = { Text("목록") },
             label = { Text("컬렉션") },
         )
+        NavigationRailItem(
+            selected = selectedTab == DDTopLevelTab.Search,
+            onClick = { onSearchClick?.invoke() },
+            icon = { Text("검색") },
+            label = { Text("검색") },
+        )
     }
 }
 
@@ -186,6 +202,7 @@ private fun RowScope.AppNavigationItems(
     selectedTab: DDTopLevelTab?,
     onDashboardClick: (() -> Unit)?,
     onCollectionClick: (() -> Unit)?,
+    onSearchClick: (() -> Unit)?,
 ) {
     NavigationBarItem(
         selected = selectedTab == DDTopLevelTab.Dashboard,
@@ -198,5 +215,11 @@ private fun RowScope.AppNavigationItems(
         onClick = { onCollectionClick?.invoke() },
         icon = { Text("목록") },
         label = { Text("컬렉션") },
+    )
+    NavigationBarItem(
+        selected = selectedTab == DDTopLevelTab.Search,
+        onClick = { onSearchClick?.invoke() },
+        icon = { Text("검색") },
+        label = { Text("검색") },
     )
 }

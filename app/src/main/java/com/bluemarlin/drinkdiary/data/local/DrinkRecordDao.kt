@@ -36,6 +36,17 @@ interface DrinkRecordDao {
         endMillis: Long,
     ): Flow<List<DrinkRecordEntity>>
 
+    @Query(
+        """
+        SELECT * FROM drink_records
+        WHERE LOWER(name) LIKE '%' || :query || '%' ESCAPE '\'
+           OR LOWER(COALESCE(place, '')) LIKE '%' || :query || '%' ESCAPE '\'
+           OR LOWER(COALESCE(tastingNote, '')) LIKE '%' || :query || '%' ESCAPE '\'
+        ORDER BY recordedAtMillis DESC
+        """,
+    )
+    fun observeSearchResults(query: String): Flow<List<DrinkRecordEntity>>
+
     @Query("SELECT * FROM drink_records WHERE id = :id")
     suspend fun getRecord(id: Long): DrinkRecordEntity?
 
