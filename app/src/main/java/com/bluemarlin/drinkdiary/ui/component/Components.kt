@@ -71,6 +71,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.shape.CircleShape
 import com.bluemarlin.drinkdiary.domain.model.CollectionStatus
 import com.bluemarlin.drinkdiary.domain.model.DashboardPeriod
 import com.bluemarlin.drinkdiary.domain.model.DrinkRatingBreakdown
@@ -118,7 +119,11 @@ fun DDDestructiveButton(text: String, onClick: () -> Unit, modifier: Modifier = 
 
 @Composable
 fun DDAddRecordFab(onClick: () -> Unit) {
-    FloatingActionButton(onClick = onClick) {
+    FloatingActionButton(
+        onClick = onClick,
+        modifier = Modifier.size(56.dp),
+        shape = CircleShape,
+    ) {
         Text("+", style = MaterialTheme.typography.headlineMedium)
     }
 }

@@ -127,6 +127,8 @@ private fun RecordEditorForm(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val drinkTypeSelected = state.input.type != null
+
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(18.dp),
@@ -162,7 +164,10 @@ private fun RecordEditorForm(
                         Text("세부 평가 평균 %.1f".format(representativeRating))
                     }
                 }
-                TextButton(onClick = viewModel::toggleRatingBreakdown) {
+                TextButton(
+                    onClick = viewModel::toggleRatingBreakdown,
+                    enabled = drinkTypeSelected,
+                ) {
                     Text(if (state.input.ratingBreakdownExpanded) "접기 ▲" else "세부 평가 ▼")
                 }
             }
@@ -186,7 +191,12 @@ private fun RecordEditorForm(
         }
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             DDSecondaryButton("취소", onClick = onBack, modifier = Modifier.weight(1f))
-            DDPrimaryButton("저장", onClick = viewModel::save, modifier = Modifier.weight(1f), enabled = !state.saving)
+            DDPrimaryButton(
+                text = "저장",
+                onClick = viewModel::save,
+                modifier = Modifier.weight(1f),
+                enabled = !state.saving && drinkTypeSelected,
+            )
         }
     }
 }
