@@ -26,7 +26,7 @@ sealed interface DashboardUiState {
 class DashboardViewModel(
     private val observeDashboardSummaryUseCase: ObserveDashboardSummaryUseCase,
 ) : ViewModel() {
-    val selectedPeriod = MutableStateFlow(DashboardPeriod.Monthly)
+    val selectedPeriod = MutableStateFlow(DashboardPeriod.Yearly)
 
     val uiState: StateFlow<DashboardUiState> = selectedPeriod
         .flatMapLatest { period ->

@@ -22,6 +22,7 @@ class ObserveDashboardSummaryUseCase(
             if (records.isEmpty()) {
                 DashboardSummary.Empty
             } else {
+                val prices = records.mapNotNull { it.price }
                 DashboardSummary(
                     totalCount = records.size,
                     averageRating = records.map { it.rating }.average(),
@@ -30,6 +31,10 @@ class ObserveDashboardSummaryUseCase(
                     beerCount = records.count { it.type == DrinkType.Beer },
                     repurchaseCount = records.count { it.collectionStatus == CollectionStatus.Repurchase },
                     notForMeCount = records.count { it.collectionStatus == CollectionStatus.NotForMe },
+                    totalSpent = prices.sum(),
+                    averageSpent = prices.takeIf { it.isNotEmpty() }?.average()?.toLong(),
+                    pricedRecordCount = prices.size,
+                    normalRecords = records.filter { it.collectionStatus == CollectionStatus.Normal },
                     repurchaseRecords = records.filter { it.collectionStatus == CollectionStatus.Repurchase },
                     notForMeRecords = records.filter { it.collectionStatus == CollectionStatus.NotForMe },
                 )

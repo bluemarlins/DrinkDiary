@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,14 +22,14 @@ import androidx.compose.ui.unit.dp
 import com.bluemarlin.drinkdiary.domain.model.CollectionStatus
 import com.bluemarlin.drinkdiary.domain.model.DashboardSummary
 import com.bluemarlin.drinkdiary.ui.component.DDAddRecordFab
-import com.bluemarlin.drinkdiary.ui.component.DDDashboardSummaryCard
-import com.bluemarlin.drinkdiary.ui.component.DDDrinkTypeRatioCard
+import com.bluemarlin.drinkdiary.ui.component.DDDashboardMetricTile
 import com.bluemarlin.drinkdiary.ui.component.DDDrinkRecordCard
+import com.bluemarlin.drinkdiary.ui.component.DDDrinkTypeDonutCard
 import com.bluemarlin.drinkdiary.ui.component.DDEmptyContent
 import com.bluemarlin.drinkdiary.ui.component.DDErrorContent
 import com.bluemarlin.drinkdiary.ui.component.DDLoadingContent
 import com.bluemarlin.drinkdiary.ui.component.DDPeriodSegmentedControl
-import com.bluemarlin.drinkdiary.ui.component.DDStatusSummaryCard
+import com.bluemarlin.drinkdiary.ui.component.formatPrice
 import com.bluemarlin.drinkdiary.ui.navigation.DDScreenType
 import com.bluemarlin.drinkdiary.ui.navigation.DDScreenScaffold
 import com.bluemarlin.drinkdiary.ui.navigation.DDTopLevelTab
@@ -93,41 +94,25 @@ private fun DashboardSuccessContent(
 ) {
     LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         item {
-            if (expanded) {
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                    DDDashboardSummaryCard("기록 수", "${summary.totalCount}개", Modifier.weight(1f))
-                    DDDashboardSummaryCard("평균 별점", summary.averageRating?.let { "%.1f".format(it) } ?: "-", Modifier.weight(1f))
-                    DDStatusSummaryCard(CollectionStatus.Repurchase, summary.repurchaseCount, Modifier.weight(1f)) {
-                        onOpenStatus(CollectionStatus.Repurchase)
-                    }
-                    DDStatusSummaryCard(CollectionStatus.NotForMe, summary.notForMeCount, Modifier.weight(1f)) {
-                        onOpenStatus(CollectionStatus.NotForMe)
-                    }
-                }
-            } else {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                        DDDashboardSummaryCard("기록 수", "${summary.totalCount}개", Modifier.weight(1f))
-                        DDDashboardSummaryCard("평균 별점", summary.averageRating?.let { "%.1f".format(it) } ?: "-", Modifier.weight(1f))
-                    }
-                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                        DDStatusSummaryCard(CollectionStatus.Repurchase, summary.repurchaseCount, Modifier.weight(1f)) {
-                            onOpenStatus(CollectionStatus.Repurchase)
-                        }
-                        DDStatusSummaryCard(CollectionStatus.NotForMe, summary.notForMeCount, Modifier.weight(1f)) {
-                            onOpenStatus(CollectionStatus.NotForMe)
-                        }
-                    }
-                }
-            }
+            DashboardMetricGrid(
+                summary = summary,
+                expanded = expanded,
+                onOpenStatus = onOpenStatus,
+            )
         }
         item {
-            DDDrinkTypeRatioCard(
+            DDDrinkTypeDonutCard(
                 wineCount = summary.wineCount,
                 whiskeyCount = summary.whiskeyCount,
                 beerCount = summary.beerCount,
                 totalCount = summary.totalCount,
             )
+        }
+        if (summary.normalRecords.isNotEmpty()) {
+            item { Text("일반 기록", style = MaterialTheme.typography.titleMedium) }
+            items(summary.normalRecords.take(5), key = { it.id }) { record ->
+                DDDrinkRecordCard(record = record, onClick = { onOpenRecord(record.id) })
+            }
         }
         if (summary.repurchaseRecords.isNotEmpty()) {
             item { Text("재구매 후보", style = MaterialTheme.typography.titleMedium) }
@@ -142,4 +127,85 @@ private fun DashboardSuccessContent(
             }
         }
     }
+}
+
+@Composable
+private fun DashboardMetricGrid(
+    summary: DashboardSummary,
+    expanded: Boolean,
+    onOpenStatus: (CollectionStatus) -> Unit,
+) {
+    val averageRatingText = summary.averageRating?.let { "%.1f".format(it) } ?: "-"
+    val averageSpentText = summary.averageSpent?.let { "평균 ${formatPrice(it)}" } ?: "가격 입력 기록 없음"
+    if (expanded) {
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+            DashboardMetricTiles(summary, averageRatingText, averageSpentText, onOpenStatus)
+        }
+    } else {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                DDDashboardMetricTile(
+                    title = "기록 수",
+                    value = "${summary.totalCount}개",
+                    supportingText = "선택 기간 전체 기록",
+                    modifier = Modifier.weight(1f),
+                )
+                DDDashboardMetricTile(
+                    title = "총 지출",
+                    value = formatPrice(summary.totalSpent),
+                    supportingText = "$averageSpentText · ${summary.pricedRecordCount}건",
+                    modifier = Modifier.weight(1f),
+                )
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                DDDashboardMetricTile(
+                    title = "평균 별점",
+                    value = averageRatingText,
+                    supportingText = "5점 만점",
+                    modifier = Modifier.weight(1f),
+                )
+                DDDashboardMetricTile(
+                    title = "재구매 후보",
+                    value = "${summary.repurchaseCount}개",
+                    supportingText = "다시 마시고 싶은 기록",
+                    modifier = Modifier.weight(1f),
+                    onClick = { onOpenStatus(CollectionStatus.Repurchase) },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun RowScope.DashboardMetricTiles(
+    summary: DashboardSummary,
+    averageRatingText: String,
+    averageSpentText: String,
+    onOpenStatus: (CollectionStatus) -> Unit,
+) {
+    DDDashboardMetricTile(
+        title = "기록 수",
+        value = "${summary.totalCount}개",
+        supportingText = "선택 기간 전체 기록",
+        modifier = Modifier.weight(1f),
+    )
+    DDDashboardMetricTile(
+        title = "총 지출",
+        value = formatPrice(summary.totalSpent),
+        supportingText = "$averageSpentText · ${summary.pricedRecordCount}건",
+        modifier = Modifier.weight(1f),
+    )
+    DDDashboardMetricTile(
+        title = "평균 별점",
+        value = averageRatingText,
+        supportingText = "5점 만점",
+        modifier = Modifier.weight(1f),
+    )
+    DDDashboardMetricTile(
+        title = "재구매 후보",
+        value = "${summary.repurchaseCount}개",
+        supportingText = "다시 마시고 싶은 기록",
+        modifier = Modifier.weight(1f),
+        onClick = { onOpenStatus(CollectionStatus.Repurchase) },
+    )
 }

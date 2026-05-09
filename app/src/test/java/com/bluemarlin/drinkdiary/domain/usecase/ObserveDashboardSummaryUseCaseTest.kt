@@ -60,8 +60,47 @@ class ObserveDashboardSummaryUseCaseTest {
         assertEquals(1, summary.beerCount)
         assertEquals(1, summary.repurchaseCount)
         assertEquals(1, summary.notForMeCount)
+        assertEquals(0L, summary.totalSpent)
+        assertEquals(null, summary.averageSpent)
+        assertEquals(0, summary.pricedRecordCount)
+        assertEquals(emptyList<Long>(), summary.normalRecords.map { it.id })
         assertEquals(listOf(1L), summary.repurchaseRecords.map { it.id })
         assertEquals(listOf(2L), summary.notForMeRecords.map { it.id })
+    }
+
+    @Test
+    fun dashboardSummaryIncludesNormalRecords() = runBlocking {
+        val zone = ZoneId.systemDefault()
+        val records = listOf(
+            record(
+                id = 1L,
+                type = DrinkType.Beer,
+                rating = 4.0,
+                status = CollectionStatus.Normal,
+                recordedAtMillis = millisOf(2026, 5, 10, 12, 0, zone),
+                price = 3_000L,
+            ),
+            record(
+                id = 2L,
+                type = DrinkType.Wine,
+                rating = 5.0,
+                status = CollectionStatus.Repurchase,
+                recordedAtMillis = millisOf(2026, 5, 11, 12, 0, zone),
+                price = 7_000L,
+            ),
+        )
+        val useCase = ObserveDashboardSummaryUseCase(RangeFilteringRepository(records))
+
+        val summary = useCase(
+            period = DashboardPeriod.Monthly,
+            nowMillis = millisOf(2026, 5, 15, 12, 0, zone),
+        ).first()
+
+        assertEquals(listOf(1L), summary.normalRecords.map { it.id })
+        assertEquals(listOf(2L), summary.repurchaseRecords.map { it.id })
+        assertEquals(10_000L, summary.totalSpent)
+        assertEquals(5_000L, summary.averageSpent)
+        assertEquals(2, summary.pricedRecordCount)
     }
 
     @Test
@@ -97,12 +136,13 @@ class ObserveDashboardSummaryUseCaseTest {
         rating: Double,
         status: CollectionStatus,
         recordedAtMillis: Long,
+        price: Long? = null,
     ) = DrinkRecord(
         id = id,
         type = type,
         name = "Record $id",
         imageUri = null,
-        price = null,
+        price = price,
         place = null,
         tastingNote = null,
         rating = rating,

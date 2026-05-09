@@ -8,6 +8,10 @@ data class DashboardSummary(
     val beerCount: Int,
     val repurchaseCount: Int,
     val notForMeCount: Int,
+    val totalSpent: Long,
+    val averageSpent: Long?,
+    val pricedRecordCount: Int,
+    val normalRecords: List<DrinkRecord>,
     val repurchaseRecords: List<DrinkRecord>,
     val notForMeRecords: List<DrinkRecord>,
 ) {
@@ -20,6 +24,10 @@ data class DashboardSummary(
             beerCount = 0,
             repurchaseCount = 0,
             notForMeCount = 0,
+            totalSpent = 0L,
+            averageSpent = null,
+            pricedRecordCount = 0,
+            normalRecords = emptyList(),
             repurchaseRecords = emptyList(),
             notForMeRecords = emptyList(),
         )

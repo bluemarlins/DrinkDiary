@@ -19,6 +19,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -26,6 +28,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
@@ -62,6 +65,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
@@ -71,7 +76,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.shape.CircleShape
 import com.bluemarlin.drinkdiary.domain.model.CollectionStatus
 import com.bluemarlin.drinkdiary.domain.model.DashboardPeriod
 import com.bluemarlin.drinkdiary.domain.model.DrinkRatingBreakdown
@@ -719,6 +723,131 @@ fun DDDrinkRecordCard(record: DrinkRecord, onClick: () -> Unit, modifier: Modifi
 }
 
 @Composable
+fun DDDashboardMetricTile(
+    title: String,
+    value: String,
+    supportingText: String,
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null,
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .defaultMinSize(minHeight = 108.dp)
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                text = value,
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.primary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                text = supportingText,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+    }
+}
+
+@Composable
+fun DDDrinkTypeDonutCard(
+    wineCount: Int,
+    whiskeyCount: Int,
+    beerCount: Int,
+    totalCount: Int,
+    modifier: Modifier = Modifier,
+) {
+    val outlineColor = MaterialTheme.colorScheme.outlineVariant
+    val entries = listOf(
+        Triple("와인", wineCount, WinePastel),
+        Triple("위스키", whiskeyCount, WhiskeyPastel),
+        Triple("맥주", beerCount, BeerPastel),
+    )
+
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(18.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(contentAlignment = Alignment.Center, modifier = Modifier.size(148.dp)) {
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    val strokeWidth = 18.dp.toPx()
+                    if (totalCount == 0) {
+                        drawArc(
+                            color = outlineColor,
+                            startAngle = -90f,
+                            sweepAngle = 360f,
+                            useCenter = false,
+                            style = Stroke(width = strokeWidth, cap = StrokeCap.Round),
+                        )
+                    } else {
+                        var startAngle = -90f
+                        entries.forEach { (_, count, color) ->
+                            val sweep = (count.toFloat() / totalCount.toFloat()) * 360f
+                            if (sweep > 0f) {
+                                drawArc(
+                                    color = color,
+                                    startAngle = startAngle,
+                                    sweepAngle = sweep,
+                                    useCenter = false,
+                                    style = Stroke(width = strokeWidth, cap = StrokeCap.Butt),
+                                )
+                            }
+                            startAngle += sweep
+                        }
+                    }
+                }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("${totalCount}개", style = MaterialTheme.typography.titleLarge)
+                    Text("전체", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Text("종류별 비중", style = MaterialTheme.typography.titleMedium)
+                entries.forEach { (label, count, color) ->
+                    val ratio = if (totalCount == 0) 0 else (count * 100) / totalCount
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Box(modifier = Modifier.size(10.dp).clip(CircleShape).background(color))
+                            Text(label, style = MaterialTheme.typography.bodyMedium)
+                        }
+                        Text("$ratio% · ${count}개", style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
 fun DDImageThumbnail(imageUri: String?) {
     if (imageUri == null) {
         Box(
@@ -866,3 +995,7 @@ fun formatRecordedDate(millis: Long): String =
 
 fun formatPrice(price: Long?): String =
     price?.let { NumberFormat.getNumberInstance(Locale.KOREA).format(it) + "원" } ?: "-"
+
+private val WinePastel = Color(0xFFFF8FB3)
+private val WhiskeyPastel = Color(0xFFFFC66E)
+private val BeerPastel = Color(0xFF70D6FF)

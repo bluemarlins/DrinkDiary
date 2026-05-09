@@ -19,7 +19,7 @@ The app focuses on three drink categories: wine, whiskey, and beer. Each record 
 
 The dashboard provides a quick summary of the user's drink collection for a selected period. It shows record counts, average rating, drink type ratio, repurchase candidates, and not-for-me records.
 
-The default dashboard period is monthly because it provides a practical balance between short-term feedback and enough data for meaningful summaries.
+The default dashboard period is yearly so the home screen can show the broadest available collection summary when the app opens.
 
 ### Collection
 
