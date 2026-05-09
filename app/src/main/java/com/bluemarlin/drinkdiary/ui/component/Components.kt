@@ -9,6 +9,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -46,6 +47,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -59,18 +61,24 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.bluemarlin.drinkdiary.domain.model.CollectionStatus
 import com.bluemarlin.drinkdiary.domain.model.DashboardPeriod
+import com.bluemarlin.drinkdiary.domain.model.DrinkRatingBreakdown
+import com.bluemarlin.drinkdiary.domain.model.DrinkRatingCriterion
 import com.bluemarlin.drinkdiary.domain.model.DrinkRecord
 import com.bluemarlin.drinkdiary.domain.model.DrinkType
 import com.bluemarlin.drinkdiary.domain.model.roundToHalf
+import com.bluemarlin.drinkdiary.domain.model.roundToTenth
 import java.text.NumberFormat
 import java.io.File
 import java.time.Instant
@@ -81,6 +89,10 @@ import java.util.UUID
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+
+private const val MinRating = 0.5
+private const val MaxRating = 5.0
+private const val RatingSliderSteps = 44
 
 @Composable
 fun DDPrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
@@ -337,26 +349,22 @@ fun DDRatingInput(
     error: String? = null,
     enabled: Boolean = true,
 ) {
+    val sliderValue = rating.coerceIn(MinRating, MaxRating)
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-            DDSecondaryButton(
-                text = "-",
-                onClick = { onRatingChange((rating - 0.5).coerceAtLeast(0.5)) },
-                enabled = enabled && rating > 0.5,
-            )
-            Text(
-                text = ratingStarsText(rating),
-                style = MaterialTheme.typography.headlineSmall,
-                color = if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = "%.1f".format(rating),
                 style = MaterialTheme.typography.titleMedium,
+                color = if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.width(48.dp),
             )
-            DDSecondaryButton(
-                text = "+",
-                onClick = { onRatingChange((rating + 0.5).coerceAtMost(5.0)) },
-                enabled = enabled && rating < 5.0,
+            Slider(
+                value = sliderValue.toFloat(),
+                onValueChange = { onRatingChange(roundToTenth(it.toDouble())) },
+                modifier = Modifier.weight(1f),
+                enabled = enabled,
+                valueRange = MinRating.toFloat()..MaxRating.toFloat(),
+                steps = RatingSliderSteps,
             )
         }
         if (error != null) Text(error, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
@@ -522,6 +530,132 @@ fun DDRatingStars(rating: Double) {
     Text(ratingStarsText(rating), color = MaterialTheme.colorScheme.primary)
 }
 
+@Composable
+fun DDRatingValueText(rating: Double, modifier: Modifier = Modifier) {
+    Text(
+        text = "%.1f".format(rating),
+        color = MaterialTheme.colorScheme.primary,
+        style = MaterialTheme.typography.bodyMedium,
+        modifier = modifier,
+    )
+}
+
+@Composable
+fun DDRatingBreakdownRadarChart(
+    criteria: List<DrinkRatingCriterion>,
+    breakdown: DrinkRatingBreakdown,
+    modifier: Modifier = Modifier,
+) {
+    val labels = criteria.take(4).map { it.label }
+    val values = breakdown.values.take(4)
+    if (labels.size < 4 || values.size < 4) return
+
+    val primary = MaterialTheme.colorScheme.primary
+    val outline = MaterialTheme.colorScheme.outlineVariant
+    val axis = MaterialTheme.colorScheme.onSurfaceVariant
+
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text("세부 평가", style = MaterialTheme.typography.titleMedium)
+                Text(
+                    text = "평균 %.1f".format(breakdown.average),
+                    color = primary,
+                    style = MaterialTheme.typography.titleMedium,
+                )
+            }
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                RadarAxisLabel(text = labels[0], value = values[0])
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    RadarAxisLabel(text = labels[3], value = values[3], modifier = Modifier.width(72.dp))
+                    Canvas(modifier = Modifier.size(180.dp)) {
+                        val center = this.center
+                        val radius = size.minDimension * 0.42f
+                        val angles = listOf(-90.0, 0.0, 90.0, 180.0)
+
+                        fun pointFor(angleDegrees: Double, ratio: Double): androidx.compose.ui.geometry.Offset {
+                            val radians = Math.toRadians(angleDegrees)
+                            return androidx.compose.ui.geometry.Offset(
+                                x = center.x + kotlin.math.cos(radians).toFloat() * radius * ratio.toFloat(),
+                                y = center.y + kotlin.math.sin(radians).toFloat() * radius * ratio.toFloat(),
+                            )
+                        }
+
+                        for (level in 1..5) {
+                            val ratio = level / 5.0
+                            val gridPath = Path()
+                            angles.forEachIndexed { index, angle ->
+                                val point = pointFor(angle, ratio)
+                                if (index == 0) gridPath.moveTo(point.x, point.y) else gridPath.lineTo(point.x, point.y)
+                            }
+                            gridPath.close()
+                            drawPath(gridPath, color = outline, style = Stroke(width = 1.dp.toPx()))
+                        }
+
+                        angles.forEach { angle ->
+                            val end = pointFor(angle, 1.0)
+                            drawLine(color = axis, start = center, end = end, strokeWidth = 1.dp.toPx())
+                        }
+
+                        val ratingPath = Path()
+                        values.forEachIndexed { index, value ->
+                            val point = pointFor(angles[index], (value / MaxRating).coerceIn(0.0, 1.0))
+                            if (index == 0) ratingPath.moveTo(point.x, point.y) else ratingPath.lineTo(point.x, point.y)
+                        }
+                        ratingPath.close()
+                        drawPath(ratingPath, color = primary.copy(alpha = 0.24f))
+                        drawPath(ratingPath, color = primary, style = Stroke(width = 2.dp.toPx()))
+                    }
+                    RadarAxisLabel(text = labels[1], value = values[1], modifier = Modifier.width(72.dp))
+                }
+                RadarAxisLabel(text = labels[2], value = values[2])
+            }
+        }
+    }
+}
+
+@Composable
+private fun RadarAxisLabel(
+    text: String,
+    value: Double,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            textAlign = TextAlign.Center,
+        )
+        Text(
+            text = "%.1f".format(value),
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.primary,
+            textAlign = TextAlign.Center,
+        )
+    }
+}
+
 private fun ratingStarsText(rating: Double): String {
     val normalized = roundToHalf(rating).coerceIn(0.0, 5.0)
     val fullStars = normalized.toInt()
@@ -557,7 +691,7 @@ fun DDDrinkRecordListItem(record: DrinkRecord, onClick: () -> Unit, modifier: Mo
                 Text(record.name, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text(record.type.label, style = MaterialTheme.typography.bodySmall)
-                    DDRatingStars(record.rating)
+                    DDRatingValueText(record.rating)
                 }
                 Text("${record.collectionStatus.label} · ${formatRecordedDate(record.recordedAtMillis)}", style = MaterialTheme.typography.bodySmall)
             }
@@ -574,7 +708,7 @@ fun DDDrinkRecordCard(record: DrinkRecord, onClick: () -> Unit, modifier: Modifi
         Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(record.name, style = MaterialTheme.typography.titleSmall)
             Text("${record.type.label} · ${record.collectionStatus.label}", style = MaterialTheme.typography.bodySmall)
-            DDRatingStars(record.rating)
+            DDRatingValueText(record.rating)
         }
     }
 }

@@ -29,7 +29,7 @@ class SaveDrinkRecordUseCase(
                 else -> null
             },
             rating = if (!input.rating.isValidRating() || ratingBreakdown.values.any { !it.isValidRating() }) {
-                "별점은 0.5~5점 사이에서 0.5 단위로 선택해 주세요."
+                "별점은 0.5~5점 사이에서 0.1 단위로 선택해 주세요."
             } else {
                 null
             },

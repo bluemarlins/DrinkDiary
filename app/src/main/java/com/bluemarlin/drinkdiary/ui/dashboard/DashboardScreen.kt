@@ -29,7 +29,9 @@ import com.bluemarlin.drinkdiary.ui.component.DDErrorContent
 import com.bluemarlin.drinkdiary.ui.component.DDLoadingContent
 import com.bluemarlin.drinkdiary.ui.component.DDPeriodSegmentedControl
 import com.bluemarlin.drinkdiary.ui.component.DDStatusSummaryCard
+import com.bluemarlin.drinkdiary.ui.navigation.DDScreenType
 import com.bluemarlin.drinkdiary.ui.navigation.DDScreenScaffold
+import com.bluemarlin.drinkdiary.ui.navigation.DDTopLevelTab
 
 @Composable
 fun DashboardRoute(
@@ -44,7 +46,8 @@ fun DashboardRoute(
 
     DDScreenScaffold(
         title = "대시보드",
-        selectedTab = "dashboard",
+        screenType = DDScreenType.TopLevel,
+        selectedTab = DDTopLevelTab.Dashboard,
         onDashboardClick = {},
         onCollectionClick = onCollectionClick,
         floatingActionButton = { DDAddRecordFab(onClick = onAddRecord) },

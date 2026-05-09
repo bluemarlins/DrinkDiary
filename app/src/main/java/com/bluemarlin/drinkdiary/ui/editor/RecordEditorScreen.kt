@@ -38,6 +38,7 @@ import com.bluemarlin.drinkdiary.ui.component.DDRatingInput
 import com.bluemarlin.drinkdiary.ui.component.DDSecondaryButton
 import com.bluemarlin.drinkdiary.ui.component.DDTextField
 import com.bluemarlin.drinkdiary.ui.navigation.DDScreenScaffold
+import com.bluemarlin.drinkdiary.ui.navigation.DDScreenType
 
 @Composable
 fun RecordEditorRoute(
@@ -59,7 +60,7 @@ fun RecordEditorRoute(
 
     DDScreenScaffold(
         title = if (state.input.id == 0L) "기록 등록" else "기록 수정",
-        showBottomBar = false,
+        screenType = DDScreenType.Editor,
         onBackClick = onBack,
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->

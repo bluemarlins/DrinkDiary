@@ -10,7 +10,7 @@ data class DrinkRatingBreakdown(
         get() = listOf(first, second, third, fourth)
 
     val average: Double
-        get() = roundToHalf(values.average())
+        get() = roundToTenth(values.average())
 
     companion object {
         fun fromRepresentativeRating(rating: Double): DrinkRatingBreakdown =
@@ -52,6 +52,11 @@ fun DrinkRatingBreakdown.update(index: Int, rating: Double): DrinkRatingBreakdow
     else -> this
 }
 
-fun Double.isValidRating(): Boolean = this in 0.5..5.0 && (this * 2).rem(1.0) == 0.0
+fun Double.isValidRating(): Boolean {
+    val scaled = this * 10.0
+    return this in 0.5..5.0 && kotlin.math.abs(scaled - kotlin.math.round(scaled)) < 0.0001
+}
 
 fun roundToHalf(value: Double): Double = kotlin.math.round(value * 2.0) / 2.0
+
+fun roundToTenth(value: Double): Double = kotlin.math.round(value * 10.0) / 10.0

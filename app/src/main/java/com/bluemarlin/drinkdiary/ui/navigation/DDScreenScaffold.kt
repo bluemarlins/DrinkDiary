@@ -21,22 +21,35 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
+enum class DDScreenType {
+    TopLevel,
+    Detail,
+    Editor,
+}
+
+enum class DDTopLevelTab {
+    Dashboard,
+    Collection,
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DDScreenScaffold(
     title: String,
-    selectedTab: String? = null,
-    showBottomBar: Boolean = true,
+    screenType: DDScreenType,
+    selectedTab: DDTopLevelTab? = null,
     onDashboardClick: (() -> Unit)? = null,
     onCollectionClick: (() -> Unit)? = null,
     onBackClick: (() -> Unit)? = null,
     floatingActionButton: @Composable (() -> Unit)? = null,
+    toolbarActions: @Composable RowScope.() -> Unit = {},
     snackbarHost: @Composable (() -> Unit)? = null,
     content: @Composable (PaddingValues) -> Unit,
 ) {
     val defaultSnackbarHostState = remember { SnackbarHostState() }
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-        val useNavigationRail = showBottomBar && maxWidth >= 840.dp
+        val showTopLevelNavigation = screenType == DDScreenType.TopLevel
+        val useNavigationRail = showTopLevelNavigation && maxWidth >= 840.dp
         val host = snackbarHost ?: { SnackbarHost(hostState = defaultSnackbarHostState) }
 
         if (useNavigationRail) {
@@ -54,6 +67,7 @@ fun DDScreenScaffold(
                     onCollectionClick = onCollectionClick,
                     onBackClick = onBackClick,
                     floatingActionButton = floatingActionButton,
+                    toolbarActions = toolbarActions,
                     snackbarHost = host,
                     content = content,
                 )
@@ -61,12 +75,13 @@ fun DDScreenScaffold(
         } else {
             AppScaffold(
                 title = title,
-                showBottomBar = showBottomBar,
+                showBottomBar = showTopLevelNavigation,
                 selectedTab = selectedTab,
                 onDashboardClick = onDashboardClick,
                 onCollectionClick = onCollectionClick,
                 onBackClick = onBackClick,
                 floatingActionButton = floatingActionButton,
+                toolbarActions = toolbarActions,
                 snackbarHost = host,
                 content = content,
             )
@@ -79,18 +94,21 @@ fun DDScreenScaffold(
 private fun AppScaffold(
     title: String,
     showBottomBar: Boolean,
-    selectedTab: String?,
+    selectedTab: DDTopLevelTab?,
     onDashboardClick: (() -> Unit)?,
     onCollectionClick: (() -> Unit)?,
     onBackClick: (() -> Unit)?,
     floatingActionButton: @Composable (() -> Unit)?,
+    toolbarActions: @Composable RowScope.() -> Unit,
     snackbarHost: @Composable (() -> Unit),
     content: @Composable (PaddingValues) -> Unit,
 ) {
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { DDTopAppBar(title = title, onBackClick = onBackClick) },
+            DDTopAppBar(
+                title = title,
+                onBackClick = onBackClick,
+                actions = toolbarActions,
             )
         },
         bottomBar = {
@@ -108,22 +126,27 @@ private fun AppScaffold(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DDTopAppBar(
     title: String,
     onBackClick: (() -> Unit)? = null,
+    actions: @Composable RowScope.() -> Unit = {},
 ) {
-    Row {
-        if (onBackClick != null) {
-            TextButton(onClick = onBackClick) { Text("뒤로") }
-        }
-        Text(title)
-    }
+    TopAppBar(
+        title = { Text(title) },
+        navigationIcon = {
+            if (onBackClick != null) {
+                TextButton(onClick = onBackClick) { Text("뒤로") }
+            }
+        },
+        actions = actions,
+    )
 }
 
 @Composable
 fun DDBottomNavigationBar(
-    selectedTab: String?,
+    selectedTab: DDTopLevelTab?,
     onDashboardClick: (() -> Unit)?,
     onCollectionClick: (() -> Unit)?,
 ) {
@@ -138,19 +161,19 @@ fun DDBottomNavigationBar(
 
 @Composable
 private fun AppNavigationRail(
-    selectedTab: String?,
+    selectedTab: DDTopLevelTab?,
     onDashboardClick: (() -> Unit)?,
     onCollectionClick: (() -> Unit)?,
 ) {
     NavigationRail {
         NavigationRailItem(
-            selected = selectedTab == "dashboard",
+            selected = selectedTab == DDTopLevelTab.Dashboard,
             onClick = { onDashboardClick?.invoke() },
             icon = { Text("홈") },
             label = { Text("대시보드") },
         )
         NavigationRailItem(
-            selected = selectedTab == "collection",
+            selected = selectedTab == DDTopLevelTab.Collection,
             onClick = { onCollectionClick?.invoke() },
             icon = { Text("목록") },
             label = { Text("컬렉션") },
@@ -160,18 +183,18 @@ private fun AppNavigationRail(
 
 @Composable
 private fun RowScope.AppNavigationItems(
-    selectedTab: String?,
+    selectedTab: DDTopLevelTab?,
     onDashboardClick: (() -> Unit)?,
     onCollectionClick: (() -> Unit)?,
 ) {
     NavigationBarItem(
-        selected = selectedTab == "dashboard",
+        selected = selectedTab == DDTopLevelTab.Dashboard,
         onClick = { onDashboardClick?.invoke() },
         icon = { Text("홈") },
         label = { Text("대시보드") },
     )
     NavigationBarItem(
-        selected = selectedTab == "collection",
+        selected = selectedTab == DDTopLevelTab.Collection,
         onClick = { onCollectionClick?.invoke() },
         icon = { Text("목록") },
         label = { Text("컬렉션") },

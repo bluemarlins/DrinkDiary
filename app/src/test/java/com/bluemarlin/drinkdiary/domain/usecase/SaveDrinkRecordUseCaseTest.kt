@@ -56,6 +56,42 @@ class SaveDrinkRecordUseCaseTest {
         assertEquals(12000L, repository.savedRecord?.price)
     }
 
+    @Test
+    fun ratingCanBeSavedInTenthUnits() = runBlocking {
+        val repository = FakeRepository()
+        val useCase = SaveDrinkRecordUseCase(repository)
+
+        val result = useCase(
+            DrinkRecordInput(
+                type = DrinkType.Beer,
+                name = "Lager",
+                rating = 4.7,
+                collectionStatus = CollectionStatus.Repurchase,
+            ),
+        )
+
+        assertTrue(result is AppResult.Success)
+        assertEquals(4.7, repository.savedRecord?.rating ?: 0.0, 0.0001)
+    }
+
+    @Test
+    fun ratingOutsideTenthUnitsReturnsValidationError() = runBlocking {
+        val useCase = SaveDrinkRecordUseCase(FakeRepository())
+
+        val result = useCase(
+            DrinkRecordInput(
+                type = DrinkType.Beer,
+                name = "Lager",
+                rating = 4.75,
+                collectionStatus = CollectionStatus.Normal,
+            ),
+        )
+
+        assertTrue(result is AppResult.Failure)
+        val error = (result as AppResult.Failure).error as AppError.Validation
+        assertEquals("별점은 0.5~5점 사이에서 0.1 단위로 선택해 주세요.", error.error.rating)
+    }
+
     private class FakeRepository : DrinkRecordRepository {
         var savedRecord: DrinkRecord? = null
 

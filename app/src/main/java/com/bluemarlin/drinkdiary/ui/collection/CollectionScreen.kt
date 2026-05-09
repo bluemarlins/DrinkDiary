@@ -26,6 +26,8 @@ import com.bluemarlin.drinkdiary.ui.component.DDEmptyContent
 import com.bluemarlin.drinkdiary.ui.component.DDErrorContent
 import com.bluemarlin.drinkdiary.ui.component.DDLoadingContent
 import com.bluemarlin.drinkdiary.ui.navigation.DDScreenScaffold
+import com.bluemarlin.drinkdiary.ui.navigation.DDScreenType
+import com.bluemarlin.drinkdiary.ui.navigation.DDTopLevelTab
 
 @Composable
 fun CollectionRoute(
@@ -40,7 +42,8 @@ fun CollectionRoute(
 
     DDScreenScaffold(
         title = "컬렉션",
-        selectedTab = "collection",
+        screenType = DDScreenType.TopLevel,
+        selectedTab = DDTopLevelTab.Collection,
         onDashboardClick = onDashboardClick,
         onCollectionClick = {},
         floatingActionButton = { DDAddRecordFab(onClick = onAddRecord) },

@@ -34,10 +34,12 @@ import com.bluemarlin.drinkdiary.ui.component.DDInfoRow
 import com.bluemarlin.drinkdiary.ui.component.DDLoadingContent
 import com.bluemarlin.drinkdiary.ui.component.DDPrimaryButton
 import com.bluemarlin.drinkdiary.ui.component.DDRecordHeroImage
-import com.bluemarlin.drinkdiary.ui.component.DDRatingStars
+import com.bluemarlin.drinkdiary.ui.component.DDRatingBreakdownRadarChart
+import com.bluemarlin.drinkdiary.ui.component.DDRatingValueText
 import com.bluemarlin.drinkdiary.ui.component.formatPrice
 import com.bluemarlin.drinkdiary.ui.component.formatRecordedDate
 import com.bluemarlin.drinkdiary.ui.navigation.DDScreenScaffold
+import com.bluemarlin.drinkdiary.ui.navigation.DDScreenType
 import com.bluemarlin.drinkdiary.domain.model.ratingCriteria
 
 @Composable
@@ -58,7 +60,7 @@ fun RecordDetailRoute(
 
     DDScreenScaffold(
         title = "기록 상세",
-        showBottomBar = false,
+        screenType = DDScreenType.Detail,
         onBackClick = onBack,
     ) { padding ->
         when (val uiState = state) {
@@ -91,14 +93,12 @@ fun RecordDetailRoute(
                                     DDDrinkTypeBadge(record.type)
                                     DDCollectionStatusBadge(record.collectionStatus)
                                 },
-                                rating = { DDRatingStars(record.rating) },
+                                rating = { DDRatingValueText(record.rating) },
                                 ratingDetails = {
-                                    record.type.ratingCriteria().forEach { criterion ->
-                                        DDInfoRow(
-                                            criterion.label,
-                                            "%.1f".format(record.ratingBreakdown.values[criterion.index]),
-                                        )
-                                    }
+                                    DDRatingBreakdownRadarChart(
+                                        criteria = record.type.ratingCriteria(),
+                                        breakdown = record.ratingBreakdown,
+                                    )
                                 },
                                 price = formatPrice(record.price),
                                 place = record.place ?: "-",
@@ -124,14 +124,12 @@ fun RecordDetailRoute(
                                     DDDrinkTypeBadge(record.type)
                                     DDCollectionStatusBadge(record.collectionStatus)
                                 },
-                                rating = { DDRatingStars(record.rating) },
+                                rating = { DDRatingValueText(record.rating) },
                                 ratingDetails = {
-                                    record.type.ratingCriteria().forEach { criterion ->
-                                        DDInfoRow(
-                                            criterion.label,
-                                            "%.1f".format(record.ratingBreakdown.values[criterion.index]),
-                                        )
-                                    }
+                                    DDRatingBreakdownRadarChart(
+                                        criteria = record.type.ratingCriteria(),
+                                        breakdown = record.ratingBreakdown,
+                                    )
                                 },
                                 price = formatPrice(record.price),
                                 place = record.place ?: "-",
