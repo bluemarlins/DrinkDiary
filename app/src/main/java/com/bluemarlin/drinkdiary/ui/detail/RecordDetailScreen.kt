@@ -61,7 +61,6 @@ fun RecordDetailRoute(
     DDScreenScaffold(
         title = "기록 상세",
         screenType = DDScreenType.Detail,
-        onBackClick = onBack,
     ) { padding ->
         when (val uiState = state) {
             RecordDetailUiState.Loading -> DDLoadingContent(Modifier.padding(padding))
@@ -181,6 +180,7 @@ private fun RecordDetailInfo(
     ) {
         Text(name, style = MaterialTheme.typography.headlineSmall)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), content = typeContent)
+        Text("전체 평점", style = MaterialTheme.typography.titleMedium)
         rating()
         ratingDetails()
         DDInfoRow("가격", price)

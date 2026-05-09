@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -73,7 +74,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.bluemarlin.drinkdiary.domain.model.CollectionStatus
@@ -82,6 +82,7 @@ import com.bluemarlin.drinkdiary.domain.model.DrinkRatingBreakdown
 import com.bluemarlin.drinkdiary.domain.model.DrinkRatingCriterion
 import com.bluemarlin.drinkdiary.domain.model.DrinkRecord
 import com.bluemarlin.drinkdiary.domain.model.DrinkType
+import com.bluemarlin.drinkdiary.domain.model.currentLabel
 import com.bluemarlin.drinkdiary.domain.model.roundToHalf
 import com.bluemarlin.drinkdiary.domain.model.roundToTenth
 import java.text.NumberFormat
@@ -95,9 +96,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-private const val MinRating = 0.5
+private const val MinOverallRating = 0.0
 private const val MaxRating = 5.0
-private const val RatingSliderSteps = 44
+private const val OverallRatingSliderSteps = 49
+private const val SensoryMetricSliderSteps = 9
 
 @Composable
 fun DDPrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
@@ -358,8 +360,13 @@ fun DDRatingInput(
     error: String? = null,
     enabled: Boolean = true,
 ) {
-    val sliderValue = rating.coerceIn(MinRating, MaxRating)
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    val sliderValue = rating.coerceIn(MinOverallRating, MaxRating)
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text(
+            text = "내가 이 술을 얼마나 좋게 느꼈는지 기록해요.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = "%.1f".format(rating),
@@ -372,11 +379,50 @@ fun DDRatingInput(
                 onValueChange = { onRatingChange(roundToTenth(it.toDouble())) },
                 modifier = Modifier.weight(1f),
                 enabled = enabled,
-                valueRange = MinRating.toFloat()..MaxRating.toFloat(),
-                steps = RatingSliderSteps,
+                valueRange = MinOverallRating.toFloat()..MaxRating.toFloat(),
+                steps = OverallRatingSliderSteps,
             )
         }
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text("별로예요", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("아주 좋아요", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
         if (error != null) Text(error, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+    }
+}
+
+@Composable
+fun DDSensoryMetricSlider(
+    criterion: DrinkRatingCriterion,
+    value: Double,
+    onValueChange: (Double) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val roundedValue = roundToHalf(value).coerceIn(MinOverallRating, MaxRating)
+    Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(criterion.label, style = MaterialTheme.typography.titleSmall)
+            Text(
+                text = "${criterion.currentLabel(roundedValue)} · %.1f".format(roundedValue),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary,
+            )
+        }
+        Text(
+            text = criterion.description,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Slider(
+            value = roundedValue.toFloat(),
+            onValueChange = { onValueChange(roundToHalf(it.toDouble())) },
+            valueRange = MinOverallRating.toFloat()..MaxRating.toFloat(),
+            steps = SensoryMetricSliderSteps,
+        )
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(criterion.minLabel, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(criterion.maxLabel, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
     }
 }
 
@@ -555,9 +601,9 @@ fun DDRatingBreakdownRadarChart(
     breakdown: DrinkRatingBreakdown,
     modifier: Modifier = Modifier,
 ) {
-    val labels = criteria.take(4).map { it.label }
-    val values = breakdown.values.take(4)
-    if (labels.size < 4 || values.size < 4) return
+    val visibleCriteria = criteria.take(5)
+    val values = breakdown.values.take(visibleCriteria.size)
+    if (visibleCriteria.isEmpty() || visibleCriteria.size != values.size) return
 
     val primary = MaterialTheme.colorScheme.primary
     val outline = MaterialTheme.colorScheme.outlineVariant
@@ -571,96 +617,97 @@ fun DDRatingBreakdownRadarChart(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
+            Text("테이스팅 프로필", style = MaterialTheme.typography.titleMedium)
+            Text(
+                text = "점수가 아니라 맛과 향의 특성을 나타내는 지표예요.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Box(
+                modifier = Modifier.size(300.dp).align(Alignment.CenterHorizontally),
+                contentAlignment = Alignment.Center,
             ) {
-                Text("세부 평가", style = MaterialTheme.typography.titleMedium)
-                Text(
-                    text = "평균 %.1f".format(breakdown.average),
-                    color = primary,
-                    style = MaterialTheme.typography.titleMedium,
-                )
-            }
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                RadarAxisLabel(text = labels[0], value = values[0])
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    RadarAxisLabel(text = labels[3], value = values[3], modifier = Modifier.width(72.dp))
-                    Canvas(modifier = Modifier.size(180.dp)) {
-                        val center = this.center
-                        val radius = size.minDimension * 0.42f
-                        val angles = listOf(-90.0, 0.0, 90.0, 180.0)
-
-                        fun pointFor(angleDegrees: Double, ratio: Double): androidx.compose.ui.geometry.Offset {
-                            val radians = Math.toRadians(angleDegrees)
-                            return androidx.compose.ui.geometry.Offset(
-                                x = center.x + kotlin.math.cos(radians).toFloat() * radius * ratio.toFloat(),
-                                y = center.y + kotlin.math.sin(radians).toFloat() * radius * ratio.toFloat(),
-                            )
-                        }
-
-                        for (level in 1..5) {
-                            val ratio = level / 5.0
-                            val gridPath = Path()
-                            angles.forEachIndexed { index, angle ->
-                                val point = pointFor(angle, ratio)
-                                if (index == 0) gridPath.moveTo(point.x, point.y) else gridPath.lineTo(point.x, point.y)
-                            }
-                            gridPath.close()
-                            drawPath(gridPath, color = outline, style = Stroke(width = 1.dp.toPx()))
-                        }
-
-                        angles.forEach { angle ->
-                            val end = pointFor(angle, 1.0)
-                            drawLine(color = axis, start = center, end = end, strokeWidth = 1.dp.toPx())
-                        }
-
-                        val ratingPath = Path()
-                        values.forEachIndexed { index, value ->
-                            val point = pointFor(angles[index], (value / MaxRating).coerceIn(0.0, 1.0))
-                            if (index == 0) ratingPath.moveTo(point.x, point.y) else ratingPath.lineTo(point.x, point.y)
-                        }
-                        ratingPath.close()
-                        drawPath(ratingPath, color = primary.copy(alpha = 0.24f))
-                        drawPath(ratingPath, color = primary, style = Stroke(width = 2.dp.toPx()))
-                    }
-                    RadarAxisLabel(text = labels[1], value = values[1], modifier = Modifier.width(72.dp))
+                val angles = visibleCriteria.indices.map { index ->
+                    -90.0 + (360.0 / visibleCriteria.size) * index
                 }
-                RadarAxisLabel(text = labels[2], value = values[2])
+                Canvas(modifier = Modifier.size(210.dp)) {
+                    val center = this.center
+                    val radius = size.minDimension * 0.42f
+
+                    fun pointFor(angleDegrees: Double, ratio: Double): androidx.compose.ui.geometry.Offset {
+                        val radians = Math.toRadians(angleDegrees)
+                        return androidx.compose.ui.geometry.Offset(
+                            x = center.x + kotlin.math.cos(radians).toFloat() * radius * ratio.toFloat(),
+                            y = center.y + kotlin.math.sin(radians).toFloat() * radius * ratio.toFloat(),
+                        )
+                    }
+
+                    for (level in 1..5) {
+                        val ratio = level / 5.0
+                        val gridPath = Path()
+                        angles.forEachIndexed { index, angle ->
+                            val point = pointFor(angle, ratio)
+                            if (index == 0) gridPath.moveTo(point.x, point.y) else gridPath.lineTo(point.x, point.y)
+                        }
+                        gridPath.close()
+                        drawPath(gridPath, color = outline, style = Stroke(width = 1.dp.toPx()))
+                    }
+
+                    angles.forEach { angle ->
+                        val end = pointFor(angle, 1.0)
+                        drawLine(color = axis, start = center, end = end, strokeWidth = 1.dp.toPx())
+                    }
+
+                    val profilePath = Path()
+                    values.forEachIndexed { index, value ->
+                        val point = pointFor(angles[index], (value / MaxRating).coerceIn(0.0, 1.0))
+                        if (index == 0) profilePath.moveTo(point.x, point.y) else profilePath.lineTo(point.x, point.y)
+                    }
+                    profilePath.close()
+                    drawPath(profilePath, color = primary.copy(alpha = 0.24f))
+                    drawPath(profilePath, color = primary, style = Stroke(width = 2.dp.toPx()))
+                }
+                visibleCriteria.forEachIndexed { index, criterion ->
+                    val angle = Math.toRadians(angles[index])
+                    val xOffset = (kotlin.math.cos(angle).toFloat() * 112f).dp
+                    val yOffset = (kotlin.math.sin(angle).toFloat() * 112f).dp
+                    RadarAxisBadge(
+                        text = criterion.label,
+                        value = values[criterion.index],
+                        modifier = Modifier.align(Alignment.Center).offset(x = xOffset, y = yOffset),
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
-private fun RadarAxisLabel(
+private fun RadarAxisBadge(
     text: String,
     value: Double,
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier,
+        modifier = modifier
+            .width(76.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.92f))
+            .padding(horizontal = 6.dp, vertical = 5.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(2.dp),
+        verticalArrangement = Arrangement.spacedBy(1.dp),
     ) {
         Text(
             text = text,
-            style = MaterialTheme.typography.labelLarge,
+            style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            textAlign = TextAlign.Center,
         )
         Text(
             text = "%.1f".format(value),
             style = MaterialTheme.typography.titleSmall,
             color = MaterialTheme.colorScheme.primary,
-            textAlign = TextAlign.Center,
         )
     }
 }

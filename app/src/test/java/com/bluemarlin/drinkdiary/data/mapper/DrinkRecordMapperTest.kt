@@ -22,6 +22,7 @@ class DrinkRecordMapperTest {
         assertEquals("Oak Reserve", record.name)
         assertEquals(4.0, record.rating, 0.0001)
         assertEquals(3.5, record.ratingBreakdown.third, 0.0001)
+        assertEquals(2.5, record.ratingBreakdown.fifth, 0.0001)
     }
 
     @Test
@@ -39,6 +40,24 @@ class DrinkRecordMapperTest {
     }
 
     @Test
+    fun entityToDomainNormalizesLegacySensoryMetricsToHalfUnits() {
+        val entity = entity(type = DrinkType.Beer.name, collectionStatus = CollectionStatus.Normal.name).copy(
+            detailRating1 = 3.3,
+            detailRating2 = 4.7,
+            detailRating3 = -1.0,
+            detailRating4 = 6.0,
+        )
+
+        val record = entity.toDomain()
+
+        requireNotNull(record)
+        assertEquals(3.5, record.ratingBreakdown.first, 0.0001)
+        assertEquals(4.5, record.ratingBreakdown.second, 0.0001)
+        assertEquals(0.0, record.ratingBreakdown.third, 0.0001)
+        assertEquals(5.0, record.ratingBreakdown.fourth, 0.0001)
+    }
+
+    @Test
     fun domainToEntityUsesStableEnumNames() {
         val record = DrinkRecord(
             id = 12L,
@@ -49,7 +68,7 @@ class DrinkRecordMapperTest {
             place = "Wine Bar",
             tastingNote = "Light body",
             rating = 5.0,
-            ratingBreakdown = DrinkRatingBreakdown(4.5, 4.0, 3.5, 3.0),
+            ratingBreakdown = DrinkRatingBreakdown(4.5, 4.0, 3.5, 3.0, 2.5),
             collectionStatus = CollectionStatus.NotForMe,
             recordedAtMillis = 1_700_000_000_000L,
         )
@@ -60,6 +79,7 @@ class DrinkRecordMapperTest {
         assertEquals(CollectionStatus.NotForMe.name, entity.collectionStatus)
         assertEquals(4.5, entity.detailRating1, 0.0001)
         assertEquals(3.0, entity.detailRating4, 0.0001)
+        assertEquals(2.5, entity.detailRating5, 0.0001)
         assertEquals(10L, entity.createdAtMillis)
         assertEquals(20L, entity.updatedAtMillis)
     }
@@ -80,6 +100,7 @@ class DrinkRecordMapperTest {
         detailRating2 = 4.0,
         detailRating3 = 3.5,
         detailRating4 = 3.0,
+        detailRating5 = 2.5,
         collectionStatus = collectionStatus,
         recordedAtMillis = 1_700_000_000_000L,
         createdAtMillis = 1L,

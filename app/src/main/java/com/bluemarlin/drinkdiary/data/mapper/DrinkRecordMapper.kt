@@ -5,6 +5,7 @@ import com.bluemarlin.drinkdiary.domain.model.CollectionStatus
 import com.bluemarlin.drinkdiary.domain.model.DrinkRecord
 import com.bluemarlin.drinkdiary.domain.model.DrinkRatingBreakdown
 import com.bluemarlin.drinkdiary.domain.model.DrinkType
+import com.bluemarlin.drinkdiary.domain.model.normalizedSensoryMetrics
 
 fun DrinkRecordEntity.toDomain(): DrinkRecord? {
     val drinkType = DrinkType.fromStorageValue(type) ?: return null
@@ -23,7 +24,8 @@ fun DrinkRecordEntity.toDomain(): DrinkRecord? {
             second = detailRating2,
             third = detailRating3,
             fourth = detailRating4,
-        ),
+            fifth = detailRating5,
+        ).normalizedSensoryMetrics(),
         collectionStatus = status,
         recordedAtMillis = recordedAtMillis,
     )
@@ -45,6 +47,7 @@ fun DrinkRecord.toEntity(
     detailRating2 = ratingBreakdown.second,
     detailRating3 = ratingBreakdown.third,
     detailRating4 = ratingBreakdown.fourth,
+    detailRating5 = ratingBreakdown.fifth,
     collectionStatus = collectionStatus.name,
     recordedAtMillis = recordedAtMillis,
     createdAtMillis = createdAtMillis,

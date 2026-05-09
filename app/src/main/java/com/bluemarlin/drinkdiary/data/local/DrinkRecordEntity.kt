@@ -28,6 +28,7 @@ data class DrinkRecordEntity(
     val detailRating2: Double,
     val detailRating3: Double,
     val detailRating4: Double,
+    val detailRating5: Double,
     val collectionStatus: String,
     val recordedAtMillis: Long,
     val createdAtMillis: Long,

@@ -7,7 +7,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
     entities = [DrinkRecordEntity::class],
-    version = 2,
+    version = 3,
     exportSchema = true,
 )
 abstract class DrinkDiaryDatabase : RoomDatabase() {
@@ -59,6 +59,22 @@ abstract class DrinkDiaryDatabase : RoomDatabase() {
                 db.execSQL("CREATE INDEX index_drink_records_collectionStatus ON drink_records(collectionStatus)")
                 db.execSQL("CREATE INDEX index_drink_records_type_collectionStatus ON drink_records(type, collectionStatus)")
                 db.execSQL("CREATE INDEX index_drink_records_recordedAtMillis_collectionStatus ON drink_records(recordedAtMillis, collectionStatus)")
+            }
+        }
+
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE drink_records ADD COLUMN detailRating5 REAL NOT NULL DEFAULT 2.5")
+                db.execSQL(
+                    """
+                    UPDATE drink_records
+                    SET
+                        detailRating1 = ROUND(detailRating1 * 2.0) / 2.0,
+                        detailRating2 = ROUND(detailRating2 * 2.0) / 2.0,
+                        detailRating3 = ROUND(detailRating3 * 2.0) / 2.0,
+                        detailRating4 = ROUND(detailRating4 * 2.0) / 2.0
+                    """.trimIndent(),
+                )
             }
         }
     }

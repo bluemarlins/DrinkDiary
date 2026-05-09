@@ -146,7 +146,7 @@ class ObserveDashboardSummaryUseCaseTest {
         place = null,
         tastingNote = null,
         rating = rating,
-        ratingBreakdown = DrinkRatingBreakdown.fromRepresentativeRating(rating),
+        ratingBreakdown = DrinkRatingBreakdown(),
         collectionStatus = status,
         recordedAtMillis = recordedAtMillis,
     )

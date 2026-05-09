@@ -6,6 +6,7 @@ import com.bluemarlin.drinkdiary.domain.model.CollectionStatus
 import com.bluemarlin.drinkdiary.domain.model.DrinkRecord
 import com.bluemarlin.drinkdiary.domain.model.DrinkRecordFilter
 import com.bluemarlin.drinkdiary.domain.model.DrinkRecordInput
+import com.bluemarlin.drinkdiary.domain.model.DrinkRatingBreakdown
 import com.bluemarlin.drinkdiary.domain.model.DrinkType
 import com.bluemarlin.drinkdiary.domain.repository.DrinkRecordRepository
 import kotlinx.coroutines.flow.Flow
@@ -75,7 +76,7 @@ class SaveDrinkRecordUseCaseTest {
     }
 
     @Test
-    fun ratingOutsideTenthUnitsReturnsValidationError() = runBlocking {
+    fun overallRatingOutsideTenthUnitsReturnsValidationError() = runBlocking {
         val useCase = SaveDrinkRecordUseCase(FakeRepository())
 
         val result = useCase(
@@ -89,7 +90,27 @@ class SaveDrinkRecordUseCaseTest {
 
         assertTrue(result is AppResult.Failure)
         val error = (result as AppResult.Failure).error as AppError.Validation
-        assertEquals("별점은 0.5~5점 사이에서 0.1 단위로 선택해 주세요.", error.error.rating)
+        assertEquals("전체 평점은 0~5점, 테이스팅 프로필은 0.5 단위로 입력해 주세요.", error.error.rating)
+    }
+
+    @Test
+    fun sensoryMetricsDoNotChangeOverallRating() = runBlocking {
+        val repository = FakeRepository()
+        val useCase = SaveDrinkRecordUseCase(repository)
+
+        val result = useCase(
+            DrinkRecordInput(
+                type = DrinkType.Wine,
+                name = "Chardonnay",
+                rating = 2.0,
+                ratingBreakdown = DrinkRatingBreakdown(5.0, 5.0, 5.0, 5.0, 5.0),
+                collectionStatus = CollectionStatus.Normal,
+            ),
+        )
+
+        assertTrue(result is AppResult.Success)
+        assertEquals(2.0, repository.savedRecord?.rating ?: 0.0, 0.0001)
+        assertEquals(5.0, repository.savedRecord?.ratingBreakdown?.first ?: 0.0, 0.0001)
     }
 
     private class FakeRepository : DrinkRecordRepository {

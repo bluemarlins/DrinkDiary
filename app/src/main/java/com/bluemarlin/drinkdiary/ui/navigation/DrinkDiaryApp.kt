@@ -109,11 +109,7 @@ fun DrinkDiaryApp() {
             EditorEntry(
                 recordId = null,
                 onBack = { navController.popBackStack() },
-                onSaved = { recordId ->
-                    navController.navigate("detail/$recordId") {
-                        popUpTo(Routes.EditorNew) { inclusive = true }
-                    }
-                },
+                onSaved = { navController.navigateTopLevel(Routes.Collection) },
             )
         }
         composable(
@@ -124,11 +120,7 @@ fun DrinkDiaryApp() {
             EditorEntry(
                 recordId = recordId,
                 onBack = { navController.popBackStack() },
-                onSaved = { savedId ->
-                    navController.navigate("detail/$savedId") {
-                        popUpTo("editor/$recordId") { inclusive = true }
-                    }
-                },
+                onSaved = { navController.navigateTopLevel(Routes.Collection) },
             )
         }
     }
@@ -177,9 +169,8 @@ private fun EditorEntry(
 private fun NavHostController.navigateTopLevel(route: String) {
     navigate(route) {
         popUpTo(graph.startDestinationId) {
-            saveState = true
+            inclusive = true
         }
         launchSingleTop = true
-        restoreState = true
     }
 }
