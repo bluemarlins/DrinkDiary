@@ -74,7 +74,30 @@ EOF
    --output-format json --dangerously-skip-permissions
 ```
 
-### 4. 후속 지시 (같은 태스크 이어가기)
+### 4. 이미지 생성 (아이콘/에셋 컨셉)
+
+`agy`는 `generate_image`라는 실제 래스터 이미지 생성 도구를 갖고 있다(확인됨 — 512x512 PNG,
+투명 배경(RGBA alpha=0) 생성 가능). **단, 실행 시 결과 파일을 `--add-dir`로 지정한 폴더가 아니라
+agy 자신의 기본 스크래치 폴더(`C:\Users\wooga\.gemini\antigravity-cli\scratch`)에 쓰는 것을
+확인했다.** 따라서 이미지 생성 태스크 후에는 항상 그 경로를 확인해 파일을 리포지토리의 의도한
+위치로 직접 복사해야 한다.
+
+```bash
+agy -p "$(cat <<'EOF'
+[역할] 너는 Android 앱 아이콘 디자이너다. generate_image 도구로 실제 PNG 이미지를 생성해라.
+[요청] <구체적 아이콘/에셋 스펙 — 모티프, 색상(브랜드 팔레트 hex 명시), 크기, 배경 투명 여부>
+EOF
+)" --model gemini-3.6-flash-high --mode accept-edits --add-dir <스테이징 폴더> \
+   --output-format json --dangerously-skip-permissions
+# 실행 후 반드시 확인:
+ls "$HOME/.gemini/antigravity-cli/scratch"
+# 필요한 파일을 리포지토리 스테이징 폴더로 복사한 뒤 사용
+```
+
+생성된 이미지는 Claude가 PIL 등으로 알파 채널/해상도를 검증하고, Android 리소스로 편입할 때는
+Claude가 직접 밀도별 리사이즈·XML 배선을 수행한다(정밀한 리소스 배치는 agy에 위임하지 않음).
+
+### 5. 후속 지시 (같은 태스크 이어가기)
 
 ```bash
 agy -p "<수정 지시>" -c --output-format json

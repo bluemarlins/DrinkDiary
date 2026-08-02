@@ -2,7 +2,7 @@
 
 Phase 1(`product-plan.md` 4-1절, `task-log.md` Phase 1)의 산출물을 정리한 문서. `agy`가 생성한
 브레인스토밍/카피 초안(P1-1, P1-4, P1-7)을 Claude가 검토·선택·확정(P1-2, P1-3, P1-5, P1-6)한
-결과다. **아이콘 방향은 아직 Claude의 추천안이며 사용자 확인이 필요하다.**
+결과다. Phase 1의 모든 항목(이름·아이콘 포함)이 확정되었다.
 
 ## 1. 애플리케이션 이름 — **확정: 테이스트 아카이브 / Taste Archive**
 
@@ -83,24 +83,26 @@ Phase 2에서 구현하고, Phase 3에서 Billing으로 게이팅한다.
 
 클라우드 동기화/멀티 디바이스는 여전히 범위 밖(Phase 4 이후 후보로만 유지).
 
-## 7. App Icon 컨셉 (agy 초안, 3안 — 방향 선택 필요)
+## 7. App Icon — **확정: 컨셉 2 (Archival Ledger & Triple Tab)**
 
-`agy`(gemini-3.6-flash-high)가 기존 Material 3 팔레트를 반영해 제안한 3가지 방향. SVG 스케치
-원본은 conversation_id `e24a39f0-b513-420a-9457-63f870125116`에서 재현 가능.
+`agy`(gemini-3.6-flash-high)가 제안한 3안(SVG 스케치, conversation_id
+`e24a39f0-b513-420a-9457-63f870125116`) 중 컨셉 2(기록장 페이지 + 3색 인덱스 탭)가 사용자
+확정되었다. 이후 `agy`의 `generate_image` 도구(실제 래스터 이미지 생성 가능, conversation_id
+`654b81c6-e95a-4526-81b1-833e88cb18da`)로 실제 PNG 에셋을 생성해 앱에 반영 완료했다:
 
-| 컨셉 | 모티프 | 인상 |
-| --- | --- | --- |
-| 1. The Private Cellar & Drop | 셀러 키홀 + 3주종이 섞인 테이스팅 드롭 | 가장 직관적, "나만의 비밀 저장고" 식별성 높음 |
-| 2. Archival Ledger & Triple Tab | 기록장 페이지 + 3색 인덱스 탭 | "기록/노트" 성격 가장 강함, Material 3 UI와 톤 일치 |
-| 3. Tasting Glass Stamp & Aging Ring | 겹쳐진 3개의 잔 자국 링 | 가장 감성적/미니멀, 프리미엄 느낌 |
+- `app/docs/orchestration/assets/icon-drafts/taste_archive_icon_512.png` — Play 스토어 등록용
+  512x512 불투명 아이콘 원본 보관
+- `app/docs/orchestration/assets/icon-drafts/taste_archive_icon_foreground.png` — adaptive icon
+  foreground 원본(투명 배경, RGBA 검증 완료) 보관
+- Android 리소스 반영: `res/drawable/ic_launcher_background.xml`을 브랜드 보틀그린(`#2F6F4E`)
+  단색으로 교체, `res/mipmap-{m,h,x,xx,xxx}hdpi/ic_launcher_foreground.png`를 원본에서 밀도별로
+  리사이즈해 교체(기존 Android 기본 로봇 아이콘 대체). `minSdk 35`이므로 API 26 미만 레거시 폴백은
+  불필요해 건드리지 않음. `:app:assembleDebug` + `:app:lint`로 리소스 병합 검증 완료.
+- **참고**: 이 PNG는 방향 확인 및 즉시 사용 가능한 초안이며, Play 스토어 정식 제출용 최종 고해상도
+  에셋은 필요 시 전문 디자인 툴에서 다듬는 것을 권장한다.
 
-**Claude 추천: 컨셉 2 (Archival Ledger & Triple Tab)** — 앱의 실제 정체성(기록/아카이브 도구)과
-가장 직접적으로 맞고, 이미 구현된 Material 3 UI 톤과 자연스럽게 이어진다. 단, **이 SVG 스케치는
-방향성 확인용이며, 실제 adaptive icon(전경/배경 레이어, 다양한 밀도) 프로덕션 에셋 제작은 별도
-작업(디자인 툴 또는 후속 태스크)이 필요하다.**
-
-## 8. 남은 확인 사항 (사용자 결정 필요)
+## 8. 남은 확인 사항
 
 - [x] 앱 이름 최종 확정 — **테이스트 아카이브 / Taste Archive**
-- [ ] 아이콘 컨셉 방향 확정 (7절 추천안 승인 또는 다른 컨셉 선택)
-- [ ] 위 결정 이후 Phase 2(MVP 고도화 구현) 착수 승인
+- [x] 아이콘 컨셉 방향 확정 — **컨셉 2 (Archival Ledger & Triple Tab)**, 실제 앱 리소스에 반영 완료
+- [ ] Phase 2(MVP 고도화 구현) 착수 승인

@@ -25,8 +25,8 @@ Billing 연동은 Phase 3(가장 마지막)으로 이동. Phase 1은 순수 기�
 | P1-4 | Play 스토어 설명(짧은/긴 설명, 키워드) 초안 작성 | agy | done | | conversation `f2370ee9`. Claude 검토 완료, branding.md 4절 |
 | P1-5 | Free 기능 최종 스펙 확정 | Claude | done | | branding.md 5절, 기존 MVP 범위 그대로 확정 |
 | P1-6 | 프리미엄(Advance) 기능 최종 스펙 확정 | Claude | done | | branding.md 6절, 우선순위: 고급 인사이트 > 내보내기 > 테마/위젯 |
-| P1-7 | App Icon 컨셉 방향 2~3안 제시 | agy | done | | conversation `e24a39f0`. Claude 추천: 컨셉 2(Archival Ledger) — branding.md 7절, 사용자 확정 대기 |
-| P1-8 | Phase 1 결과 통합 (`orchestration/branding.md` 작성) + 사용자 마일스톤 보고 | Claude | in-progress | | 이름/아이콘 최종 확정만 남음 — branding.md 8절 |
+| P1-7 | App Icon 컨셉 방향 제시 + 실제 이미지 생성 | agy | done | | 컨셉 conversation `e24a39f0` → **사용자 확정: 컨셉 2**. `generate_image`로 실제 PNG 생성(conversation `654b81c6`), Claude가 밀도별 리사이즈 후 앱 리소스 반영 완료 |
+| P1-8 | Phase 1 결과 통합 (`orchestration/branding.md` 작성) + 사용자 마일스톤 보고 | Claude | done | | 이름/아이콘 모두 확정 및 반영 완료 — Phase 2 착수 승인 대기 |
 
 ## Phase 2 — MVP 고도화 구현
 
