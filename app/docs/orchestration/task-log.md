@@ -30,7 +30,30 @@ Billing 연동은 Phase 3(가장 마지막)으로 이동. Phase 1은 순수 기�
 
 ## Phase 2 — MVP 고도화 구현
 
-Phase 1에서 확정된 스펙을 기반으로 착수 시점에 세부 태스크로 분해한다.
+착수 전 도구 상태 확인(harness.md 6-1절 기준, 이 phase 착수 시점 1회 확인):
+- **Skill**: `jetpack-compose-m3`는 이름과 달리 Wear OS 전용이라 이 앱(일반 모바일)에는 적용 불가.
+  `styles`(Compose Styles API)는 현재 코드베이스가 쓰지 않는 별도 API 도입 결정이라 지금 범위에
+  끌어오지 않음. `testing-setup`은 이미 확립된 유닛테스트 패턴(UseCase/ViewModel/Mapper)으로
+  충분해 신규 테스트 하네스 구축은 불필요 — 즉, 이번 Phase의 Compose/테스트 작업에 skill이 주는
+  이점은 없고 기존 `design-system.md`/`harness.md` 컨벤션을 그대로 따르는 것으로 충분하다.
+- **Android CLI/기기**: `adb devices`에 실기기(`R3CY50L9FCT`) 연결 확인됨 → UI 작업은 커밋 전
+  루트 `installDebugApk` 태스크로 실기기에 설치해 시각 검증 가능(단순 컴파일/린트 통과에 그치지
+  않음).
+- **MCP**: 이 세션에 인증·연결된 MCP 중 Android/모바일 관련은 없음(Claude Browser는 웹 전용) →
+  배분 판단에서 제외.
+
+담당 배분(Claude: 설계/알고리즘/최종 리뷰+실기기 검증, agy: 명세에 따른 구현+테스트 작성):
+
+| ID | 태스크 | 담당 | 상태 | 커밋 | 비고 |
+| --- | --- | --- | --- | --- | --- |
+| P2-1 | 고급 인사이트 UseCase 설계 (트렌드/가격대 만족도/재구매율 계산 알고리즘 확정) | Claude | todo | | 아키텍처/알고리즘 결정 — agy 위임 안 함 |
+| P2-2 | 고급 인사이트 UseCase 구현 + 단위 테스트 | agy | todo | | P2-1 스펙을 그대로 구현, gemini-3.1-pro-high |
+| P2-3 | 고급 인사이트 대시보드 UI (신규 카드/화면, DD* 컴포넌트 재사용) | agy | todo | | gemini-3.6-flash-high, Claude가 실기기 설치로 시각 검증 후 병합 |
+| P2-4 | 데이터 내보내기(CSV) UseCase + 파일 쓰기 로직 설계 | Claude | todo | | 파일 포맷/저장 위치 결정 — agy 위임 안 함 |
+| P2-5 | 데이터 내보내기 UseCase 구현 + 단위 테스트 | agy | todo | | P2-4 스펙 구현 |
+| P2-6 | 데이터 내보내기 UI (설정/내보내기 진입점) | agy | todo | | Claude가 실기기 설치로 시각 검증 후 병합 |
+| P2-7 | 커스텀 테마/위젯 | — | todo | | 우선순위 최하 — Phase 2 후반 착수 시 재세분화 |
+| P2-8 | Phase 2 통합 리뷰 + 전체 회귀 테스트 + 실기기 설치 검증 | Claude | todo | | Phase 2 마일스톤 보고 전 필수 |
 
 ## Phase 3 — Billing 연동 (최종 단계)
 
