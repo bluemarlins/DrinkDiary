@@ -7,6 +7,9 @@
 문서는 수익화 전략과 Phase별 확장 계획을 다룬다. 실행 태스크 단위 분해는
 `orchestration/task-log.md`에서 관리한다.
 
+> **참고**: "DrinkDiary"는 프로젝트/패키지 내부 코드명이다. 사용자 대면 확정 브랜드명은
+> **테이스트 아카이브 / Taste Archive**이며, 상세 근거는 `orchestration/branding.md` 1절 참고.
+
 ## 2. 타깃 사용자
 
 기존 README의 제품 스코프를 유지한다: 와인/위스키/맥주를 즐기는 개인이 자신의 취향을 기록하고
