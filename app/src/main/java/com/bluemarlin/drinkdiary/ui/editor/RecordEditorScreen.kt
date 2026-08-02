@@ -1,8 +1,8 @@
 package com.bluemarlin.drinkdiary.ui.editor
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.consumeWindowInsets
@@ -25,8 +25,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.bluemarlin.drinkdiary.domain.model.ratingCriteria
 import com.bluemarlin.drinkdiary.ui.component.DDCollectionStatusSelector
@@ -84,18 +84,20 @@ fun RecordEditorRoute(
             DDLoadingContent(Modifier.padding(padding))
         } else {
             BoxWithConstraints(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .consumeWindowInsets(padding)
-                    .padding(16.dp),
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .padding(padding)
+                        .consumeWindowInsets(padding)
+                        .padding(16.dp),
             ) {
                 val twoPane = maxWidth >= 600.dp
                 if (twoPane) {
                     Row(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .imePadding(),
+                        modifier =
+                            Modifier
+                                .fillMaxSize()
+                                .imePadding(),
                         horizontalArrangement = Arrangement.spacedBy(20.dp),
                         verticalAlignment = Alignment.Top,
                     ) {
@@ -115,10 +117,11 @@ fun RecordEditorRoute(
                     }
                 } else {
                     Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .imePadding()
-                            .verticalScroll(rememberScrollState()),
+                        modifier =
+                            Modifier
+                                .fillMaxSize()
+                                .imePadding()
+                                .verticalScroll(rememberScrollState()),
                         verticalArrangement = Arrangement.spacedBy(18.dp),
                     ) {
                         RecordEditorForm(

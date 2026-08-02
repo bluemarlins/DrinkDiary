@@ -2,8 +2,8 @@ package com.bluemarlin.drinkdiary.data.mapper
 
 import com.bluemarlin.drinkdiary.data.local.DrinkRecordEntity
 import com.bluemarlin.drinkdiary.domain.model.CollectionStatus
-import com.bluemarlin.drinkdiary.domain.model.DrinkRecord
 import com.bluemarlin.drinkdiary.domain.model.DrinkRatingBreakdown
+import com.bluemarlin.drinkdiary.domain.model.DrinkRecord
 import com.bluemarlin.drinkdiary.domain.model.DrinkType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -41,12 +41,13 @@ class DrinkRecordMapperTest {
 
     @Test
     fun entityToDomainNormalizesLegacySensoryMetricsToHalfUnits() {
-        val entity = entity(type = DrinkType.Beer.name, collectionStatus = CollectionStatus.Normal.name).copy(
-            detailRating1 = 3.3,
-            detailRating2 = 4.7,
-            detailRating3 = -1.0,
-            detailRating4 = 6.0,
-        )
+        val entity =
+            entity(type = DrinkType.Beer.name, collectionStatus = CollectionStatus.Normal.name).copy(
+                detailRating1 = 3.3,
+                detailRating2 = 4.7,
+                detailRating3 = -1.0,
+                detailRating4 = 6.0,
+            )
 
         val record = entity.toDomain()
 
@@ -59,19 +60,20 @@ class DrinkRecordMapperTest {
 
     @Test
     fun domainToEntityUsesStableEnumNames() {
-        val record = DrinkRecord(
-            id = 12L,
-            type = DrinkType.Wine,
-            name = "House Red",
-            imageUri = "content://image",
-            price = 18000L,
-            place = "Wine Bar",
-            tastingNote = "Light body",
-            rating = 5.0,
-            ratingBreakdown = DrinkRatingBreakdown(4.5, 4.0, 3.5, 3.0, 2.5),
-            collectionStatus = CollectionStatus.NotForMe,
-            recordedAtMillis = 1_700_000_000_000L,
-        )
+        val record =
+            DrinkRecord(
+                id = 12L,
+                type = DrinkType.Wine,
+                name = "House Red",
+                imageUri = "content://image",
+                price = 18000L,
+                place = "Wine Bar",
+                tastingNote = "Light body",
+                rating = 5.0,
+                ratingBreakdown = DrinkRatingBreakdown(4.5, 4.0, 3.5, 3.0, 2.5),
+                collectionStatus = CollectionStatus.NotForMe,
+                recordedAtMillis = 1_700_000_000_000L,
+            )
 
         val entity = record.toEntity(createdAtMillis = 10L, updatedAtMillis = 20L)
 

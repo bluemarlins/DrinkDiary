@@ -8,6 +8,5 @@ import kotlinx.coroutines.flow.Flow
 class ObserveDrinkRecordsUseCase(
     private val repository: DrinkRecordRepository,
 ) {
-    operator fun invoke(filter: DrinkRecordFilter): Flow<List<DrinkRecord>> =
-        repository.observeRecords(filter)
+    operator fun invoke(filter: DrinkRecordFilter): Flow<List<DrinkRecord>> = repository.observeRecords(filter)
 }

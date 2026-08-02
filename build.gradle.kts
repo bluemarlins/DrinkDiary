@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.kotlin.compose) apply false
     alias(libs.plugins.ksp) apply false
+    alias(libs.plugins.ktlint) apply false
 }
 
 val debugApkPath = layout.projectDirectory.file("app/build/outputs/apk/debug/app-debug.apk").asFile.absolutePath

@@ -35,7 +35,9 @@ data class RecordEditorUiState(
 private fun DrinkRecordInput.contentForChangeDetection(): DrinkRecordInput = copy(ratingBreakdownExpanded = false)
 
 sealed interface RecordEditorEvent {
-    data class Saved(val recordId: Long) : RecordEditorEvent
+    data class Saved(
+        val recordId: Long,
+    ) : RecordEditorEvent
 }
 
 class RecordEditorViewModel(
@@ -56,46 +58,59 @@ class RecordEditorViewModel(
                 if (record == null) {
                     _uiState.update { it.copy(loading = false, errorMessage = "수정할 기록을 찾지 못했습니다.") }
                 } else {
-                    val input = DrinkRecordInput(
-                        id = record.id,
-                        type = record.type,
-                        name = record.name,
-                        imageUri = record.imageUri,
-                        priceText = record.price?.toString().orEmpty(),
-                        place = record.place.orEmpty(),
-                        tastingNote = record.tastingNote.orEmpty(),
-                        rating = record.rating,
-                        ratingBreakdown = record.ratingBreakdown,
-                        ratingBreakdownExpanded = false,
-                        collectionStatus = record.collectionStatus,
-                        recordedAtMillis = record.recordedAtMillis,
-                    )
+                    val input =
+                        DrinkRecordInput(
+                            id = record.id,
+                            type = record.type,
+                            name = record.name,
+                            imageUri = record.imageUri,
+                            priceText = record.price?.toString().orEmpty(),
+                            place = record.place.orEmpty(),
+                            tastingNote = record.tastingNote.orEmpty(),
+                            rating = record.rating,
+                            ratingBreakdown = record.ratingBreakdown,
+                            ratingBreakdownExpanded = false,
+                            collectionStatus = record.collectionStatus,
+                            recordedAtMillis = record.recordedAtMillis,
+                        )
                     _uiState.value = RecordEditorUiState(input = input, initialInput = input)
                 }
             }
         }
     }
 
-    fun updateType(value: DrinkType) = updateInput {
-        it.copy(type = value)
-    }
+    fun updateType(value: DrinkType) =
+        updateInput {
+            it.copy(type = value)
+        }
+
     fun updateName(value: String) = updateInput { it.copy(name = value) }
+
     fun updateImageUri(value: String?) = updateInput { it.copy(imageUri = value) }
+
     fun updatePrice(value: String) = updateInput { it.copy(priceText = value) }
+
     fun updatePlace(value: String) = updateInput { it.copy(place = value) }
+
     fun updateTastingNote(value: String) = updateInput { it.copy(tastingNote = value) }
+
     fun updateRating(value: Double) = updateInput { it.copy(rating = value) }
 
     fun toggleRatingBreakdown() = updateInput { it.copy(ratingBreakdownExpanded = !it.ratingBreakdownExpanded) }
 
-    fun updateDetailRating(index: Int, value: Double) = updateInput {
+    fun updateDetailRating(
+        index: Int,
+        value: Double,
+    ) = updateInput {
         val breakdown = it.ratingBreakdown.update(index, value)
         it.copy(
             ratingBreakdown = breakdown,
             ratingBreakdownExpanded = true,
         )
     }
+
     fun updateCollectionStatus(value: CollectionStatus) = updateInput { it.copy(collectionStatus = value) }
+
     fun updateRecordedAtMillis(value: Long) = updateInput { it.copy(recordedAtMillis = value) }
 
     fun save() {

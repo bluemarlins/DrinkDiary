@@ -2,9 +2,9 @@ package com.bluemarlin.drinkdiary.ui.navigation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.calculateEndPadding
@@ -157,22 +157,25 @@ private fun AppScaffold(
         snackbarHost = snackbarHost,
         content = { padding ->
             if (hazeState != null) {
-                val overlayContentPadding = PaddingValues(
-                    start = padding.calculateStartPadding(layoutDirection),
-                    top = padding.calculateTopPadding(),
-                    end = padding.calculateEndPadding(layoutDirection),
-                    bottom = 0.dp,
-                )
+                val overlayContentPadding =
+                    PaddingValues(
+                        start = padding.calculateStartPadding(layoutDirection),
+                        top = padding.calculateTopPadding(),
+                        end = padding.calculateEndPadding(layoutDirection),
+                        bottom = 0.dp,
+                    )
                 Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .haze(
-                            state = hazeState,
-                            style = HazeStyle(
-                                tint = MaterialTheme.colorScheme.surface.copy(alpha = 0.08f),
-                                blurRadius = 32.dp,
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .haze(
+                                state = hazeState,
+                                style =
+                                    HazeStyle(
+                                        tint = MaterialTheme.colorScheme.surface.copy(alpha = 0.08f),
+                                        blurRadius = 32.dp,
+                                    ),
                             ),
-                        ),
                 ) {
                     content(overlayContentPadding)
                 }
@@ -211,36 +214,39 @@ fun DDBottomNavigationBar(
 ) {
     val shape = RoundedCornerShape(28.dp)
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .navigationBarsPadding()
-            .padding(horizontal = 18.dp, vertical = 10.dp)
-            .height(64.dp)
-            .clip(shape)
-            .then(
-                if (hazeState != null) {
-                    Modifier.hazeChild(
-                        state = hazeState,
-                        shape = shape,
-                        style = HazeStyle(
-                            tint = MaterialTheme.colorScheme.surface.copy(alpha = 0.42f),
-                            blurRadius = 32.dp,
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .navigationBarsPadding()
+                .padding(horizontal = 18.dp, vertical = 10.dp)
+                .height(64.dp)
+                .clip(shape)
+                .then(
+                    if (hazeState != null) {
+                        Modifier.hazeChild(
+                            state = hazeState,
+                            shape = shape,
+                            style =
+                                HazeStyle(
+                                    tint = MaterialTheme.colorScheme.surface.copy(alpha = 0.42f),
+                                    blurRadius = 32.dp,
+                                ),
+                        )
+                    } else {
+                        Modifier.background(MaterialTheme.colorScheme.surface.copy(alpha = 0.88f), shape)
+                    },
+                ).border(
+                    width = Dp.Hairline,
+                    brush =
+                        Brush.verticalGradient(
+                            colors =
+                                listOf(
+                                    Color.White.copy(alpha = 0.58f),
+                                    Color.White.copy(alpha = 0.12f),
+                                ),
                         ),
-                    )
-                } else {
-                    Modifier.background(MaterialTheme.colorScheme.surface.copy(alpha = 0.88f), shape)
-                },
-            )
-            .border(
-                width = Dp.Hairline,
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        Color.White.copy(alpha = 0.58f),
-                        Color.White.copy(alpha = 0.12f),
-                    ),
+                    shape = shape,
                 ),
-                shape = shape,
-            ),
     ) {
         NavigationBar(
             modifier = Modifier.fillMaxSize(),

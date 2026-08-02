@@ -1,7 +1,7 @@
 package com.bluemarlin.drinkdiary.ui.detail
 
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -25,6 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.bluemarlin.drinkdiary.domain.model.ratingCriteria
 import com.bluemarlin.drinkdiary.ui.component.DDCollectionStatusBadge
 import com.bluemarlin.drinkdiary.ui.component.DDConfirmDialog
 import com.bluemarlin.drinkdiary.ui.component.DDDestructiveButton
@@ -33,14 +34,13 @@ import com.bluemarlin.drinkdiary.ui.component.DDErrorContent
 import com.bluemarlin.drinkdiary.ui.component.DDInfoRow
 import com.bluemarlin.drinkdiary.ui.component.DDLoadingContent
 import com.bluemarlin.drinkdiary.ui.component.DDPrimaryButton
-import com.bluemarlin.drinkdiary.ui.component.DDRecordHeroImage
 import com.bluemarlin.drinkdiary.ui.component.DDRatingBreakdownRadarChart
 import com.bluemarlin.drinkdiary.ui.component.DDRatingValueText
+import com.bluemarlin.drinkdiary.ui.component.DDRecordHeroImage
 import com.bluemarlin.drinkdiary.ui.component.formatPrice
 import com.bluemarlin.drinkdiary.ui.component.formatRecordedDate
 import com.bluemarlin.drinkdiary.ui.navigation.DDScreenScaffold
 import com.bluemarlin.drinkdiary.ui.navigation.DDScreenType
-import com.bluemarlin.drinkdiary.domain.model.ratingCriteria
 
 @Composable
 fun RecordDetailRoute(
@@ -69,11 +69,12 @@ fun RecordDetailRoute(
             is RecordDetailUiState.Success -> {
                 val record = uiState.record
                 BoxWithConstraints(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(padding)
-                        .consumeWindowInsets(padding)
-                        .padding(16.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .padding(padding)
+                            .consumeWindowInsets(padding)
+                            .padding(16.dp),
                 ) {
                     val twoPane = maxWidth >= 600.dp
                     if (twoPane) {
@@ -111,9 +112,10 @@ fun RecordDetailRoute(
                         }
                     } else {
                         Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .verticalScroll(rememberScrollState()),
+                            modifier =
+                                Modifier
+                                    .fillMaxSize()
+                                    .verticalScroll(rememberScrollState()),
                             verticalArrangement = Arrangement.spacedBy(16.dp),
                         ) {
                             DDRecordHeroImage(record.imageUri)
@@ -173,9 +175,10 @@ private fun RecordDetailInfo(
     scrollable: Boolean = true,
 ) {
     Column(
-        modifier = modifier
-            .widthIn(max = 560.dp)
-            .then(if (scrollable) Modifier.verticalScroll(rememberScrollState()) else Modifier),
+        modifier =
+            modifier
+                .widthIn(max = 560.dp)
+                .then(if (scrollable) Modifier.verticalScroll(rememberScrollState()) else Modifier),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         Text(name, style = MaterialTheme.typography.headlineSmall)

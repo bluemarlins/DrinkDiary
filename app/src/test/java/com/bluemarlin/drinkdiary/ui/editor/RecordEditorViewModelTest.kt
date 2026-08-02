@@ -49,11 +49,18 @@ class RecordEditorViewModelTest {
 
     private class FakeRepository : DrinkRecordRepository {
         override fun observeRecords(filter: DrinkRecordFilter): Flow<List<DrinkRecord>> = emptyFlow()
+
         override fun observeRecord(id: Long): Flow<DrinkRecord?> = emptyFlow()
-        override fun observeRecordsByPeriod(startMillis: Long, endMillis: Long): Flow<List<DrinkRecord>> = emptyFlow()
+
+        override fun observeRecordsByPeriod(
+            startMillis: Long,
+            endMillis: Long,
+        ): Flow<List<DrinkRecord>> = emptyFlow()
+
         override fun observeSearchResults(query: String): Flow<List<DrinkRecord>> = emptyFlow()
 
         override suspend fun save(record: DrinkRecord): AppResult<Long> = AppResult.Success(1L)
+
         override suspend fun deleteById(id: Long): AppResult<Unit> = AppResult.Success(Unit)
     }
 }

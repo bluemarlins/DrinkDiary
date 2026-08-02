@@ -7,6 +7,5 @@ import kotlinx.coroutines.flow.Flow
 class ObserveSearchResultsUseCase(
     private val repository: DrinkRecordRepository,
 ) {
-    operator fun invoke(query: String): Flow<List<DrinkRecord>> =
-        repository.observeSearchResults(query.trim())
+    operator fun invoke(query: String): Flow<List<DrinkRecord>> = repository.observeSearchResults(query.trim())
 }

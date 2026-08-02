@@ -1,7 +1,7 @@
 package com.bluemarlin.drinkdiary.ui.collection
 
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -54,11 +54,12 @@ fun CollectionRoute(
         floatingActionButton = { DDAddRecordFab(onClick = onAddRecord) },
     ) { padding ->
         BoxWithConstraints(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .consumeWindowInsets(padding)
-                .padding(16.dp),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .consumeWindowInsets(padding)
+                    .padding(16.dp),
         ) {
             val expanded = maxWidth >= 840.dp
             if (expanded) {
@@ -126,18 +127,20 @@ private fun CollectionStateContent(
 ) {
     when (state) {
         CollectionUiState.Loading -> DDLoadingContent(modifier)
-        is CollectionUiState.Empty -> DDEmptyContent(
-            message = if (state.filtered) "필터 조건에 맞는 기록이 없습니다." else "아직 기록이 없습니다.",
-            actionText = "기록 추가",
-            onAction = onAddRecord,
-            modifier = modifier,
-        )
+        is CollectionUiState.Empty ->
+            DDEmptyContent(
+                message = if (state.filtered) "필터 조건에 맞는 기록이 없습니다." else "아직 기록이 없습니다.",
+                actionText = "기록 추가",
+                onAction = onAddRecord,
+                modifier = modifier,
+            )
         is CollectionUiState.Error -> DDErrorContent(state.message, modifier = modifier)
-        is CollectionUiState.Success -> DrinkRecordList(
-            records = state.records,
-            onOpenRecord = onOpenRecord,
-            modifier = modifier,
-        )
+        is CollectionUiState.Success ->
+            DrinkRecordList(
+                records = state.records,
+                onOpenRecord = onOpenRecord,
+                modifier = modifier,
+            )
     }
 }
 

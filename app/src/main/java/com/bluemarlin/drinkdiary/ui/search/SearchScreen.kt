@@ -50,12 +50,13 @@ fun SearchRoute(
         onSearchClick = {},
     ) { padding ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .consumeWindowInsets(padding)
-                .padding(16.dp)
-                .widthIn(max = 840.dp),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .consumeWindowInsets(padding)
+                    .padding(16.dp)
+                    .widthIn(max = 840.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             SearchTextField(
@@ -104,18 +105,20 @@ private fun SearchStateContent(
     when (state) {
         SearchUiState.Idle -> SearchGuideContent("검색어를 입력해 주세요.", modifier)
         is SearchUiState.InvalidQuery -> SearchGuideContent("검색어는 2글자 이상 입력해 주세요.", modifier)
-        SearchUiState.Loading -> Column(
-            modifier = modifier.fillMaxWidth().padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            CircularProgressIndicator()
-        }
+        SearchUiState.Loading ->
+            Column(
+                modifier = modifier.fillMaxWidth().padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                CircularProgressIndicator()
+            }
         is SearchUiState.Empty -> SearchGuideContent("검색 결과가 없습니다.", modifier)
-        is SearchUiState.Success -> SearchResultList(
-            records = state.records,
-            onOpenRecord = onOpenRecord,
-            modifier = modifier,
-        )
+        is SearchUiState.Success ->
+            SearchResultList(
+                records = state.records,
+                onOpenRecord = onOpenRecord,
+                modifier = modifier,
+            )
         is SearchUiState.Error -> DDErrorContent(state.message, modifier = modifier)
     }
 }

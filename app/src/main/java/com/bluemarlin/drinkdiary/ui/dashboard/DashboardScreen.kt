@@ -1,7 +1,7 @@
 package com.bluemarlin.drinkdiary.ui.dashboard
 
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -31,8 +31,8 @@ import com.bluemarlin.drinkdiary.ui.component.DDErrorContent
 import com.bluemarlin.drinkdiary.ui.component.DDLoadingContent
 import com.bluemarlin.drinkdiary.ui.component.DDPeriodSegmentedControl
 import com.bluemarlin.drinkdiary.ui.component.formatPrice
-import com.bluemarlin.drinkdiary.ui.navigation.DDScreenType
 import com.bluemarlin.drinkdiary.ui.navigation.DDScreenScaffold
+import com.bluemarlin.drinkdiary.ui.navigation.DDScreenType
 import com.bluemarlin.drinkdiary.ui.navigation.DDTopLevelTab
 
 private val TopLevelBottomContentPadding = 112.dp
@@ -59,11 +59,12 @@ fun DashboardRoute(
         floatingActionButton = { DDAddRecordFab(onClick = onAddRecord) },
     ) { padding ->
         BoxWithConstraints(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .consumeWindowInsets(padding)
-                .padding(16.dp),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .consumeWindowInsets(padding)
+                    .padding(16.dp),
         ) {
             val contentMaxWidth = if (maxWidth >= 840.dp) 1100.dp else maxWidth
             val expanded = maxWidth >= 840.dp
@@ -76,12 +77,13 @@ fun DashboardRoute(
                     DashboardUiState.Loading -> DDLoadingContent()
                     DashboardUiState.Empty -> DDEmptyContent("선택한 기간에 기록이 없습니다.", "기록 추가", onAddRecord)
                     is DashboardUiState.Error -> DDErrorContent(uiState.message)
-                    is DashboardUiState.Success -> DashboardSuccessContent(
-                        summary = uiState.summary,
-                        expanded = expanded,
-                        onOpenRecord = onOpenRecord,
-                        onOpenStatus = onOpenStatus,
-                    )
+                    is DashboardUiState.Success ->
+                        DashboardSuccessContent(
+                            summary = uiState.summary,
+                            expanded = expanded,
+                            onOpenRecord = onOpenRecord,
+                            onOpenStatus = onOpenStatus,
+                        )
                 }
             }
         }

@@ -16,20 +16,21 @@ data class DashboardSummary(
     val notForMeRecords: List<DrinkRecord>,
 ) {
     companion object {
-        val Empty = DashboardSummary(
-            totalCount = 0,
-            averageRating = null,
-            wineCount = 0,
-            whiskeyCount = 0,
-            beerCount = 0,
-            repurchaseCount = 0,
-            notForMeCount = 0,
-            totalSpent = 0L,
-            averageSpent = null,
-            pricedRecordCount = 0,
-            normalRecords = emptyList(),
-            repurchaseRecords = emptyList(),
-            notForMeRecords = emptyList(),
-        )
+        val Empty =
+            DashboardSummary(
+                totalCount = 0,
+                averageRating = null,
+                wineCount = 0,
+                whiskeyCount = 0,
+                beerCount = 0,
+                repurchaseCount = 0,
+                notForMeCount = 0,
+                totalSpent = 0L,
+                averageSpent = null,
+                pricedRecordCount = 0,
+                normalRecords = emptyList(),
+                repurchaseRecords = emptyList(),
+                notForMeRecords = emptyList(),
+            )
     }
 }

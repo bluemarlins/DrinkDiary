@@ -21,65 +21,69 @@ data class DrinkDiaryChartColors(
     val beer: Color,
 )
 
-private val DarkColorScheme = darkColorScheme(
-    primary = BottleGreenDark,
-    onPrimary = CellarInkDark,
-    primaryContainer = BottleGreenContainerDark,
-    onPrimaryContainer = CellarOnSurfaceDark,
-    secondary = MaltAmberDark,
-    onSecondary = CellarInkDark,
-    secondaryContainer = MaltAmberContainerDark,
-    onSecondaryContainer = CellarOnSurfaceDark,
-    tertiary = WineBerryDark,
-    onTertiary = CellarInkDark,
-    tertiaryContainer = WineBerryContainerDark,
-    onTertiaryContainer = CellarOnSurfaceDark,
-    background = CellarInkDark,
-    onBackground = CellarOnSurfaceDark,
-    surface = CellarSurfaceDark,
-    onSurface = CellarOnSurfaceDark,
-    surfaceVariant = CellarSurfaceVariantDark,
-    onSurfaceVariant = CellarOnSurfaceVariantDark,
-    outline = CellarOutlineDark,
-    outlineVariant = CellarOutlineVariantDark,
-    error = CorkErrorDark,
-)
+private val DarkColorScheme =
+    darkColorScheme(
+        primary = BottleGreenDark,
+        onPrimary = CellarInkDark,
+        primaryContainer = BottleGreenContainerDark,
+        onPrimaryContainer = CellarOnSurfaceDark,
+        secondary = MaltAmberDark,
+        onSecondary = CellarInkDark,
+        secondaryContainer = MaltAmberContainerDark,
+        onSecondaryContainer = CellarOnSurfaceDark,
+        tertiary = WineBerryDark,
+        onTertiary = CellarInkDark,
+        tertiaryContainer = WineBerryContainerDark,
+        onTertiaryContainer = CellarOnSurfaceDark,
+        background = CellarInkDark,
+        onBackground = CellarOnSurfaceDark,
+        surface = CellarSurfaceDark,
+        onSurface = CellarOnSurfaceDark,
+        surfaceVariant = CellarSurfaceVariantDark,
+        onSurfaceVariant = CellarOnSurfaceVariantDark,
+        outline = CellarOutlineDark,
+        outlineVariant = CellarOutlineVariantDark,
+        error = CorkErrorDark,
+    )
 
-private val LightColorScheme = lightColorScheme(
-    primary = BottleGreenLight,
-    onPrimary = DrinkSurfaceLight,
-    primaryContainer = BottleGreenContainerLight,
-    onPrimaryContainer = DrinkOnSurfaceLight,
-    secondary = MaltAmberLight,
-    onSecondary = DrinkSurfaceLight,
-    secondaryContainer = MaltAmberContainerLight,
-    onSecondaryContainer = DrinkOnSurfaceLight,
-    tertiary = WineBerryLight,
-    onTertiary = DrinkSurfaceLight,
-    tertiaryContainer = WineBerryContainerLight,
-    onTertiaryContainer = DrinkOnSurfaceLight,
-    background = DrinkPaperLight,
-    onBackground = DrinkOnSurfaceLight,
-    surface = DrinkSurfaceLight,
-    onSurface = DrinkOnSurfaceLight,
-    surfaceVariant = DrinkSurfaceVariantLight,
-    onSurfaceVariant = DrinkOnSurfaceVariantLight,
-    outline = DrinkOutlineLight,
-    outlineVariant = DrinkOutlineVariantLight,
-    error = CorkErrorLight,
-)
+private val LightColorScheme =
+    lightColorScheme(
+        primary = BottleGreenLight,
+        onPrimary = DrinkSurfaceLight,
+        primaryContainer = BottleGreenContainerLight,
+        onPrimaryContainer = DrinkOnSurfaceLight,
+        secondary = MaltAmberLight,
+        onSecondary = DrinkSurfaceLight,
+        secondaryContainer = MaltAmberContainerLight,
+        onSecondaryContainer = DrinkOnSurfaceLight,
+        tertiary = WineBerryLight,
+        onTertiary = DrinkSurfaceLight,
+        tertiaryContainer = WineBerryContainerLight,
+        onTertiaryContainer = DrinkOnSurfaceLight,
+        background = DrinkPaperLight,
+        onBackground = DrinkOnSurfaceLight,
+        surface = DrinkSurfaceLight,
+        onSurface = DrinkOnSurfaceLight,
+        surfaceVariant = DrinkSurfaceVariantLight,
+        onSurfaceVariant = DrinkOnSurfaceVariantLight,
+        outline = DrinkOutlineLight,
+        outlineVariant = DrinkOutlineVariantLight,
+        error = CorkErrorLight,
+    )
 
-private val LightChartColors = DrinkDiaryChartColors(
-    wine = ChartWineLight,
-    whiskey = ChartWhiskeyLight,
-    beer = ChartBeerLight,
-)
+private val LightChartColors =
+    DrinkDiaryChartColors(
+        wine = ChartWineLight,
+        whiskey = ChartWhiskeyLight,
+        beer = ChartBeerLight,
+    )
 
-private val DarkChartColors = DrinkDiaryChartColors(
-    wine = ChartWineDark,
-    whiskey = ChartWhiskeyDark,
-    beer = ChartBeerDark,
-)
+private val DarkChartColors =
+    DrinkDiaryChartColors(
+        wine = ChartWineDark,
+        whiskey = ChartWhiskeyDark,
+        beer = ChartBeerDark,
+    )
 
 val LocalDrinkDiaryChartColors = staticCompositionLocalOf { LightChartColors }
 
@@ -94,17 +98,18 @@ fun DrinkDiaryTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = false,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
+    val colorScheme =
+        when {
+            dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+                val context = LocalContext.current
+                if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+            }
 
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
-    }
+            darkTheme -> DarkColorScheme
+            else -> LightColorScheme
+        }
 
     val chartColors = if (darkTheme) DarkChartColors else LightChartColors
 
@@ -113,7 +118,7 @@ fun DrinkDiaryTheme(
             colorScheme = colorScheme,
             typography = Typography,
             shapes = DrinkDiaryShapes,
-            content = content
+            content = content,
         )
     }
 }

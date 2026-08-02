@@ -22,15 +22,19 @@ class DrinkDiaryApplication : Application() {
     }
 }
 
-class AppContainer(application: Application) {
-    private val database: DrinkDiaryDatabase = Room.databaseBuilder(
-        application,
-        DrinkDiaryDatabase::class.java,
-        "drink_diary.db",
-    ).addMigrations(
-        DrinkDiaryDatabase.MIGRATION_1_2,
-        DrinkDiaryDatabase.MIGRATION_2_3,
-    ).build()
+class AppContainer(
+    application: Application,
+) {
+    private val database: DrinkDiaryDatabase =
+        Room
+            .databaseBuilder(
+                application,
+                DrinkDiaryDatabase::class.java,
+                "drink_diary.db",
+            ).addMigrations(
+                DrinkDiaryDatabase.MIGRATION_1_2,
+                DrinkDiaryDatabase.MIGRATION_2_3,
+            ).build()
 
     private val repository: DrinkRecordRepository =
         DrinkRecordRepositoryImpl(database.drinkRecordDao())

@@ -1,0 +1,23 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+[*.{kt,kts}]
+indent_size = 4
+max_line_length = 120
+# @Composable functions follow the official Compose convention of PascalCase factory-style names.
+ktlint_standard_function-naming = disabled
+# This codebase names constants (e.g. NavigationSlideDurationMillis, WinePastel) in PascalCase, not SCREAMING_SNAKE_CASE.
+ktlint_standard_property-naming = disabled
+
+[*.md]
+trim_trailing_whitespace = false
+
+[*.{yml,yaml,json}]
+indent_size = 2

@@ -20,9 +20,18 @@ import kotlinx.coroutines.flow.stateIn
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 sealed interface CollectionUiState {
     data object Loading : CollectionUiState
-    data class Empty(val filtered: Boolean) : CollectionUiState
-    data class Success(val records: List<DrinkRecord>) : CollectionUiState
-    data class Error(val message: String) : CollectionUiState
+
+    data class Empty(
+        val filtered: Boolean,
+    ) : CollectionUiState
+
+    data class Success(
+        val records: List<DrinkRecord>,
+    ) : CollectionUiState
+
+    data class Error(
+        val message: String,
+    ) : CollectionUiState
 }
 
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
@@ -33,22 +42,25 @@ class CollectionViewModel(
     val selectedType = MutableStateFlow<DrinkType?>(null)
     val selectedStatus = MutableStateFlow(initialStatus)
 
-    private val filter = combine(selectedType, selectedStatus) { type, status ->
-        DrinkRecordFilter(type, status)
-    }
-
-    val uiState: StateFlow<CollectionUiState> = filter
-        .flatMapLatest { currentFilter ->
-            observeDrinkRecordsUseCase(currentFilter).map { records ->
-                if (records.isEmpty()) {
-                    CollectionUiState.Empty(currentFilter.drinkType != null || currentFilter.collectionStatus != null)
-                } else {
-                    CollectionUiState.Success(records)
-                }
-            }
+    private val filter =
+        combine(selectedType, selectedStatus) { type, status ->
+            DrinkRecordFilter(type, status)
         }
-        .catch { emit(CollectionUiState.Error("컬렉션을 불러오지 못했습니다.")) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), CollectionUiState.Loading)
+
+    val uiState: StateFlow<CollectionUiState> =
+        filter
+            .flatMapLatest { currentFilter ->
+                observeDrinkRecordsUseCase(currentFilter).map { records ->
+                    if (records.isEmpty()) {
+                        CollectionUiState.Empty(
+                            currentFilter.drinkType != null || currentFilter.collectionStatus != null,
+                        )
+                    } else {
+                        CollectionUiState.Success(records)
+                    }
+                }
+            }.catch { emit(CollectionUiState.Error("컬렉션을 불러오지 못했습니다.")) }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), CollectionUiState.Loading)
 
     fun selectType(type: DrinkType?) {
         selectedType.value = type

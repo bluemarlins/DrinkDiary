@@ -5,11 +5,11 @@ import com.bluemarlin.drinkdiary.domain.model.DashboardPeriod
 import com.bluemarlin.drinkdiary.domain.model.DashboardSummary
 import com.bluemarlin.drinkdiary.domain.model.DrinkType
 import com.bluemarlin.drinkdiary.domain.repository.DrinkRecordRepository
+import kotlinx.coroutines.flow.map
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.temporal.TemporalAdjusters
-import kotlinx.coroutines.flow.map
 
 class ObserveDashboardSummaryUseCase(
     private val repository: DrinkRecordRepository,
@@ -42,27 +42,31 @@ class ObserveDashboardSummaryUseCase(
         }
     }
 
-    private fun periodRange(period: DashboardPeriod, nowMillis: Long): MillisRange {
+    private fun periodRange(
+        period: DashboardPeriod,
+        nowMillis: Long,
+    ): MillisRange {
         val zone = ZoneId.systemDefault()
         val today = Instant.ofEpochMilli(nowMillis).atZone(zone).toLocalDate()
-        val startDate = when (period) {
-            DashboardPeriod.Weekly -> today.with(TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY))
-            DashboardPeriod.Monthly -> today.withDayOfMonth(1)
-            DashboardPeriod.Yearly -> today.withDayOfYear(1)
-        }
-        val endDate = when (period) {
-            DashboardPeriod.Weekly -> startDate.plusDays(7)
-            DashboardPeriod.Monthly -> startDate.plusMonths(1)
-            DashboardPeriod.Yearly -> startDate.plusYears(1)
-        }
+        val startDate =
+            when (period) {
+                DashboardPeriod.Weekly -> today.with(TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY))
+                DashboardPeriod.Monthly -> today.withDayOfMonth(1)
+                DashboardPeriod.Yearly -> today.withDayOfYear(1)
+            }
+        val endDate =
+            when (period) {
+                DashboardPeriod.Weekly -> startDate.plusDays(7)
+                DashboardPeriod.Monthly -> startDate.plusMonths(1)
+                DashboardPeriod.Yearly -> startDate.plusYears(1)
+            }
         return MillisRange(
             startMillis = startDate.startOfDayMillis(zone),
             endMillis = endDate.startOfDayMillis(zone) - 1L,
         )
     }
 
-    private fun LocalDate.startOfDayMillis(zone: ZoneId): Long =
-        atStartOfDay(zone).toInstant().toEpochMilli()
+    private fun LocalDate.startOfDayMillis(zone: ZoneId): Long = atStartOfDay(zone).toInstant().toEpochMilli()
 
     private data class MillisRange(
         val startMillis: Long,

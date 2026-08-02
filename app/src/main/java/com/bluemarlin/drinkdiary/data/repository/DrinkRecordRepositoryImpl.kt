@@ -15,13 +15,13 @@ class DrinkRecordRepositoryImpl(
     private val dao: DrinkRecordDao,
 ) : DrinkRecordRepository {
     override fun observeRecords(filter: DrinkRecordFilter): Flow<List<DrinkRecord>> =
-        dao.observeRecords(
-            type = filter.drinkType?.name,
-            collectionStatus = filter.collectionStatus?.name,
-        ).map { records -> records.mapNotNull { it.toDomain() } }
+        dao
+            .observeRecords(
+                type = filter.drinkType?.name,
+                collectionStatus = filter.collectionStatus?.name,
+            ).map { records -> records.mapNotNull { it.toDomain() } }
 
-    override fun observeRecord(id: Long): Flow<DrinkRecord?> =
-        dao.observeRecord(id).map { it?.toDomain() }
+    override fun observeRecord(id: Long): Flow<DrinkRecord?> = dao.observeRecord(id).map { it?.toDomain() }
 
     override fun observeRecordsByPeriod(
         startMillis: Long,
@@ -36,31 +36,34 @@ class DrinkRecordRepositoryImpl(
             records.mapNotNull { it.toDomain() }
         }
 
-    override suspend fun save(record: DrinkRecord): AppResult<Long> = runCatching {
-        val now = System.currentTimeMillis()
-        if (record.id == 0L) {
-            dao.insert(record.toEntity(createdAtMillis = now, updatedAtMillis = now))
-        } else {
-            val current = dao.getRecord(record.id) ?: return AppResult.Failure(AppError.NotFound)
-            val updated = record.toEntity(
-                createdAtMillis = current.createdAtMillis,
-                updatedAtMillis = now,
-            )
-            if (dao.update(updated) == 0) {
-                return AppResult.Failure(AppError.NotFound)
+    override suspend fun save(record: DrinkRecord): AppResult<Long> =
+        runCatching {
+            val now = System.currentTimeMillis()
+            if (record.id == 0L) {
+                dao.insert(record.toEntity(createdAtMillis = now, updatedAtMillis = now))
+            } else {
+                val current = dao.getRecord(record.id) ?: return AppResult.Failure(AppError.NotFound)
+                val updated =
+                    record.toEntity(
+                        createdAtMillis = current.createdAtMillis,
+                        updatedAtMillis = now,
+                    )
+                if (dao.update(updated) == 0) {
+                    return AppResult.Failure(AppError.NotFound)
+                }
+                record.id
             }
-            record.id
-        }
-    }.fold(
-        onSuccess = { AppResult.Success(it) },
-        onFailure = { AppResult.Failure(AppError.Storage) },
-    )
+        }.fold(
+            onSuccess = { AppResult.Success(it) },
+            onFailure = { AppResult.Failure(AppError.Storage) },
+        )
 
-    override suspend fun deleteById(id: Long): AppResult<Unit> = runCatching {
-        if (dao.deleteById(id) == 0) AppResult.Failure(AppError.NotFound) else AppResult.Success(Unit)
-    }.getOrElse {
-        AppResult.Failure(AppError.Storage)
-    }
+    override suspend fun deleteById(id: Long): AppResult<Unit> =
+        runCatching {
+            if (dao.deleteById(id) == 0) AppResult.Failure(AppError.NotFound) else AppResult.Success(Unit)
+        }.getOrElse {
+            AppResult.Failure(AppError.Storage)
+        }
 
     private fun String.toSearchPattern(): String =
         trim()

@@ -18,9 +18,16 @@ import kotlinx.coroutines.launch
 
 sealed interface RecordDetailUiState {
     data object Loading : RecordDetailUiState
+
     data object NotFound : RecordDetailUiState
-    data class Success(val record: DrinkRecord) : RecordDetailUiState
-    data class Error(val message: String) : RecordDetailUiState
+
+    data class Success(
+        val record: DrinkRecord,
+    ) : RecordDetailUiState
+
+    data class Error(
+        val message: String,
+    ) : RecordDetailUiState
 }
 
 sealed interface RecordDetailEvent {
@@ -32,10 +39,11 @@ class RecordDetailViewModel(
     observeDrinkRecordUseCase: ObserveDrinkRecordUseCase,
     private val deleteDrinkRecordUseCase: DeleteDrinkRecordUseCase,
 ) : ViewModel() {
-    val uiState: StateFlow<RecordDetailUiState> = observeDrinkRecordUseCase(recordId)
-        .map { record -> record?.let { RecordDetailUiState.Success(it) } ?: RecordDetailUiState.NotFound }
-        .catch { emit(RecordDetailUiState.Error("기록을 불러오지 못했습니다.")) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), RecordDetailUiState.Loading)
+    val uiState: StateFlow<RecordDetailUiState> =
+        observeDrinkRecordUseCase(recordId)
+            .map { record -> record?.let { RecordDetailUiState.Success(it) } ?: RecordDetailUiState.NotFound }
+            .catch { emit(RecordDetailUiState.Error("기록을 불러오지 못했습니다.")) }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), RecordDetailUiState.Loading)
 
     private val _events = MutableSharedFlow<RecordDetailEvent>()
     val events: SharedFlow<RecordDetailEvent> = _events

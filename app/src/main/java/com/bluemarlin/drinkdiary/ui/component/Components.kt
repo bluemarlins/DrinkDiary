@@ -8,8 +8,8 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -18,12 +18,10 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -85,16 +83,16 @@ import com.bluemarlin.drinkdiary.domain.model.currentLabel
 import com.bluemarlin.drinkdiary.domain.model.roundToHalf
 import com.bluemarlin.drinkdiary.domain.model.roundToTenth
 import com.bluemarlin.drinkdiary.ui.theme.DrinkDiaryThemeTokens
-import java.text.NumberFormat
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
+import java.text.NumberFormat
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import java.util.UUID
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 private const val MinOverallRating = 0.0
 private const val MaxRating = 5.0
@@ -102,22 +100,41 @@ private const val OverallRatingSliderSteps = 49
 private const val SensoryMetricSliderSteps = 9
 
 @Composable
-fun DDPrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
+fun DDPrimaryButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+) {
     Button(onClick = onClick, modifier = modifier, enabled = enabled) { Text(text) }
 }
 
 @Composable
-fun DDSecondaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
+fun DDSecondaryButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+) {
     OutlinedButton(onClick = onClick, modifier = modifier, enabled = enabled) { Text(text) }
 }
 
 @Composable
-fun DDContainedButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
+fun DDContainedButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+) {
     FilledTonalButton(onClick = onClick, modifier = modifier, enabled = enabled) { Text(text) }
 }
 
 @Composable
-fun DDDestructiveButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+fun DDDestructiveButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     TextButton(onClick = onClick, modifier = modifier) {
         Text(text, color = MaterialTheme.colorScheme.error)
     }
@@ -142,7 +159,12 @@ fun DDLoadingContent(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun DDEmptyContent(message: String, actionText: String, onAction: () -> Unit, modifier: Modifier = Modifier) {
+fun DDEmptyContent(
+    message: String,
+    actionText: String,
+    onAction: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Column(
         modifier = modifier.fillMaxWidth().padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -154,7 +176,11 @@ fun DDEmptyContent(message: String, actionText: String, onAction: () -> Unit, mo
 }
 
 @Composable
-fun DDErrorContent(message: String, onRetry: (() -> Unit)? = null, modifier: Modifier = Modifier) {
+fun DDErrorContent(
+    message: String,
+    onRetry: (() -> Unit)? = null,
+    modifier: Modifier = Modifier,
+) {
     Column(
         modifier = modifier.fillMaxWidth().padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -184,7 +210,13 @@ fun DDConfirmDialog(
 }
 
 @Composable
-fun DDTextField(label: String, value: String, onValueChange: (String) -> Unit, modifier: Modifier = Modifier, error: String? = null) {
+fun DDTextField(
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    error: String? = null,
+) {
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
@@ -197,7 +229,13 @@ fun DDTextField(label: String, value: String, onValueChange: (String) -> Unit, m
 }
 
 @Composable
-fun DDNumberField(label: String, value: String, onValueChange: (String) -> Unit, modifier: Modifier = Modifier, error: String? = null) {
+fun DDNumberField(
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    error: String? = null,
+) {
     OutlinedTextField(
         value = value,
         onValueChange = { text -> onValueChange(text.filter { it.isDigit() }) },
@@ -211,7 +249,12 @@ fun DDNumberField(label: String, value: String, onValueChange: (String) -> Unit,
 }
 
 @Composable
-fun DDMultilineTextField(label: String, value: String, onValueChange: (String) -> Unit, modifier: Modifier = Modifier) {
+fun DDMultilineTextField(
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
@@ -236,10 +279,12 @@ fun DDDateTimeField(
         DatePickerDialog(
             context,
             { _, year, month, dayOfMonth ->
-                val selectedMillis = java.time.LocalDate.of(year, month + 1, dayOfMonth)
-                    .atStartOfDay(zone)
-                    .toInstant()
-                    .toEpochMilli()
+                val selectedMillis =
+                    java.time.LocalDate
+                        .of(year, month + 1, dayOfMonth)
+                        .atStartOfDay(zone)
+                        .toInstant()
+                        .toEpochMilli()
                 onValueChange(selectedMillis)
             },
             date.year,
@@ -264,7 +309,10 @@ fun DDDateTimeField(
 }
 
 @Composable
-fun DDFormSection(title: String, content: @Composable ColumnScope.() -> Unit) {
+fun DDFormSection(
+    title: String,
+    content: @Composable ColumnScope.() -> Unit,
+) {
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Text(title, style = MaterialTheme.typography.titleMedium)
         content()
@@ -272,7 +320,10 @@ fun DDFormSection(title: String, content: @Composable ColumnScope.() -> Unit) {
 }
 
 @Composable
-fun DDFormErrorText(error: String?, modifier: Modifier = Modifier) {
+fun DDFormErrorText(
+    error: String?,
+    modifier: Modifier = Modifier,
+) {
     if (error != null) {
         Text(
             text = error,
@@ -284,19 +335,24 @@ fun DDFormErrorText(error: String?, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun DDImagePicker(imageUri: String?, onImageSelected: (String?) -> Unit, modifier: Modifier = Modifier) {
+fun DDImagePicker(
+    imageUri: String?,
+    onImageSelected: (String?) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri: Uri? ->
-        if (uri == null) {
-            onImageSelected(null)
-        } else {
-            coroutineScope.launch {
-                val storedUri = copyImageToInternalStorage(context, uri)
-                onImageSelected(storedUri)
+    val launcher =
+        rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri: Uri? ->
+            if (uri == null) {
+                onImageSelected(null)
+            } else {
+                coroutineScope.launch {
+                    val storedUri = copyImageToInternalStorage(context, uri)
+                    onImageSelected(storedUri)
+                }
             }
         }
-    }
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -309,10 +365,11 @@ fun DDImagePicker(imageUri: String?, onImageSelected: (String?) -> Unit, modifie
                 DDUriImage(
                     imageUri = imageUri,
                     contentDescription = "선택한 사진",
-                    modifier = Modifier
-                        .width(imageWidth)
-                        .height(imageHeight)
-                        .clip(RoundedCornerShape(8.dp)),
+                    modifier =
+                        Modifier
+                            .width(imageWidth)
+                            .height(imageHeight)
+                            .clip(RoundedCornerShape(8.dp)),
                     contentScale = ContentScale.Fit,
                 )
             }
@@ -339,7 +396,10 @@ fun DDImagePicker(imageUri: String?, onImageSelected: (String?) -> Unit, modifie
     }
 }
 
-private suspend fun copyImageToInternalStorage(context: Context, sourceUri: Uri): String? =
+private suspend fun copyImageToInternalStorage(
+    context: Context,
+    sourceUri: Uri,
+): String? =
     withContext(Dispatchers.IO) {
         runCatching {
             val imageDir = File(context.filesDir, "drink_record_images").apply { mkdirs() }
@@ -371,7 +431,12 @@ fun DDRatingInput(
             Text(
                 text = "%.1f".format(rating),
                 style = MaterialTheme.typography.titleMedium,
-                color = if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
+                color =
+                    if (enabled) {
+                        MaterialTheme.colorScheme.onSurface
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
                 modifier = Modifier.width(48.dp),
             )
             Slider(
@@ -384,10 +449,22 @@ fun DDRatingInput(
             )
         }
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text("별로예요", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text("아주 좋아요", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(
+                "별로예요",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                "아주 좋아요",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
-        if (error != null) Text(error, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+        if (error !=
+            null
+        ) {
+            Text(error, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+        }
     }
 }
 
@@ -420,15 +497,27 @@ fun DDSensoryMetricSlider(
             steps = SensoryMetricSliderSteps,
         )
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(criterion.minLabel, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text(criterion.maxLabel, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(
+                criterion.minLabel,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                criterion.maxLabel,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DDDrinkTypeSelector(selected: DrinkType?, onSelected: (DrinkType) -> Unit, error: String? = null) {
+fun DDDrinkTypeSelector(
+    selected: DrinkType?,
+    onSelected: (DrinkType) -> Unit,
+    error: String? = null,
+) {
     val useDropdown = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         if (useDropdown) {
@@ -450,13 +539,21 @@ fun DDDrinkTypeSelector(selected: DrinkType?, onSelected: (DrinkType) -> Unit, e
                 }
             }
         }
-        if (error != null) Text(error, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+        if (error !=
+            null
+        ) {
+            Text(error, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+        }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DDCollectionStatusSelector(selected: CollectionStatus?, onSelected: (CollectionStatus) -> Unit, error: String? = null) {
+fun DDCollectionStatusSelector(
+    selected: CollectionStatus?,
+    onSelected: (CollectionStatus) -> Unit,
+    error: String? = null,
+) {
     val useDropdown = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         if (useDropdown) {
@@ -478,13 +575,20 @@ fun DDCollectionStatusSelector(selected: CollectionStatus?, onSelected: (Collect
                 }
             }
         }
-        if (error != null) Text(error, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+        if (error !=
+            null
+        ) {
+            Text(error, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+        }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DDPeriodSegmentedControl(selected: DashboardPeriod, onSelected: (DashboardPeriod) -> Unit) {
+fun DDPeriodSegmentedControl(
+    selected: DashboardPeriod,
+    onSelected: (DashboardPeriod) -> Unit,
+) {
     SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
         DashboardPeriod.entries.forEachIndexed { index, period ->
             SegmentedButton(
@@ -498,7 +602,10 @@ fun DDPeriodSegmentedControl(selected: DashboardPeriod, onSelected: (DashboardPe
 }
 
 @Composable
-fun DDDrinkTypeFilter(selected: DrinkType?, onSelected: (DrinkType?) -> Unit) {
+fun DDDrinkTypeFilter(
+    selected: DrinkType?,
+    onSelected: (DrinkType?) -> Unit,
+) {
     val useDropdown = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     if (useDropdown) {
         DDOptionDropdown(
@@ -511,27 +618,43 @@ fun DDDrinkTypeFilter(selected: DrinkType?, onSelected: (DrinkType?) -> Unit) {
         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             item { FilterChip(selected = selected == null, onClick = { onSelected(null) }, label = { Text("전체") }) }
             DrinkType.entries.forEach { type ->
-                item { FilterChip(selected = selected == type, onClick = { onSelected(type) }, label = { Text(type.label) }) }
+                item {
+                    FilterChip(
+                        selected = selected == type,
+                        onClick = { onSelected(type) },
+                        label = { Text(type.label) },
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
-fun DDCollectionStatusFilter(selected: CollectionStatus?, onSelected: (CollectionStatus?) -> Unit) {
+fun DDCollectionStatusFilter(
+    selected: CollectionStatus?,
+    onSelected: (CollectionStatus?) -> Unit,
+) {
     val useDropdown = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     if (useDropdown) {
         DDOptionDropdown(
             label = "컬렉션 상태",
             selectedLabel = selected?.label ?: "전체",
-            options = listOf<CollectionStatus?>(null).map { it to "전체" } + CollectionStatus.entries.map { it to it.label },
+            options =
+                listOf<CollectionStatus?>(null).map { it to "전체" } + CollectionStatus.entries.map { it to it.label },
             onSelected = onSelected,
         )
     } else {
         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             item { FilterChip(selected = selected == null, onClick = { onSelected(null) }, label = { Text("전체") }) }
             CollectionStatus.entries.forEach { status ->
-                item { FilterChip(selected = selected == status, onClick = { onSelected(status) }, label = { Text(status.label) }) }
+                item {
+                    FilterChip(
+                        selected = selected == status,
+                        onClick = { onSelected(status) },
+                        label = { Text(status.label) },
+                    )
+                }
             }
         }
     }
@@ -586,7 +709,10 @@ fun DDRatingStars(rating: Double) {
 }
 
 @Composable
-fun DDRatingValueText(rating: Double, modifier: Modifier = Modifier) {
+fun DDRatingValueText(
+    rating: Double,
+    modifier: Modifier = Modifier,
+) {
     Text(
         text = "%.1f".format(rating),
         color = MaterialTheme.colorScheme.primary,
@@ -627,14 +753,18 @@ fun DDRatingBreakdownRadarChart(
                 modifier = Modifier.size(300.dp).align(Alignment.CenterHorizontally),
                 contentAlignment = Alignment.Center,
             ) {
-                val angles = visibleCriteria.indices.map { index ->
-                    -90.0 + (360.0 / visibleCriteria.size) * index
-                }
+                val angles =
+                    visibleCriteria.indices.map { index ->
+                        -90.0 + (360.0 / visibleCriteria.size) * index
+                    }
                 Canvas(modifier = Modifier.size(210.dp)) {
                     val center = this.center
                     val radius = size.minDimension * 0.42f
 
-                    fun pointFor(angleDegrees: Double, ratio: Double): androidx.compose.ui.geometry.Offset {
+                    fun pointFor(
+                        angleDegrees: Double,
+                        ratio: Double,
+                    ): androidx.compose.ui.geometry.Offset {
                         val radians = Math.toRadians(angleDegrees)
                         return androidx.compose.ui.geometry.Offset(
                             x = center.x + kotlin.math.cos(radians).toFloat() * radius * ratio.toFloat(),
@@ -689,11 +819,12 @@ private fun RadarAxisBadge(
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier
-            .width(76.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.92f))
-            .padding(horizontal = 6.dp, vertical = 5.dp),
+        modifier =
+            modifier
+                .width(76.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.92f))
+                .padding(horizontal = 6.dp, vertical = 5.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(1.dp),
     ) {
@@ -725,17 +856,27 @@ private fun ratingStarsText(rating: Double): String {
 }
 
 @Composable
-fun DDPriceText(price: Long?, modifier: Modifier = Modifier) {
+fun DDPriceText(
+    price: Long?,
+    modifier: Modifier = Modifier,
+) {
     Text(text = formatPrice(price), modifier = modifier)
 }
 
 @Composable
-fun DDRecordedDateText(recordedAtMillis: Long, modifier: Modifier = Modifier) {
+fun DDRecordedDateText(
+    recordedAtMillis: Long,
+    modifier: Modifier = Modifier,
+) {
     Text(text = formatRecordedDate(recordedAtMillis), modifier = modifier)
 }
 
 @Composable
-fun DDDrinkRecordListItem(record: DrinkRecord, onClick: () -> Unit, modifier: Modifier = Modifier) {
+fun DDDrinkRecordListItem(
+    record: DrinkRecord,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     ElevatedCard(modifier = modifier.fillMaxWidth().clickable(onClick = onClick)) {
         Row(
             modifier = Modifier.padding(12.dp),
@@ -744,19 +885,34 @@ fun DDDrinkRecordListItem(record: DrinkRecord, onClick: () -> Unit, modifier: Mo
         ) {
             DDImageThumbnail(record.imageUri)
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(record.name, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    record.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
                     Text(record.type.label, style = MaterialTheme.typography.bodySmall)
                     DDRatingValueText(record.rating)
                 }
-                Text("${record.collectionStatus.label} · ${formatRecordedDate(record.recordedAtMillis)}", style = MaterialTheme.typography.bodySmall)
+                Text(
+                    "${record.collectionStatus.label} · ${formatRecordedDate(record.recordedAtMillis)}",
+                    style = MaterialTheme.typography.bodySmall,
+                )
             }
         }
     }
 }
 
 @Composable
-fun DDDrinkRecordCard(record: DrinkRecord, onClick: () -> Unit, modifier: Modifier = Modifier) {
+fun DDDrinkRecordCard(
+    record: DrinkRecord,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Card(
         modifier = modifier.fillMaxWidth().clickable(onClick = onClick),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
@@ -778,10 +934,11 @@ fun DDDashboardMetricTile(
     onClick: (() -> Unit)? = null,
 ) {
     Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .defaultMinSize(minHeight = 108.dp)
-            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .defaultMinSize(minHeight = 108.dp)
+                .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
     ) {
         Column(
@@ -823,11 +980,12 @@ fun DDDrinkTypeDonutCard(
 ) {
     val outlineColor = MaterialTheme.colorScheme.outlineVariant
     val chartColors = DrinkDiaryThemeTokens.chartColors
-    val entries = listOf(
-        Triple("와인", wineCount, chartColors.wine),
-        Triple("위스키", whiskeyCount, chartColors.whiskey),
-        Triple("맥주", beerCount, chartColors.beer),
-    )
+    val entries =
+        listOf(
+            Triple("와인", wineCount, chartColors.wine),
+            Triple("위스키", whiskeyCount, chartColors.whiskey),
+            Triple("맥주", beerCount, chartColors.beer),
+        )
 
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -868,7 +1026,11 @@ fun DDDrinkTypeDonutCard(
                 }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("${totalCount}개", style = MaterialTheme.typography.titleLarge)
-                    Text("전체", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(
+                        "전체",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
             }
             Column(
@@ -883,7 +1045,10 @@ fun DDDrinkTypeDonutCard(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
                             Box(modifier = Modifier.size(10.dp).clip(CircleShape).background(color))
                             Text(label, style = MaterialTheme.typography.bodyMedium)
                         }
@@ -899,7 +1064,12 @@ fun DDDrinkTypeDonutCard(
 fun DDImageThumbnail(imageUri: String?) {
     if (imageUri == null) {
         Box(
-            modifier = Modifier.size(56.dp).clip(RoundedCornerShape(8.dp)).background(MaterialTheme.colorScheme.surfaceVariant),
+            modifier =
+                Modifier
+                    .size(
+                        56.dp,
+                    ).clip(RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
             contentAlignment = Alignment.Center,
         ) {
             Text("사진", style = MaterialTheme.typography.labelSmall)
@@ -915,7 +1085,10 @@ fun DDImageThumbnail(imageUri: String?) {
 }
 
 @Composable
-fun DDInfoRow(label: String, value: String) {
+fun DDInfoRow(
+    label: String,
+    value: String,
+) {
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
         Text(label, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Text(value)
@@ -923,17 +1096,21 @@ fun DDInfoRow(label: String, value: String) {
 }
 
 @Composable
-fun DDRecordHeroImage(imageUri: String?, modifier: Modifier = Modifier) {
+fun DDRecordHeroImage(
+    imageUri: String?,
+    modifier: Modifier = Modifier,
+) {
     BoxWithConstraints(modifier = modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
         val imageWidth = maxWidth * 0.8f
         val imageHeight = (imageWidth * 4f / 3f).coerceAtMost(520.dp)
         if (imageUri == null) {
             Box(
-                modifier = Modifier
-                    .width(imageWidth)
-                    .height(220.dp.coerceAtMost(imageHeight))
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                modifier =
+                    Modifier
+                        .width(imageWidth)
+                        .height(220.dp.coerceAtMost(imageHeight))
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center,
             ) {
                 Text("등록된 사진 없음")
@@ -942,10 +1119,11 @@ fun DDRecordHeroImage(imageUri: String?, modifier: Modifier = Modifier) {
             DDUriImage(
                 imageUri = imageUri,
                 contentDescription = "기록 대표 사진",
-                modifier = Modifier
-                    .width(imageWidth)
-                    .height(imageHeight)
-                    .clip(RoundedCornerShape(8.dp)),
+                modifier =
+                    Modifier
+                        .width(imageWidth)
+                        .height(imageHeight)
+                        .clip(RoundedCornerShape(8.dp)),
                 contentScale = ContentScale.Fit,
             )
         }
@@ -963,12 +1141,13 @@ private fun DDUriImage(
     var bitmap by remember(imageUri) { mutableStateOf<ImageBitmap?>(null) }
 
     LaunchedEffect(imageUri) {
-        bitmap = withContext(Dispatchers.IO) {
-            runCatching {
-                val source = ImageDecoder.createSource(context.contentResolver, Uri.parse(imageUri))
-                ImageDecoder.decodeBitmap(source).asImageBitmap()
-            }.getOrNull()
-        }
+        bitmap =
+            withContext(Dispatchers.IO) {
+                runCatching {
+                    val source = ImageDecoder.createSource(context.contentResolver, Uri.parse(imageUri))
+                    ImageDecoder.decodeBitmap(source).asImageBitmap()
+                }.getOrNull()
+            }
     }
 
     if (bitmap == null) {
@@ -989,9 +1168,23 @@ private fun DDUriImage(
 }
 
 @Composable
-fun DDDashboardSummaryCard(title: String, value: String, modifier: Modifier = Modifier, onClick: (() -> Unit)? = null) {
+fun DDDashboardSummaryCard(
+    title: String,
+    value: String,
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null,
+) {
     Card(
-        modifier = modifier.fillMaxWidth().then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
+        modifier =
+            modifier.fillMaxWidth().then(
+                if (onClick !=
+                    null
+                ) {
+                    Modifier.clickable(onClick = onClick)
+                } else {
+                    Modifier
+                },
+            ),
     ) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(title, style = MaterialTheme.typography.labelLarge)
@@ -1023,12 +1216,13 @@ fun DDDrinkTypeRatioCard(
     totalCount: Int,
     modifier: Modifier = Modifier,
 ) {
-    val value = if (totalCount == 0) {
-        "와인 0% · 위스키 0% · 맥주 0%"
-    } else {
-        fun ratio(count: Int): Int = (count * 100) / totalCount
-        "와인 ${ratio(wineCount)}% · 위스키 ${ratio(whiskeyCount)}% · 맥주 ${ratio(beerCount)}%"
-    }
+    val value =
+        if (totalCount == 0) {
+            "와인 0% · 위스키 0% · 맥주 0%"
+        } else {
+            fun ratio(count: Int): Int = (count * 100) / totalCount
+            "와인 ${ratio(wineCount)}% · 위스키 ${ratio(whiskeyCount)}% · 맥주 ${ratio(beerCount)}%"
+        }
     DDDashboardSummaryCard(
         title = "종류별 비중",
         value = value,
@@ -1037,7 +1231,8 @@ fun DDDrinkTypeRatioCard(
 }
 
 fun formatRecordedDate(millis: Long): String =
-    Instant.ofEpochMilli(millis)
+    Instant
+        .ofEpochMilli(millis)
         .atZone(ZoneId.systemDefault())
         .format(DateTimeFormatter.ofPattern("yyyy.MM.dd"))
 
