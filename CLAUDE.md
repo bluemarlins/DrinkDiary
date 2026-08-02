@@ -28,7 +28,10 @@ Run a single unit test class or method with `--tests`:
 .\gradlew.bat :app:testDebugUnitTest --tests "com.bluemarlin.drinkdiary.domain.usecase.SaveDrinkRecordUseCaseTest.validation fails when rating is out of range"
 ```
 
-There is no ktlint/detekt config in the repo; `:app:lint` (Android Lint) is the only static check.
+```powershell
+.\gradlew.bat :app:ktlintCheck          # ktlint style check
+.\gradlew.bat :app:ktlintFormat         # auto-fix ktlint violations
+```
 
 ## Architecture
 
@@ -80,7 +83,16 @@ UI (Compose Screen) -> ViewModel -> UseCase -> Repository -> DAO (Room) -> Datab
 
 Detailed design docs live under `app/docs/` (mostly in Korean): `software-architecture.md` (layer
 responsibilities, data flow diagrams), `database-design.md`, `design-system.md`, `usecase.md`,
-`ui-flow.md`, `navigation-flow-usecases.md`, `development-todo.md`.
+`ui-flow.md`, `navigation-flow-usecases.md`, `development-todo.md`, `product-plan.md` (business model
+and phase roadmap).
+
+## Multi-agent workflow
+
+Feature work can be split between Claude (planning, architecture, review, tests) and the `agy` CLI
+(Google Antigravity, invoked non-interactively as a coding sub-agent for benchmarking research, UI
+polish, and boilerplate code generation). The shared rules every agent must follow, the Definition of
+Done, and the exact `agy` invocation templates live in `app/docs/orchestration/harness.md` and
+`app/docs/orchestration/agy-playbook.md`. The live backlog is `app/docs/orchestration/task-log.md`.
 
 ## Working conventions
 
