@@ -19,7 +19,7 @@ Billing 연동은 Phase 3(가장 마지막)으로 이동. Phase 1은 순수 기�
 
 | ID | 태스크 | 담당 | 상태 | 커밋 | 비고 |
 | --- | --- | --- | --- | --- | --- |
-| P1-1 | 앱 이름 후보 브레인스토밍 (대량 생성) | agy | done | | conversation `fe5823a5`. Claude 추천: "그날의 팔레트" — branding.md 1절, 사용자 확정 대기 |
+| P1-1 | 앱 이름 후보 브레인스토밍 (대량 생성) | agy | done | | 1차 conversation `fe5823a5`(감성적이라 반려) → 2차 conversation `c6d24b88`(기능 직관성 기준 재생성). Claude 추천: "테이스트 아카이브 / Taste Archive" — branding.md 1절, 사용자 확정 대기 |
 | P1-2 | 가치 제안(Value Proposition) 확정 | Claude | done | | branding.md 2절 |
 | P1-3 | 브랜딩 방향(톤앤매너, 컬러/키워드) 확정 | Claude | done | | branding.md 3절, 기존 `ui/theme` 팔레트 그대로 채택 |
 | P1-4 | Play 스토어 설명(짧은/긴 설명, 키워드) 초안 작성 | agy | done | | conversation `f2370ee9`. Claude 검토 완료, branding.md 4절 |
