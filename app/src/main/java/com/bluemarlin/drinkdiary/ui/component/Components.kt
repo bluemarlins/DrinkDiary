@@ -67,7 +67,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
@@ -85,6 +84,7 @@ import com.bluemarlin.drinkdiary.domain.model.DrinkType
 import com.bluemarlin.drinkdiary.domain.model.currentLabel
 import com.bluemarlin.drinkdiary.domain.model.roundToHalf
 import com.bluemarlin.drinkdiary.domain.model.roundToTenth
+import com.bluemarlin.drinkdiary.ui.theme.DrinkDiaryThemeTokens
 import java.text.NumberFormat
 import java.io.File
 import java.time.Instant
@@ -822,10 +822,11 @@ fun DDDrinkTypeDonutCard(
     modifier: Modifier = Modifier,
 ) {
     val outlineColor = MaterialTheme.colorScheme.outlineVariant
+    val chartColors = DrinkDiaryThemeTokens.chartColors
     val entries = listOf(
-        Triple("와인", wineCount, WinePastel),
-        Triple("위스키", whiskeyCount, WhiskeyPastel),
-        Triple("맥주", beerCount, BeerPastel),
+        Triple("와인", wineCount, chartColors.wine),
+        Triple("위스키", whiskeyCount, chartColors.whiskey),
+        Triple("맥주", beerCount, chartColors.beer),
     )
 
     Card(
@@ -1042,7 +1043,3 @@ fun formatRecordedDate(millis: Long): String =
 
 fun formatPrice(price: Long?): String =
     price?.let { NumberFormat.getNumberInstance(Locale.KOREA).format(it) + "원" } ?: "-"
-
-private val WinePastel = Color(0xFFFF8FB3)
-private val WhiskeyPastel = Color(0xFFFFC66E)
-private val BeerPastel = Color(0xFF70D6FF)

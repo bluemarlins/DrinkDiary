@@ -1,7 +1,13 @@
 package com.bluemarlin.drinkdiary.ui.navigation
 
 import android.app.Activity
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
@@ -9,11 +15,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.IntOffset
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.scene.Scene
 import androidx.navigation3.ui.NavDisplay
+import kotlin.math.roundToInt
 import com.bluemarlin.drinkdiary.DrinkDiaryApplication
 import com.bluemarlin.drinkdiary.domain.model.CollectionStatus
 import com.bluemarlin.drinkdiary.ui.collection.CollectionRoute
@@ -36,6 +44,8 @@ private sealed interface AppRoute : NavKey {
 }
 
 private const val NavigationSlideDurationMillis = 260
+private const val TopLevelTransitionDurationMillis = 230
+private const val FadeThroughDurationMillis = 180
 
 @Composable
 fun DrinkDiaryApp() {
@@ -64,6 +74,9 @@ fun DrinkDiaryApp() {
     NavDisplay(
         backStack = backStack,
         onBack = ::goBack,
+        transitionSpec = { drinkDiaryTransitionSpec() },
+        popTransitionSpec = { drinkDiaryPopTransitionSpec() },
+        predictivePopTransitionSpec = { _: Int -> drinkDiaryPopTransitionSpec() },
         entryProvider = entryProvider {
             entry<AppRoute.Dashboard> {
                 val viewModel: DashboardViewModel = viewModel(
@@ -124,6 +137,81 @@ fun DrinkDiaryApp() {
             }
         },
     )
+}
+
+private fun AnimatedContentTransitionScope<Scene<AppRoute>>.drinkDiaryTransitionSpec(): ContentTransform {
+    val initialRoute = initialState.key as? AppRoute
+    val targetRoute = targetState.key as? AppRoute
+    return if (initialRoute.isTopLevelRoute() && targetRoute.isTopLevelRoute()) {
+        topLevelSharedAxisTransition(initialRoute, targetRoute)
+    } else {
+        fadeThroughTransition()
+    }
+}
+
+private fun AnimatedContentTransitionScope<Scene<AppRoute>>.drinkDiaryPopTransitionSpec(): ContentTransform {
+    val initialRoute = initialState.key as? AppRoute
+    val targetRoute = targetState.key as? AppRoute
+    return if (initialRoute.isTopLevelRoute() && targetRoute.isTopLevelRoute()) {
+        topLevelSharedAxisTransition(initialRoute, targetRoute)
+    } else {
+        fadeThroughTransition()
+    }
+}
+
+private fun topLevelSharedAxisTransition(
+    initialRoute: AppRoute?,
+    targetRoute: AppRoute?,
+): ContentTransform {
+    val direction = when {
+        initialRoute == null || targetRoute == null -> 1
+        topLevelRouteIndex(targetRoute) >= topLevelRouteIndex(initialRoute) -> 1
+        else -> -1
+    }
+    val animationSpec = tween<IntOffset>(
+        durationMillis = TopLevelTransitionDurationMillis,
+        easing = FastOutSlowInEasing,
+    )
+    val fadeSpec = tween<Float>(
+        durationMillis = TopLevelTransitionDurationMillis,
+        easing = FastOutSlowInEasing,
+    )
+
+    return (
+        slideInHorizontally(
+            initialOffsetX = { direction * (it * 0.12f).roundToInt() },
+            animationSpec = animationSpec,
+        ) + fadeIn(animationSpec = fadeSpec)
+        ) togetherWith (
+        slideOutHorizontally(
+            targetOffsetX = { -direction * (it * 0.08f).roundToInt() },
+            animationSpec = animationSpec,
+        ) + fadeOut(animationSpec = fadeSpec)
+        )
+}
+
+private fun fadeThroughTransition(): ContentTransform {
+    val fadeSpec = tween<Float>(
+        durationMillis = FadeThroughDurationMillis,
+        easing = FastOutSlowInEasing,
+    )
+    return (
+        fadeIn(animationSpec = fadeSpec) + scaleIn(
+            initialScale = 0.98f,
+            animationSpec = fadeSpec,
+        )
+        ) togetherWith fadeOut(animationSpec = fadeSpec)
+}
+
+private fun AppRoute?.isTopLevelRoute(): Boolean =
+    this is AppRoute.Dashboard || this is AppRoute.Collection || this is AppRoute.Search
+
+private fun topLevelRouteIndex(route: AppRoute): Int = when (route) {
+    AppRoute.Dashboard -> 0
+    is AppRoute.Collection -> 1
+    AppRoute.Search -> 2
+    is AppRoute.Detail,
+    is AppRoute.Editor -> 1
 }
 
 private fun detailTransitionMetadata(): Map<String, Any> =
