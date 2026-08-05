@@ -4,6 +4,26 @@ Claude와 `agy`가 수행하는 태스크의 살아있는 백로그/로그. 상�
 `review` / `done` / `blocked` 중 하나. 완료 시 관련 커밋 해시를 기록한다. Phase 정의는
 `app/docs/product-plan.md` 참조.
 
+## 야간 자율 작업 중단 시점 요약 (사용자 요청으로 저장 후 정지)
+
+사용자가 취침 전 6개 항목(MVP 구현·테스트, 디자인 시스템/모션, 한/영 로컬라이제이션, Advance 기능
+구상, 더미 데이터 DB 점검, 상품화 완성도)을 자율 진행하도록 요청 → 이후 "저장하고 정지" 요청으로
+중단. 아래는 이 시점의 정확한 상태다(과장 없이 있는 그대로).
+
+- **완료 + 검증됨**: 고급 인사이트 UseCase(P2-1/P2-2), CSV 내보내기 UseCase(P2-4/P2-5), Room DAO
+  더미데이터 CRUD 테스트(Robolectric), Advance 기능 구상 문서.
+- **완료했으나 최종 게이트 미확인**: 고급 인사이트 UI(P2-3, 커밋 `ffce97d`) — `ktlintCheck`와
+  컴파일은 통과 확인했지만 `testDebugUnitTest`/`lint` 전체 통과는 빌드가 느려 확인 못 하고 중단.
+  **다음 세션에서 가장 먼저 `.\gradlew.bat :app:testDebugUnitTest :app:lint` 재실행 필요.**
+- **착수 안 함**: CSV 내보내기 UI/파일 저장 진입점(P2-6), 한/영 로컬라이제이션(약 123개 하드코딩
+  한글 문자열, 14개 파일 — 범위만 조사함), 디자인 시스템 모션/인터랙션 고도화, Phase 2 통합
+  회귀(P2-8).
+- **중요 사고**: 여러 `agy` 호출을 동시(백그라운드 포함)에 띄웠다가 그 중 하나가 워킹 트리를
+  마지막 커밋으로 되돌리는 부작용을 일으켜 미커밋 작업이 통째로 사라진 적 있음(대화 컨텍스트에서
+  복구 완료). 상세: `orchestration/harness.md` 5절 사고 이력. 이후로는 agy 호출을 한 번에 하나씩만
+  실행하고 검증 즉시 커밋하는 방식으로 전환함.
+- **push 안 함**: 이 세션에서 만든 모든 커밋은 로컬에만 있다. 사용자 확인 후 push 필요.
+
 ## Phase 0 — 하네스/스캐폴딩 구축
 
 | ID | 태스크 | 담당 | 상태 | 커밋 | 비고 |
@@ -46,14 +66,17 @@ Billing 연동은 Phase 3(가장 마지막)으로 이동. Phase 1은 순수 기�
 
 | ID | 태스크 | 담당 | 상태 | 커밋 | 비고 |
 | --- | --- | --- | --- | --- | --- |
-| P2-1 | 고급 인사이트 UseCase 설계 (트렌드/가격대 만족도/재구매율 계산 알고리즘 확정) | Claude | todo | | 아키텍처/알고리즘 결정 — agy 위임 안 함 |
-| P2-2 | 고급 인사이트 UseCase 구현 + 단위 테스트 | agy | todo | | P2-1 스펙을 그대로 구현, gemini-3.1-pro-high |
-| P2-3 | 고급 인사이트 대시보드 UI (신규 카드/화면, DD* 컴포넌트 재사용) | agy | todo | | gemini-3.6-flash-high, Claude가 실기기 설치로 시각 검증 후 병합 |
-| P2-4 | 데이터 내보내기(CSV) UseCase + 파일 쓰기 로직 설계 | Claude | todo | | 파일 포맷/저장 위치 결정 — agy 위임 안 함 |
-| P2-5 | 데이터 내보내기 UseCase 구현 + 단위 테스트 | agy | todo | | P2-4 스펙 구현 |
-| P2-6 | 데이터 내보내기 UI (설정/내보내기 진입점) | agy | todo | | Claude가 실기기 설치로 시각 검증 후 병합 |
-| P2-7 | 커스텀 테마/위젯 | — | todo | | 우선순위 최하 — Phase 2 후반 착수 시 재세분화 |
-| P2-8 | Phase 2 통합 리뷰 + 전체 회귀 테스트 + 실기기 설치 검증 | Claude | todo | | Phase 2 마일스톤 보고 전 필수 |
+| P2-1 | 고급 인사이트 UseCase 설계 (트렌드/가격대 만족도/재구매율 계산 알고리즘 확정) | Claude | done | c5dee4e | |
+| P2-2 | 고급 인사이트 UseCase 구현 + 단위 테스트 | agy | done | c5dee4e | gemini-3.1-pro-high, `ktlintCheck`/`testDebugUnitTest`/`lint` 통과 확인 |
+| P2-3 | 고급 인사이트 대시보드 UI (신규 카드/화면, DD* 컴포넌트 재사용) | agy+Claude | review | ffce97d | 데이터 유실 사고로 Claude가 대화 컨텍스트에서 재작성. `ktlintCheck`+컴파일 통과 확인, `testDebugUnitTest`/`lint` 최종 확인 필요. 기기 미연결로 실기기 시각 검증 못함 |
+| P2-4 | 데이터 내보내기(CSV) UseCase + 파일 쓰기 로직 설계 | Claude | done | b6625f3 | |
+| P2-5 | 데이터 내보내기 UseCase 구현 + 단위 테스트 | agy | done | b6625f3 | gemini-3.5-flash-medium, `ktlintCheck`/`testDebugUnitTest` 통과 확인 |
+| P2-6 | 데이터 내보내기 UI (설정/내보내기 진입점, SAF 파일 저장) | agy | todo | | 착수 안 함 |
+| P2-7 | 커스텀 테마/위젯 | — | todo | | 착수 안 함, 우선순위 최하 |
+| P2-8 | Phase 2 통합 리뷰 + 전체 회귀 테스트 + 실기기 설치 검증 | Claude | todo | | 착수 안 함. P2-3 최종 게이트 확인부터 시작 |
+| P2-9 | (계획 외 추가) Room DAO 더미데이터 CRUD 테스트 | Claude | done | 79aa4f2 | Robolectric 도입, `@Config(sdk=[35])`로 JDK17 환경에서 SDK36 미지원 이슈 우회 |
+| P2-10 | (계획 외 추가) 한/영 로컬라이제이션 | Claude | todo | | 범위 조사만 완료(14개 파일, 약 123개 하드코딩 한글 문자열). strings.xml 추출 착수 안 함 |
+| P2-11 | (계획 외 추가) 디자인 시스템 모션/인터랙션 고도화 | — | todo | | 착수 안 함 |
 
 ## Phase 3 — Billing 연동 (최종 단계)
 
