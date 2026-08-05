@@ -31,6 +31,8 @@ import com.bluemarlin.drinkdiary.ui.detail.RecordDetailRoute
 import com.bluemarlin.drinkdiary.ui.detail.RecordDetailViewModel
 import com.bluemarlin.drinkdiary.ui.editor.RecordEditorRoute
 import com.bluemarlin.drinkdiary.ui.editor.RecordEditorViewModel
+import com.bluemarlin.drinkdiary.ui.insights.InsightsRoute
+import com.bluemarlin.drinkdiary.ui.insights.InsightsViewModel
 import com.bluemarlin.drinkdiary.ui.search.SearchRoute
 import com.bluemarlin.drinkdiary.ui.search.SearchViewModel
 import kotlin.math.roundToInt
@@ -51,6 +53,8 @@ private sealed interface AppRoute : NavKey {
     data class Editor(
         val recordId: Long? = null,
     ) : AppRoute
+
+    data object Insights : AppRoute
 }
 
 private const val NavigationSlideDurationMillis = 260
@@ -101,6 +105,7 @@ fun DrinkDiaryApp() {
                         onOpenStatus = { navigateTopLevel(AppRoute.Collection(it)) },
                         onCollectionClick = { navigateTopLevel(AppRoute.Collection()) },
                         onSearchClick = { navigateTopLevel(AppRoute.Search) },
+                        onOpenInsights = { navigate(AppRoute.Insights) },
                     )
                 }
                 entry<AppRoute.Collection> { route ->
@@ -149,6 +154,13 @@ fun DrinkDiaryApp() {
                         onBack = ::goBack,
                         onSaved = { navigateTopLevel(AppRoute.Collection()) },
                     )
+                }
+                entry<AppRoute.Insights>(metadata = detailTransitionMetadata()) {
+                    val viewModel: InsightsViewModel =
+                        viewModel(
+                            factory = InsightsViewModel.Factory(appContainer.observeInsightsUseCase),
+                        )
+                    InsightsRoute(viewModel = viewModel, onBack = ::goBack)
                 }
             },
     )
@@ -233,6 +245,7 @@ private fun topLevelRouteIndex(route: AppRoute): Int =
         AppRoute.Search -> 2
         is AppRoute.Detail,
         is AppRoute.Editor,
+        AppRoute.Insights,
         -> 1
     }
 

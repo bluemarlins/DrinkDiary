@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -79,6 +80,8 @@ import com.bluemarlin.drinkdiary.domain.model.DrinkRatingBreakdown
 import com.bluemarlin.drinkdiary.domain.model.DrinkRatingCriterion
 import com.bluemarlin.drinkdiary.domain.model.DrinkRecord
 import com.bluemarlin.drinkdiary.domain.model.DrinkType
+import com.bluemarlin.drinkdiary.domain.model.MonthlyInsight
+import com.bluemarlin.drinkdiary.domain.model.PriceBracketInsight
 import com.bluemarlin.drinkdiary.domain.model.currentLabel
 import com.bluemarlin.drinkdiary.domain.model.roundToHalf
 import com.bluemarlin.drinkdiary.domain.model.roundToTenth
@@ -1238,3 +1241,145 @@ fun formatRecordedDate(millis: Long): String =
 
 fun formatPrice(price: Long?): String =
     price?.let { NumberFormat.getNumberInstance(Locale.KOREA).format(it) + "원" } ?: "-"
+
+@Composable
+fun DDMonthlyTrendCard(
+    monthlyTrend: List<MonthlyInsight>,
+    modifier: Modifier = Modifier,
+) {
+    val isEmpty = monthlyTrend.isEmpty() || monthlyTrend.all { it.totalCount == 0 }
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text("취향 트렌드", style = MaterialTheme.typography.titleMedium)
+            if (isEmpty) {
+                Text(
+                    text = "표시할 데이터가 없습니다",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            } else {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    monthlyTrend.forEach { insight ->
+                        val ratingText = insight.averageRating?.let { "%.1f".format(it) } ?: "-"
+                        val repurchaseText = insight.repurchaseRate?.let { "%.0f%%".format(it * 100) } ?: "-"
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                text = insight.yearMonthLabel,
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.width(72.dp),
+                            )
+                            Row(
+                                modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                Box(
+                                    modifier =
+                                        Modifier
+                                            .weight(1f)
+                                            .height(8.dp)
+                                            .clip(RoundedCornerShape(4.dp))
+                                            .background(MaterialTheme.colorScheme.outlineVariant),
+                                ) {
+                                    val ratingRatio =
+                                        ((insight.averageRating ?: 0.0) / 5.0)
+                                            .coerceIn(
+                                                0.0,
+                                                1.0,
+                                            ).toFloat()
+                                    if (ratingRatio > 0f) {
+                                        Box(
+                                            modifier =
+                                                Modifier
+                                                    .fillMaxWidth(ratingRatio)
+                                                    .fillMaxHeight()
+                                                    .background(MaterialTheme.colorScheme.primary),
+                                        )
+                                    }
+                                }
+                                Text(
+                                    text = "★ $ratingText",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.primary,
+                                )
+                            }
+                            Text(
+                                text = "재구매 $repurchaseText",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun DDPriceBracketCard(
+    priceBrackets: List<PriceBracketInsight>,
+    modifier: Modifier = Modifier,
+) {
+    val isEmpty = priceBrackets.isEmpty() || priceBrackets.all { it.count == 0 }
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text("가격대별 만족도", style = MaterialTheme.typography.titleMedium)
+            if (isEmpty) {
+                Text(
+                    text = "표시할 데이터가 없습니다",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            } else {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    priceBrackets.forEach { insight ->
+                        val ratingText = insight.averageRating?.let { "%.1f".format(it) } ?: "-"
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                text = insight.bracket.label,
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.weight(1f),
+                            )
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(
+                                    text = "${insight.count}건",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                                Text(
+                                    text = "★ $ratingText",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = MaterialTheme.colorScheme.primary,
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

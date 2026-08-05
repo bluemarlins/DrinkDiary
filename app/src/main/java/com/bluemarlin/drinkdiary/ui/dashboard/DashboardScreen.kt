@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import com.bluemarlin.drinkdiary.domain.model.CollectionStatus
 import com.bluemarlin.drinkdiary.domain.model.DashboardSummary
 import com.bluemarlin.drinkdiary.ui.component.DDAddRecordFab
+import com.bluemarlin.drinkdiary.ui.component.DDContainedButton
 import com.bluemarlin.drinkdiary.ui.component.DDDashboardMetricTile
 import com.bluemarlin.drinkdiary.ui.component.DDDrinkRecordCard
 import com.bluemarlin.drinkdiary.ui.component.DDDrinkTypeDonutCard
@@ -45,6 +46,7 @@ fun DashboardRoute(
     onOpenStatus: (CollectionStatus) -> Unit,
     onCollectionClick: () -> Unit,
     onSearchClick: () -> Unit,
+    onOpenInsights: () -> Unit,
 ) {
     val state by viewModel.uiState.collectAsState()
     val period by viewModel.selectedPeriod.collectAsState()
@@ -83,6 +85,7 @@ fun DashboardRoute(
                             expanded = expanded,
                             onOpenRecord = onOpenRecord,
                             onOpenStatus = onOpenStatus,
+                            onOpenInsights = onOpenInsights,
                         )
                 }
             }
@@ -96,6 +99,7 @@ private fun DashboardSuccessContent(
     expanded: Boolean,
     onOpenRecord: (Long) -> Unit,
     onOpenStatus: (CollectionStatus) -> Unit,
+    onOpenInsights: () -> Unit,
 ) {
     LazyColumn(
         contentPadding = PaddingValues(bottom = TopLevelBottomContentPadding),
@@ -114,6 +118,13 @@ private fun DashboardSuccessContent(
                 whiskeyCount = summary.whiskeyCount,
                 beerCount = summary.beerCount,
                 totalCount = summary.totalCount,
+            )
+        }
+        item {
+            DDContainedButton(
+                text = "고급 인사이트 보기",
+                onClick = onOpenInsights,
+                modifier = Modifier.fillMaxWidth(),
             )
         }
         if (summary.normalRecords.isNotEmpty()) {
