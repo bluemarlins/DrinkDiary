@@ -51,7 +51,7 @@ Room schema history is exported to `app/schemas/` (JSON per version) — bump th
 
 ## Reference docs (`app/docs/`, Korean)
 
-Docs are organized by department under `app/docs/`: `product/` (requirements/roadmap), `design/` (component system/UI plans), `dev/` (architecture/data), `research/` and `marketing/` (added as the Play Store launch effort produces them). `app/docs/service-launch-roadmap.md` is the master roadmap tying these together — check its Phase tracking table for current status before starting new launch-prep work.
+Docs are organized by department under `app/docs/`: `product/` (requirements/roadmap), `design/` (component system/UI plans), `dev/` (architecture/data), `research/`, `legal/` (privacy policy, data safety, content rating), and `marketing/` (added as the Play Store launch effort produces them). `app/docs/service-launch-roadmap.md` is the master roadmap tying these together — check its Phase tracking table for current status before starting new launch-prep work. Note: the developer is an employed individual who cannot register a business (사업자등록); Play Console/AdMob accounts are Individual type under the display name `spicyrabbit`, and ad income's tax treatment (사업소득 vs 기타소득) needs a 세무사 consult once revenue grows past trivial amounts — see Phase 1 in the roadmap doc.
 
 Read the relevant doc before changing behavior in that area — these define the actual product rules, not just background:
 - `product/usecase.md` — the 8 use cases (UC-01..UC-08) and their flows/exceptions

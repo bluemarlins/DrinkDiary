@@ -20,10 +20,15 @@ app/docs
   dev/         # 개발
     software-architecture.md
     database-design.md
-  research/    # 리서치 (Phase 0 완료)
+  research/    # 리서치 (Phase 0 완료, Phase 1에서 추가)
     competitor-analysis.md
     ad-monetization.md
     persona-aso.md
+    address-disclosure-policy.md
+  legal/       # 법무/정책 (Phase 1 초안 완료)
+    privacy-policy.md
+    data-safety-mapping.md
+    content-rating-draft.md
   marketing/   # 마케팅 (Phase 5에서 채움)
 ```
 
@@ -69,10 +74,26 @@ app/docs
 - ASO 1순위 키워드: `술 기록`, `음주 일기`, `와인 다이어리`, `테이스팅 노트` — Phase 5 스토어 리스팅 작성 시 타이틀에 반영
 - GDPR/UMP 동의는 타겟이 한국이어도 EEA/UK 접속자 대상으로 필요 → Phase 2 범위에 UMP SDK 포함
 
-### Phase 1. 법무/정책 기반
+### Phase 1. 법무/정책 기반 (초안 완료, 검수 대기)
 
 담당: Claude 초안 + 사용자 검수
-산출물: `app/docs/product/` 또는 별도 `legal/`에 개인정보처리방침, 데이터 안전성 매핑, 콘텐츠 등급 설문 답변 초안
+산출물: `app/docs/legal/privacy-policy.md`, `data-safety-mapping.md`, `content-rating-draft.md`
+
+**전제 조건 (사용자 확인 완료)**:
+- 사용자는 재직 중인 회사원이며 별도 사업자등록이 불가능한 상황 → 개인(Individual) Google Play/AdMob 계정으로 진행
+- 재직 회사의 겸업/부업 금지 조항 확인 완료, 문제 없음
+- 개발자 표시명: `spicyrabbit`
+- 개인정보처리방침 문의 연락처: `greatescape8274@gmail.com`
+
+**리서치로 확인된 사항 (`app/docs/research/` 참고)**:
+- 개인 계정 + AdMob 광고만(인앱결제 없음) 조합에서는 Play Console 스토어 설정의 주소란을 비워두면 실거주지 주소가 공개되지 않음 (`address-disclosure-policy.md`)
+- 애드몹 광고 수익은 세법상 "계속적·반복적" 성격의 **사업소득으로 분류될 가능성이 높음**. 초기 소액 구간에서는 사업자등록 없이 다음 해 5월 종합소득세로 신고 가능하나, **수익 규모가 커지면 사업자등록 필요 여부를 세무사와 상담해야 함** — 로드맵 상시 확인 항목으로 기록
+- 근로소득 외 종합소득이 연 2,000만원을 초과하면 건강보험 소득월액보험료가 추가 부과됨 (초기 예상 수익 규모로는 해당 없음)
+
+**남은 작업**:
+- [ ] `privacy-policy.md`, `data-safety-mapping.md`, `content-rating-draft.md` 사용자 최종 검수
+- [ ] 개인정보처리방침 공개용 URL 확보 (GitHub Pages 권장)
+- [ ] Phase 4에서 실제 Play Console 계정 개설 시 주소란 공란 여부 등 정책 재확인
 
 ### Phase 2. 수익화 개발
 
@@ -116,7 +137,7 @@ app/docs
 | Phase | 상태 |
 |---|---|
 | 0. 리서치 | 완료 |
-| 1. 법무/정책 | 대기 |
+| 1. 법무/정책 | 초안 완료, 사용자 검수 대기 |
 | 2. 수익화 개발 | 대기 |
 | 3. 디자인 고도화 | 대기 |
 | 4. 릴리즈 준비 | 대기 |
