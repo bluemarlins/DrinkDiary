@@ -51,13 +51,19 @@ Room schema history is exported to `app/schemas/` (JSON per version) — bump th
 
 ## Reference docs (`app/docs/`, Korean)
 
-Read the relevant one before changing behavior in that area — these define the actual product rules, not just background:
-- `usecase.md` — the 8 use cases (UC-01..UC-08) and their flows/exceptions
-- `software-architecture.md` — layer responsibilities and data-flow diagrams this section summarizes
-- `database-design.md` — entity/index rationale and migration considerations
-- `design-system.md` — canonical list of `DD*` components, when to use each, and per-screen composition (component reuse is preferred over ad hoc screen-local UI)
-- `scaffold-toolbar-plan.md` — in-progress plan to move `DDScreenScaffold`/`DDTopAppBar` to enum-based `screenType`/`selectedTab` (`DDScreenType`, `DDTopLevelTab`) instead of string tags and to use TopAppBar's proper `navigationIcon`/`actions` slots; current code (`ui/navigation/DDScreenScaffold.kt`) still uses raw string tabs (`"dashboard"`/`"collection"`) and a back button built inside the title slot — check this doc before touching that file
-- `development-todo.md` — the step-by-step build plan (Step 01-15) the codebase was built from, including the fixed MVP decisions (rating 1-5, single image URI, free-text place, monthly default dashboard period, etc.)
+Docs are organized by department under `app/docs/`: `product/` (requirements/roadmap), `design/` (component system/UI plans), `dev/` (architecture/data), `research/` and `marketing/` (added as the Play Store launch effort produces them). `app/docs/service-launch-roadmap.md` is the master roadmap tying these together — check its Phase tracking table for current status before starting new launch-prep work.
+
+Read the relevant doc before changing behavior in that area — these define the actual product rules, not just background:
+- `product/usecase.md` — the 8 use cases (UC-01..UC-08) and their flows/exceptions
+- `dev/software-architecture.md` — layer responsibilities and data-flow diagrams this section summarizes
+- `dev/database-design.md` — entity/index rationale and migration considerations
+- `design/design-system.md` — canonical list of `DD*` components, when to use each, and per-screen composition (component reuse is preferred over ad hoc screen-local UI)
+- `design/scaffold-toolbar-plan.md` — in-progress plan to move `DDScreenScaffold`/`DDTopAppBar` to enum-based `screenType`/`selectedTab` (`DDScreenType`, `DDTopLevelTab`) instead of string tags and to use TopAppBar's proper `navigationIcon`/`actions` slots; current code (`ui/navigation/DDScreenScaffold.kt`) still uses raw string tabs (`"dashboard"`/`"collection"`) and a back button built inside the title slot — check this doc before touching that file
+- `product/development-todo.md` — the step-by-step build plan (Step 01-15) the codebase was built from, including the fixed MVP decisions (rating 1-5, single image URI, free-text place, monthly default dashboard period, etc.). Steps 01-13 are done; 14 (UX polish) and 15 (test coverage) are not.
+
+## AI orchestration for the launch effort
+
+For the Play Store launch/monetization initiative tracked in `app/docs/service-launch-roadmap.md`, Claude acts as orchestrator: research and image-generation tasks are delegated to the `agy` CLI (invoked directly via Bash, e.g. `agy -p "<prompt>" --model gemini-3.6-flash-high`), while code changes, design-system structuring, and merging all outputs stay with Claude. `agy` is a multi-model CLI (not the `gemini` npm package) — always pass `--model gemini-*` explicitly since it defaults to other models otherwise.
 
 ## Language
 
