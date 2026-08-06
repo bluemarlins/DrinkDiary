@@ -17,6 +17,7 @@ app/docs
   design/      # 디자인
     design-system.md
     scaffold-toolbar-plan.md
+    app-icon.md
   dev/         # 개발
     software-architecture.md
     database-design.md
@@ -109,12 +110,15 @@ app/docs
 
 **⚠️ 릴리즈 전 필수**: 현재 모든 광고 ID는 Google 공식 테스트 ID다. Phase 4에서 `spicyrabbit` AdMob 계정 개설 후 실제 ID로 교체해야 한다 (`ads-integration.md` 3절 체크리스트).
 
-### Phase 3. 디자인 고도화
+### Phase 3. 디자인 고도화 (진행 중)
 
-담당: agy(이미지 초안) + Claude(통합)
+담당: agy(이미지 초안/검토) + Claude(통합)
+
+**✅ 앱 아이콘 재제작 완료** — agy로 기존 아이콘(경쟁 앱과 차별성 부족, 작은 크기 가독성 저하로 평가됨) 검토 후 3종 대안 생성, "재구매 하트체크 와인잔" 컨셉 채택. 적응형 아이콘 배경/전경 레이어 분리도 함께 정상화(기존에는 Android 기본 템플릿 로봇 배경이 죽은 채로 남아있었고 전경이 불투명 이미지라 사실상 비-적응형으로 동작하던 상태였음). 상세: `app/docs/design/app-icon.md`
+
+**남은 작업**:
 - `DDBottomNavigationBar` 등 placeholder 텍스트 아이콘 → 실아이콘 교체
 - Feature Graphic(1024x500), 스크린샷 세트 생성
-- 기존 `ic_launcher-playstore.png` 브랜드 톤 유지
 
 ### Phase 4. 릴리즈 준비
 
@@ -146,7 +150,7 @@ app/docs
 | 0. 리서치 | 완료 |
 | 1. 법무/정책 | 초안 완료, 사용자 검수 대기 |
 | 2. 수익화 개발 | 구현 완료 (테스트 ID, 실 계정 전환은 Phase 4) |
-| 3. 디자인 고도화 | 대기 |
+| 3. 디자인 고도화 | 진행 중 |
 | 4. 릴리즈 준비 | 대기 |
 | 5. 스토어 등록/마케팅 | 대기 |
 | 6. 출시 후 운영 | 대기 |
