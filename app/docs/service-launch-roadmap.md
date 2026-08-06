@@ -20,6 +20,7 @@ app/docs
   dev/         # 개발
     software-architecture.md
     database-design.md
+    ads-integration.md
   research/    # 리서치 (Phase 0 완료, Phase 1에서 추가)
     competitor-analysis.md
     ad-monetization.md
@@ -95,12 +96,18 @@ app/docs
 - [ ] 개인정보처리방침 공개용 URL 확보 (GitHub Pages 권장)
 - [ ] Phase 4에서 실제 Play Console 계정 개설 시 주소란 공란 여부 등 정책 재확인
 
-### Phase 2. 수익화 개발
+### Phase 2. 수익화 개발 (구현 완료, 테스트 ID 사용 중)
 
 담당: Claude
-- AdMob SDK 통합 (`gradle/libs.versions.toml`에 의존성 추가)
-- UMP(사용자 메시징 플랫폼)로 GDPR/동의 처리
-- 광고 배치 UX 설계 (Dashboard/Collection 화면, 정책 위반 안 되는 빈도)
+산출물: `app/docs/dev/ads-integration.md`, `com.bluemarlin.drinkdiary.ads` 패키지
+
+- AdMob SDK 통합 완료 (`play-services-ads:25.4.0`, `user-messaging-platform:4.0.0`)
+- UMP 동의 흐름 연동 (`MainActivity`에서 앱 시작 시 요청)
+- 배너 광고: Dashboard/Collection 하단(바텀 내비 위) — `DDScreenScaffold(showBannerAd = true)`
+- 전면 광고: RecordEditor 저장 완료 시점, 4회 저장당 1회 노출 (빈도 제한)
+- 에뮬레이터에서 실제 Test Ad 렌더링 확인, 빌드/유닛테스트 통과
+
+**⚠️ 릴리즈 전 필수**: 현재 모든 광고 ID는 Google 공식 테스트 ID다. Phase 4에서 `spicyrabbit` AdMob 계정 개설 후 실제 ID로 교체해야 한다 (`ads-integration.md` 3절 체크리스트).
 
 ### Phase 3. 디자인 고도화
 
@@ -138,7 +145,7 @@ app/docs
 |---|---|
 | 0. 리서치 | 완료 |
 | 1. 법무/정책 | 초안 완료, 사용자 검수 대기 |
-| 2. 수익화 개발 | 대기 |
+| 2. 수익화 개발 | 구현 완료 (테스트 ID, 실 계정 전환은 Phase 4) |
 | 3. 디자인 고도화 | 대기 |
 | 4. 릴리즈 준비 | 대기 |
 | 5. 스토어 등록/마케팅 | 대기 |

@@ -2,6 +2,7 @@ package com.bluemarlin.drinkdiary
 
 import android.app.Application
 import androidx.room.Room
+import com.bluemarlin.drinkdiary.ads.InterstitialAdManager
 import com.bluemarlin.drinkdiary.data.local.DrinkDiaryDatabase
 import com.bluemarlin.drinkdiary.data.repository.DrinkRecordRepositoryImpl
 import com.bluemarlin.drinkdiary.domain.repository.DrinkRecordRepository
@@ -36,4 +37,6 @@ class AppContainer(application: Application) {
     val saveDrinkRecordUseCase = SaveDrinkRecordUseCase(repository)
     val deleteDrinkRecordUseCase = DeleteDrinkRecordUseCase(repository)
     val observeDashboardSummaryUseCase = ObserveDashboardSummaryUseCase(repository)
+
+    val interstitialAdManager = InterstitialAdManager(application)
 }

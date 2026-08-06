@@ -1,5 +1,6 @@
 package com.bluemarlin.drinkdiary.ui.editor
 
+import android.app.Activity
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -23,7 +24,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.bluemarlin.drinkdiary.DrinkDiaryApplication
 import com.bluemarlin.drinkdiary.domain.model.ratingCriteria
 import com.bluemarlin.drinkdiary.ui.component.DDCollectionStatusSelector
 import com.bluemarlin.drinkdiary.ui.component.DDDateTimeField
@@ -47,10 +50,21 @@ fun RecordEditorRoute(
 ) {
     val state by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
+    val appContainer = (context.applicationContext as DrinkDiaryApplication).appContainer
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
-            if (event is RecordEditorEvent.Saved) onSaved(event.recordId)
+            if (event is RecordEditorEvent.Saved) {
+                val activity = context as? Activity
+                if (activity != null) {
+                    appContainer.interstitialAdManager.maybeShowAfterSave(activity) {
+                        onSaved(event.recordId)
+                    }
+                } else {
+                    onSaved(event.recordId)
+                }
+            }
         }
     }
     LaunchedEffect(state.errorMessage) {

@@ -45,6 +45,7 @@ fun DashboardRoute(
     DDScreenScaffold(
         title = "대시보드",
         selectedTab = "dashboard",
+        showBannerAd = true,
         onDashboardClick = {},
         onCollectionClick = onCollectionClick,
         floatingActionButton = { DDAddRecordFab(onClick = onAddRecord) },

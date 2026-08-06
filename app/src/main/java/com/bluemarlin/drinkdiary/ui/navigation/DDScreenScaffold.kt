@@ -1,5 +1,6 @@
 package com.bluemarlin.drinkdiary.ui.navigation
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -20,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.bluemarlin.drinkdiary.ads.DDBannerAdView
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -27,6 +29,7 @@ fun DDScreenScaffold(
     title: String,
     selectedTab: String? = null,
     showBottomBar: Boolean = true,
+    showBannerAd: Boolean = false,
     onDashboardClick: (() -> Unit)? = null,
     onCollectionClick: (() -> Unit)? = null,
     onBackClick: (() -> Unit)? = null,
@@ -49,6 +52,7 @@ fun DDScreenScaffold(
                 AppScaffold(
                     title = title,
                     showBottomBar = false,
+                    showBannerAd = showBannerAd,
                     selectedTab = selectedTab,
                     onDashboardClick = onDashboardClick,
                     onCollectionClick = onCollectionClick,
@@ -62,6 +66,7 @@ fun DDScreenScaffold(
             AppScaffold(
                 title = title,
                 showBottomBar = showBottomBar,
+                showBannerAd = showBannerAd,
                 selectedTab = selectedTab,
                 onDashboardClick = onDashboardClick,
                 onCollectionClick = onCollectionClick,
@@ -79,6 +84,7 @@ fun DDScreenScaffold(
 private fun AppScaffold(
     title: String,
     showBottomBar: Boolean,
+    showBannerAd: Boolean,
     selectedTab: String?,
     onDashboardClick: (() -> Unit)?,
     onCollectionClick: (() -> Unit)?,
@@ -94,12 +100,17 @@ private fun AppScaffold(
             )
         },
         bottomBar = {
-            if (showBottomBar) {
-                DDBottomNavigationBar(
-                    selectedTab = selectedTab,
-                    onDashboardClick = onDashboardClick,
-                    onCollectionClick = onCollectionClick,
-                )
+            Column {
+                if (showBannerAd) {
+                    DDBannerAdView()
+                }
+                if (showBottomBar) {
+                    DDBottomNavigationBar(
+                        selectedTab = selectedTab,
+                        onDashboardClick = onDashboardClick,
+                        onCollectionClick = onCollectionClick,
+                    )
+                }
             }
         },
         floatingActionButton = floatingActionButton ?: {},

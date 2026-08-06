@@ -39,6 +39,7 @@ UI (Compose) -> ViewModel -> UseCase -> Repository -> DAO (Room) -> Database
 - `ui/<feature>` (`dashboard`, `collection`, `detail`, `editor`) — each has a `*ViewModel` + `*Screen`
 - `ui/navigation` — `DrinkDiaryApp` (nav host/routes) and `DDScreenScaffold` (shared Scaffold/TopAppBar/BottomNav)
 - `ui/component`, `ui/theme` — shared Compose building blocks and theme tokens
+- `ads` — AdMob integration (`AdConfig`, `ConsentManager`, `InterstitialAdManager`, `DDBannerAdView`). All ad unit IDs are currently Google's public test IDs — see `app/docs/dev/ads-integration.md` before touching this package, especially its Phase 4 checklist for swapping in real IDs before any release build.
 
 No DI framework (Hilt intentionally deferred). Dependencies are wired manually in `AppContainer` (in `DrinkDiaryApplication.kt`), which constructs the Room database, repository, and all use cases; `MainActivity` reads `appContainer` off the `Application`.
 
@@ -57,6 +58,7 @@ Read the relevant doc before changing behavior in that area — these define the
 - `product/usecase.md` — the 8 use cases (UC-01..UC-08) and their flows/exceptions
 - `dev/software-architecture.md` — layer responsibilities and data-flow diagrams this section summarizes
 - `dev/database-design.md` — entity/index rationale and migration considerations
+- `dev/ads-integration.md` — AdMob wiring, ad placement rationale, and the test-ID-to-real-ID swap checklist
 - `design/design-system.md` — canonical list of `DD*` components, when to use each, and per-screen composition (component reuse is preferred over ad hoc screen-local UI)
 - `design/scaffold-toolbar-plan.md` — in-progress plan to move `DDScreenScaffold`/`DDTopAppBar` to enum-based `screenType`/`selectedTab` (`DDScreenType`, `DDTopLevelTab`) instead of string tags and to use TopAppBar's proper `navigationIcon`/`actions` slots; current code (`ui/navigation/DDScreenScaffold.kt`) still uses raw string tabs (`"dashboard"`/`"collection"`) and a back button built inside the title slot — check this doc before touching that file
 - `product/development-todo.md` — the step-by-step build plan (Step 01-15) the codebase was built from, including the fixed MVP decisions (rating 1-5, single image URI, free-text place, monthly default dashboard period, etc.). Steps 01-13 are done; 14 (UX polish) and 15 (test coverage) are not.

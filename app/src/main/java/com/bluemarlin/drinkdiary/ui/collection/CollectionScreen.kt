@@ -41,6 +41,7 @@ fun CollectionRoute(
     DDScreenScaffold(
         title = "컬렉션",
         selectedTab = "collection",
+        showBannerAd = true,
         onDashboardClick = onDashboardClick,
         onCollectionClick = {},
         floatingActionButton = { DDAddRecordFab(onClick = onAddRecord) },
