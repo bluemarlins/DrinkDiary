@@ -67,6 +67,8 @@ Read the relevant doc before changing behavior in that area — these define the
 
 For the Play Store launch/monetization initiative tracked in `app/docs/service-launch-roadmap.md`, Claude acts as orchestrator: research and image-generation tasks are delegated to the `agy` CLI (invoked directly via Bash, e.g. `agy -p "<prompt>" --model gemini-3.6-flash-high`), while code changes, design-system structuring, and merging all outputs stay with Claude. `agy` is a multi-model CLI (not the `gemini` npm package) — always pass `--model gemini-*` explicitly since it defaults to other models otherwise.
 
+**Git commit/push should also be delegated to `agy`** (to conserve Claude usage on mechanical operations) rather than run directly, once the commit itself has already been prepared/staged by Claude. Pattern: `agy -p 'Using your shell tool, run this exact single command: git push origin <branch>. Report the exact output, success or failure. Do not run any other git commands (no reset, no force-push, no rebase).' --model gemini-3.5-flash-medium --dangerously-skip-permissions`. Notes: use a cheap model (mechanical task, no reasoning needed); avoid trailing punctuation after the command in the prompt text — agy has literally included a trailing `.` as part of the git command before; `agy`'s shell tool does not inherit the invoking shell's cwd, so the command must be fully self-contained (an absolute git command with no reliance on `cd` first) — it resolved this repo's checkout via its own project state, but don't assume that persists across all environments.
+
 ## Language
 
 Respond to the user in Korean (한국어) when working in this repository.
