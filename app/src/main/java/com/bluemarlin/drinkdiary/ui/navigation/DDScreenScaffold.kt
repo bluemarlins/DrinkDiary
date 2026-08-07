@@ -5,7 +5,11 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationRail
@@ -157,13 +161,13 @@ private fun AppNavigationRail(
         NavigationRailItem(
             selected = selectedTab == "dashboard",
             onClick = { onDashboardClick?.invoke() },
-            icon = { Text("홈") },
+            icon = { Icon(Icons.Filled.Home, contentDescription = null) },
             label = { Text("대시보드") },
         )
         NavigationRailItem(
             selected = selectedTab == "collection",
             onClick = { onCollectionClick?.invoke() },
-            icon = { Text("목록") },
+            icon = { Icon(Icons.AutoMirrored.Filled.List, contentDescription = null) },
             label = { Text("컬렉션") },
         )
     }
@@ -178,13 +182,13 @@ private fun RowScope.AppNavigationItems(
     NavigationBarItem(
         selected = selectedTab == "dashboard",
         onClick = { onDashboardClick?.invoke() },
-        icon = { Text("홈") },
+        icon = { Icon(Icons.Filled.Home, contentDescription = null) },
         label = { Text("대시보드") },
     )
     NavigationBarItem(
         selected = selectedTab == "collection",
         onClick = { onCollectionClick?.invoke() },
-        icon = { Text("목록") },
+        icon = { Icon(Icons.AutoMirrored.Filled.List, contentDescription = null) },
         label = { Text("컬렉션") },
     )
 }

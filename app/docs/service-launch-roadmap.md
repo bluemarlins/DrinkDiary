@@ -31,7 +31,12 @@ app/docs
     privacy-policy.md
     data-safety-mapping.md
     content-rating-draft.md
-  marketing/   # 마케팅 (Phase 5에서 채움)
+  marketing/   # 마케팅 (Phase 3에서 스토어 그래픽 선반영, 나머지는 Phase 5)
+    store-listing-assets.md
+
+app/store-listing/            # Play Store 리스팅용 그래픽 원본 (Phase 3 산출)
+  feature-graphic.png
+  screenshots/
 ```
 
 기존 6개 문서는 내용 변경 없이 부서 폴더로 이동만 했다. `usecase.md`, `development-todo.md`, `software-architecture.md`, `database-design.md`, `design-system.md`, `scaffold-toolbar-plan.md`는 계속 유효한 기준 문서로 유지한다.
@@ -110,15 +115,16 @@ app/docs
 
 **⚠️ 릴리즈 전 필수**: 현재 모든 광고 ID는 Google 공식 테스트 ID다. Phase 4에서 `spicyrabbit` AdMob 계정 개설 후 실제 ID로 교체해야 한다 (`ads-integration.md` 3절 체크리스트).
 
-### Phase 3. 디자인 고도화 (진행 중)
+### Phase 3. 디자인 고도화 (완료)
 
-담당: agy(이미지 초안/검토) + Claude(통합)
+담당: agy(이미지 초안/검토) + Claude(통합/코드/자동화)
 
-**✅ 앱 아이콘 재제작 완료** — agy로 기존 아이콘(경쟁 앱과 차별성 부족, 작은 크기 가독성 저하로 평가됨) 검토 후 3종 대안 생성, "재구매 하트체크 와인잔" 컨셉 채택. 적응형 아이콘 배경/전경 레이어 분리도 함께 정상화(기존에는 Android 기본 템플릿 로봇 배경이 죽은 채로 남아있었고 전경이 불투명 이미지라 사실상 비-적응형으로 동작하던 상태였음). 상세: `app/docs/design/app-icon.md`
+- **앱 아이콘 재제작** — agy로 기존 아이콘(경쟁 앱과 차별성 부족, 작은 크기 가독성 저하로 평가됨) 검토 후 3종 대안 생성, "재구매 하트체크 와인잔" 컨셉 채택. 적응형 아이콘 배경/전경 레이어 분리도 함께 정상화(기존에는 Android 기본 템플릿 로봇 배경이 죽은 채로 남아있었고 전경이 불투명 이미지라 사실상 비-적응형으로 동작하던 상태였음). 상세: `app/docs/design/app-icon.md`
+- **하단 내비게이션 실아이콘 교체** — `DDBottomNavigationBar`/`AppNavigationRail`의 `Text("홈")`/`Text("목록")` placeholder를 `material-icons-core`의 `Icons.Filled.Home`/`Icons.AutoMirrored.Filled.List`로 교체
+- **Feature Graphic** — agy로 1024x500 생성 (`app/store-listing/feature-graphic.png`)
+- **스크린샷 세트** — 에뮬레이터에서 adb 자동화로 샘플 기록 3건(와인/위스키/맥주) 입력 후 Dashboard/Collection/Detail/Editor 4장 캡처, AdMob 테스트 배너는 후처리로 제거. 상세: `app/docs/marketing/store-listing-assets.md`
 
-**남은 작업**:
-- `DDBottomNavigationBar` 등 placeholder 텍스트 아이콘 → 실아이콘 교체
-- Feature Graphic(1024x500), 스크린샷 세트 생성
+빌드/유닛테스트 통과, 에뮬레이터에서 실제 아이콘·화면 렌더링 확인.
 
 ### Phase 4. 릴리즈 준비
 
@@ -150,7 +156,7 @@ app/docs
 | 0. 리서치 | 완료 |
 | 1. 법무/정책 | 초안 완료, 사용자 검수 대기 |
 | 2. 수익화 개발 | 구현 완료 (테스트 ID, 실 계정 전환은 Phase 4) |
-| 3. 디자인 고도화 | 진행 중 |
+| 3. 디자인 고도화 | 완료 |
 | 4. 릴리즈 준비 | 대기 |
 | 5. 스토어 등록/마케팅 | 대기 |
 | 6. 출시 후 운영 | 대기 |

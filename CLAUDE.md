@@ -61,6 +61,7 @@ Read the relevant doc before changing behavior in that area — these define the
 - `dev/ads-integration.md` — AdMob wiring, ad placement rationale, and the test-ID-to-real-ID swap checklist
 - `design/design-system.md` — canonical list of `DD*` components, when to use each, and per-screen composition (component reuse is preferred over ad hoc screen-local UI)
 - `design/app-icon.md` — how the launcher icon was redesigned/regenerated (adaptive-icon background/foreground layers, source glyph, Pillow asset pipeline) — read before touching anything under `res/mipmap-*/ic_launcher*` or `res/drawable/ic_launcher_background.xml`
+- `marketing/store-listing-assets.md` — how `app/store-listing/` (Feature Graphic, screenshots) was produced and how to regenerate it
 - `design/scaffold-toolbar-plan.md` — in-progress plan to move `DDScreenScaffold`/`DDTopAppBar` to enum-based `screenType`/`selectedTab` (`DDScreenType`, `DDTopLevelTab`) instead of string tags and to use TopAppBar's proper `navigationIcon`/`actions` slots; current code (`ui/navigation/DDScreenScaffold.kt`) still uses raw string tabs (`"dashboard"`/`"collection"`) and a back button built inside the title slot — check this doc before touching that file
 - `product/development-todo.md` — the step-by-step build plan (Step 01-15) the codebase was built from, including the fixed MVP decisions (rating 1-5, single image URI, free-text place, monthly default dashboard period, etc.). Steps 01-13 are done; 14 (UX polish) and 15 (test coverage) are not.
 
