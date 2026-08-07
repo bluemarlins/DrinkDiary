@@ -88,10 +88,15 @@ app/store-listing/            # Play Store 리스팅용 그래픽 원본 (Phase 
 
 업그레이드 경로: Compose 스크린샷 테스트(`testing-setup` skill) 도입 시 기계적 pass/fail이 생기므로, 그때 가벼운 Stop hook을 안전하게 추가할 수 있다. 지금은 UX 품질이 정성적 판단이라 무제한 자동 루프 대신 위 반자동 루프로 제한한다.
 
-**시범 실행 결과 (Dashboard, 2026-08-07)**: 새 서브에이전트가 세션 재시작 전이라 수동으로 1회 재현 — agy가 실제로 유효한 findings를 반환해 루프 자체는 검증됨. 발견된 격차(다음 UX 고도화 작업 백로그):
-- Material3 기본 퍼플 테마가 노출됨 — `Theme.kt`가 `primary`/`secondary`/`tertiary`만 브랜드 컬러로 오버라이드하고 `background`/`surface`/`*Container` 롤은 M3 베이스라인 그대로라 카드·세그먼트컨트롤·FAB 배경이 브랜드 컬러(Cellar Green/Malt Gold/Rose)가 아닌 기본 퍼플 계열로 보임
-- 통계 카드/세그먼트 컨트롤 코너 라운딩이 디자인 시스템 규정(8dp 이하)을 초과
-- 컬렉션 카드가 사진/썸네일 없이 텍스트만 있어 "개인 컬렉션" 느낌이 부족, 일반 데이터 테이블처럼 보임
+**Dashboard 3라운드 완주 (2026-08-07)** — 루프를 실제로 캡(3라운드)까지 돌려 완료:
+
+| 라운드 | 발견 | 조치 |
+|---|---|---|
+| 1 (시범, 서브에이전트 등록 전이라 수동 재현) | M3 기본 퍼플 테마 노출(`Theme.kt`가 primary/secondary/tertiary만 오버라이드), 카드/세그먼트 코너 라운딩 8dp 초과, 재구매후보/비선호 카드에 썸네일·뱃지 없음(텍스트만), FAB가 마지막 카드를 가림 | `Theme.kt`에 background/surface/`*Container` 전체 롤 지정, FAB·세그먼트에 명시적 8dp shape, `DDDrinkRecordCard`에 썸네일+뱃지 추가, LazyColumn bottom contentPadding 추가 |
+| 2 | 재구매후보/비선호 뱃지가 색상 구분 없이 동일해 핵심 차별화 요소(Wish/Pass)가 텍스트로만 구분됨, 나머지 카드들(`DDDashboardSummaryCard` 등)은 여전히 8dp 미준수, "종류별 비중"이 평문 텍스트, 썸네일 placeholder가 카드와 동일 색이라 안 보임 | `DDCollectionStatusBadge`를 상태별 색상 필 칩으로 분리(재구매=Cellar Green, 비선호=Rose), 남은 카드에 8dp shape 일괄 적용, 비중을 3색 프로포셔널 바+범례로 시각화, 썸네일 placeholder를 `surfaceContainerHighest`로 대비 확보 |
+| 3 (최종, 캡 도달) | 회귀 없음 확인, "프로덕션 수준에 근접, 출시 막을 요소 없음"으로 판정. Non-blocking 백로그: 뱃지에 아이콘 글리프 없음(색상만으로 구분), 섹션 헤더와 뱃지 라벨 중복, "사진" 텍스트 대신 카메라 아이콘 고려, 별점 색상이 다소 탁함 | 이번 라운드 캡 도달로 보류 — 다음 UX 작업 백로그로 이월 |
+
+다음 화면(Collection/Detail/Editor)도 동일 루프로 순차 적용 필요.
 - 재구매후보/비선호 상태가 본문 텍스트로만 표시되어 스캔성 낮음 — 별도 컬러 칩/뱃지 필요
 - FAB가 목록 마지막 카드 콘텐츠를 가림 (하단 컨텐츠 패딩 부족)
 

@@ -10,6 +10,7 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,6 +19,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -29,6 +31,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -44,7 +47,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -58,6 +60,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
@@ -106,7 +109,7 @@ fun DDDestructiveButton(text: String, onClick: () -> Unit, modifier: Modifier = 
 
 @Composable
 fun DDAddRecordFab(onClick: () -> Unit) {
-    FloatingActionButton(onClick = onClick) {
+    FloatingActionButton(onClick = onClick, shape = RoundedCornerShape(8.dp)) {
         Text("+", style = MaterialTheme.typography.headlineMedium)
     }
 }
@@ -382,7 +385,7 @@ fun DDDrinkTypeSelector(selected: DrinkType?, onSelected: (DrinkType) -> Unit, e
                         selected = selected == type,
                         onClick = { onSelected(type) },
                         modifier = Modifier.weight(1f),
-                        shape = SegmentedButtonDefaults.itemShape(index = index, count = DrinkType.entries.size),
+                        shape = RoundedCornerShape(8.dp),
                     ) { Text(type.label, maxLines = 1, overflow = TextOverflow.Clip) }
                 }
             }
@@ -410,7 +413,7 @@ fun DDCollectionStatusSelector(selected: CollectionStatus?, onSelected: (Collect
                         selected = selected == status,
                         onClick = { onSelected(status) },
                         modifier = Modifier.weight(1f),
-                        shape = SegmentedButtonDefaults.itemShape(index = index, count = CollectionStatus.entries.size),
+                        shape = RoundedCornerShape(8.dp),
                     ) { Text(status.label, maxLines = 1, overflow = TextOverflow.Clip) }
                 }
             }
@@ -428,7 +431,7 @@ fun DDPeriodSegmentedControl(selected: DashboardPeriod, onSelected: (DashboardPe
                 selected = selected == period,
                 onClick = { onSelected(period) },
                 modifier = Modifier.weight(1f),
-                shape = SegmentedButtonDefaults.itemShape(index = index, count = DashboardPeriod.entries.size),
+                shape = RoundedCornerShape(8.dp),
             ) { Text(period.label, maxLines = 1, overflow = TextOverflow.Clip) }
         }
     }
@@ -514,7 +517,27 @@ fun DDDrinkTypeBadge(type: DrinkType) {
 
 @Composable
 fun DDCollectionStatusBadge(status: CollectionStatus) {
-    AssistChip(onClick = {}, label = { Text(status.label) })
+    when (status) {
+        CollectionStatus.Repurchase -> AssistChip(
+            onClick = {},
+            label = { Text(status.label) },
+            colors = AssistChipDefaults.assistChipColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                labelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            ),
+            border = null,
+        )
+        CollectionStatus.NotForMe -> AssistChip(
+            onClick = {},
+            label = { Text(status.label) },
+            colors = AssistChipDefaults.assistChipColors(
+                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                labelColor = MaterialTheme.colorScheme.onTertiaryContainer,
+            ),
+            border = null,
+        )
+        CollectionStatus.Normal -> AssistChip(onClick = {}, label = { Text(status.label) })
+    }
 }
 
 @Composable
@@ -546,7 +569,7 @@ fun DDRecordedDateText(recordedAtMillis: Long, modifier: Modifier = Modifier) {
 
 @Composable
 fun DDDrinkRecordListItem(record: DrinkRecord, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    ElevatedCard(modifier = modifier.fillMaxWidth().clickable(onClick = onClick)) {
+    ElevatedCard(modifier = modifier.fillMaxWidth().clickable(onClick = onClick), shape = RoundedCornerShape(8.dp)) {
         Row(
             modifier = Modifier.padding(12.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -555,11 +578,14 @@ fun DDDrinkRecordListItem(record: DrinkRecord, onClick: () -> Unit, modifier: Mo
             DDImageThumbnail(record.imageUri)
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(record.name, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Text(record.type.label, style = MaterialTheme.typography.bodySmall)
-                    DDRatingStars(record.rating)
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                    DDDrinkTypeBadge(record.type)
+                    DDCollectionStatusBadge(record.collectionStatus)
                 }
-                Text("${record.collectionStatus.label} · ${formatRecordedDate(record.recordedAtMillis)}", style = MaterialTheme.typography.bodySmall)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    DDRatingStars(record.rating)
+                    Text(formatRecordedDate(record.recordedAtMillis), style = MaterialTheme.typography.bodySmall)
+                }
             }
         }
     }
@@ -570,11 +596,22 @@ fun DDDrinkRecordCard(record: DrinkRecord, onClick: () -> Unit, modifier: Modifi
     Card(
         modifier = modifier.fillMaxWidth().clickable(onClick = onClick),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        shape = RoundedCornerShape(8.dp),
     ) {
-        Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text(record.name, style = MaterialTheme.typography.titleSmall)
-            Text("${record.type.label} · ${record.collectionStatus.label}", style = MaterialTheme.typography.bodySmall)
-            DDRatingStars(record.rating)
+        Row(
+            modifier = Modifier.padding(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            DDImageThumbnail(record.imageUri)
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(record.name, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                    DDDrinkTypeBadge(record.type)
+                    DDCollectionStatusBadge(record.collectionStatus)
+                }
+                DDRatingStars(record.rating)
+            }
         }
     }
 }
@@ -583,10 +620,13 @@ fun DDDrinkRecordCard(record: DrinkRecord, onClick: () -> Unit, modifier: Modifi
 fun DDImageThumbnail(imageUri: String?) {
     if (imageUri == null) {
         Box(
-            modifier = Modifier.size(56.dp).clip(RoundedCornerShape(8.dp)).background(MaterialTheme.colorScheme.surfaceVariant),
+            modifier = Modifier.size(56.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+                .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.4f), RoundedCornerShape(8.dp)),
             contentAlignment = Alignment.Center,
         ) {
-            Text("사진", style = MaterialTheme.typography.labelSmall)
+            Text("사진", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     } else {
         DDUriImage(
@@ -617,10 +657,11 @@ fun DDRecordHeroImage(imageUri: String?, modifier: Modifier = Modifier) {
                     .width(imageWidth)
                     .height(220.dp.coerceAtMost(imageHeight))
                     .clip(RoundedCornerShape(8.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.4f), RoundedCornerShape(8.dp)),
                 contentAlignment = Alignment.Center,
             ) {
-                Text("등록된 사진 없음")
+                Text("등록된 사진 없음", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         } else {
             DDUriImage(
@@ -676,6 +717,7 @@ private fun DDUriImage(
 fun DDDashboardSummaryCard(title: String, value: String, modifier: Modifier = Modifier, onClick: (() -> Unit)? = null) {
     Card(
         modifier = modifier.fillMaxWidth().then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
+        shape = RoundedCornerShape(8.dp),
     ) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(title, style = MaterialTheme.typography.labelLarge)
@@ -707,17 +749,45 @@ fun DDDrinkTypeRatioCard(
     totalCount: Int,
     modifier: Modifier = Modifier,
 ) {
-    val value = if (totalCount == 0) {
-        "와인 0% · 위스키 0% · 맥주 0%"
-    } else {
-        fun ratio(count: Int): Int = (count * 100) / totalCount
-        "와인 ${ratio(wineCount)}% · 위스키 ${ratio(whiskeyCount)}% · 맥주 ${ratio(beerCount)}%"
+    Card(modifier = modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp)) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text("종류별 비중", style = MaterialTheme.typography.labelLarge)
+            if (totalCount == 0) {
+                Text("기록이 없습니다.", style = MaterialTheme.typography.bodyMedium)
+            } else {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(10.dp)
+                        .clip(RoundedCornerShape(4.dp)),
+                ) {
+                    if (wineCount > 0) {
+                        Box(Modifier.weight(wineCount.toFloat()).fillMaxHeight().background(MaterialTheme.colorScheme.tertiary))
+                    }
+                    if (whiskeyCount > 0) {
+                        Box(Modifier.weight(whiskeyCount.toFloat()).fillMaxHeight().background(MaterialTheme.colorScheme.secondary))
+                    }
+                    if (beerCount > 0) {
+                        Box(Modifier.weight(beerCount.toFloat()).fillMaxHeight().background(MaterialTheme.colorScheme.primary))
+                    }
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                    DDRatioLegendItem("와인", wineCount, totalCount, MaterialTheme.colorScheme.tertiary)
+                    DDRatioLegendItem("위스키", whiskeyCount, totalCount, MaterialTheme.colorScheme.secondary)
+                    DDRatioLegendItem("맥주", beerCount, totalCount, MaterialTheme.colorScheme.primary)
+                }
+            }
+        }
     }
-    DDDashboardSummaryCard(
-        title = "종류별 비중",
-        value = value,
-        modifier = modifier,
-    )
+}
+
+@Composable
+private fun DDRatioLegendItem(label: String, count: Int, total: Int, color: Color) {
+    val percent = if (total == 0) 0 else (count * 100) / total
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        Box(Modifier.size(8.dp).clip(RoundedCornerShape(2.dp)).background(color))
+        Text("$label $percent%", style = MaterialTheme.typography.bodySmall)
+    }
 }
 
 fun formatRecordedDate(millis: Long): String =

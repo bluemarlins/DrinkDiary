@@ -3,6 +3,7 @@ package com.bluemarlin.drinkdiary.ui.dashboard
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -87,7 +88,10 @@ private fun DashboardSuccessContent(
     onOpenRecord: (Long) -> Unit,
     onOpenStatus: (CollectionStatus) -> Unit,
 ) {
-    LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    LazyColumn(
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        contentPadding = PaddingValues(bottom = 96.dp),
+    ) {
         item {
             if (expanded) {
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
