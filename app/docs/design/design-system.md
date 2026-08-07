@@ -249,3 +249,29 @@ com.bluemarlin.drinkdiary.ui
 18. DDEmptyContent
 19. DDErrorContent
 20. DDConfirmDialog
+
+## 14. AI 에이전트 작업 금지 규칙 (Behavioral Rules)
+
+Astryx(Meta의 AI-에이전트 인지형 디자인 시스템 문서, `app/docs/design/ux-reference-sites.md` 5절 참고)가 보여준 패턴 — "AI가 디자인 시스템을 임의로 추측하지 않도록 명시적 금지 규칙을 문서화" — 을 이 프로젝트에 맞게 적용한다. 아래 규칙은 전부 실제로 이 세션에서 겪은 실패 패턴에서 나왔다(에뮬레이터 스크린샷으로 검증한 뒤 발견됨).
+
+### 하지 말아야 할 것
+
+| 금지 사항 | 이유 / 실제 발생 사례 |
+| --- | --- |
+| Composable 안에서 색상 하드코딩(`Color(0xFF...)`) | 브랜드 색상은 반드시 `MaterialTheme.colorScheme.*`를 거쳐야 다크테마/일관성이 유지된다. 원본 색상 상수 정의는 `Color.kt`에서만 허용. |
+| `Theme.kt`에서 `lightColorScheme()`/`darkColorScheme()`에 `primary`/`secondary`/`tertiary`만 지정하고 나머지 롤을 비워두기 | 비워두면 M3 베이스라인 색(보라색 계열)이 그대로 노출된다 — 실제로 발생: `background`/`surface`/`surfaceContainer*` 롤을 안 채워서 카드·FAB·바텀내비 전체가 브랜드 컬러 대신 M3 기본 퍼플로 렌더링됐었다. **컬러스킴을 만들거나 수정할 때는 primary/secondary/tertiary + 각 Container/onContainer + background/surface + surfaceContainer 전체 사다리(Lowest~Highest)까지 명시적으로 채운다.** |
+| `Card`, `FloatingActionButton`, `SegmentedButton` 등에 `shape` 파라미터 생략 | 컴포넌트별로 테마의 `Shapes`를 그대로 상속하는지 여부가 다르다(FAB/SegmentedButton은 상속하지 않는 경우가 실제로 있었다) — **8dp 규정을 지키려면 카드류·FAB·세그먼트 버튼에 `shape = RoundedCornerShape(8.dp)`를 명시적으로 지정**한다. "테마에 이미 8dp로 설정했으니 괜찮겠지"라고 가정하지 않는다. |
+| 임의의 dp 값 사용(`14.dp`, `18.dp`, `20.dp` 등) | `DrinkDiarySpacing` 토큰(4/8/12/16/24/32dp) 밖의 값은 화면마다 미묘하게 다른 간격을 만든다. |
+| 두 개의 인접/중첩 컴포넌트에 동일한 `colorScheme` 롤을 배경으로 사용 | 예: 카드 배경이 `surfaceVariant`인데 그 안의 이미지 placeholder도 `surfaceVariant`를 쓰면 서로 구분이 안 되고 텍스트만 떠 보인다(실제 발생). 부모-자식 관계에 있는 배경색은 항상 인접 롤(예: `surfaceVariant` 위에는 `surfaceContainerHighest`)로 대비를 만든다. |
+| 상태/타입이 다른 도메인 배지를 텍스트 라벨로만 구분 | `DDCollectionStatusBadge`는 재구매 후보/비선호/일반을 텍스트만으로 구분하면 앱의 핵심 차별화 요소(Wish/Pass)가 스캔이 안 된다. **색상까지 함께 구분**한다(재구매=Cellar Green 계열, 비선호=Rose 계열). |
+| `LazyColumn` 화면에 `FloatingActionButton`을 얹으면서 `contentPadding` 없이 방치 | 목록 마지막 아이템이 FAB에 가려진다. FAB가 떠 있는 화면의 `LazyColumn`은 `contentPadding = PaddingValues(bottom = 96.dp)` 이상을 준다. |
+| raw `Text`/`Button`/`Card`를 DD* 컴포넌트가 이미 존재하는 상황에서 새로 조합 | 재사용 가능한 `DD*`가 있으면 그것을 쓴다(2절 원칙). 화면 전용 신규 조합이 필요하면 `ui.component` 밖 feature 패키지에 두되, 먼저 이 문서에 없는지 확인한다. |
+
+### 확인 질문 (작업 시작 전 스스로 답해볼 것)
+
+1. 지금 만들려는 카드/버튼의 코너 반경은 몇 dp이며, 어떻게 8dp를 보장하는가?
+2. 지금 배경색으로 쓰려는 `colorScheme` 롤은 부모 컨테이너와 같은 색인가, 다른 색인가?
+3. 재구매 후보/비선호를 화면에 표시한다면 색상으로도 구분되는가, 텍스트로만 구분되는가?
+4. 새로 추가하는 dp 값이 `DrinkDiarySpacing` 토큰(4/8/12/16/24/32) 안에 있는가?
+
+답이 불확실하면 코드를 작성하기 전에 `Components.kt`/`Theme.kt`/`Color.kt`를 먼저 읽는다 — 이 문서에 없는 세부사항은 실제 구현 코드가 최종 근거다.
