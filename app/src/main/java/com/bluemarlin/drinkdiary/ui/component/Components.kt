@@ -42,6 +42,7 @@ import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -87,17 +88,17 @@ import kotlinx.coroutines.withContext
 
 @Composable
 fun DDPrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
-    Button(onClick = onClick, modifier = modifier, enabled = enabled) { Text(text) }
+    Button(onClick = onClick, modifier = modifier, enabled = enabled, shape = RoundedCornerShape(8.dp)) { Text(text) }
 }
 
 @Composable
 fun DDSecondaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
-    OutlinedButton(onClick = onClick, modifier = modifier, enabled = enabled) { Text(text) }
+    OutlinedButton(onClick = onClick, modifier = modifier, enabled = enabled, shape = RoundedCornerShape(8.dp)) { Text(text) }
 }
 
 @Composable
 fun DDContainedButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
-    FilledTonalButton(onClick = onClick, modifier = modifier, enabled = enabled) { Text(text) }
+    FilledTonalButton(onClick = onClick, modifier = modifier, enabled = enabled, shape = RoundedCornerShape(8.dp)) { Text(text) }
 }
 
 @Composable
@@ -122,7 +123,14 @@ fun DDLoadingContent(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun DDEmptyContent(message: String, actionText: String, onAction: () -> Unit, modifier: Modifier = Modifier) {
+fun DDEmptyContent(
+    message: String,
+    actionText: String,
+    onAction: () -> Unit,
+    modifier: Modifier = Modifier,
+    secondaryActionText: String? = null,
+    onSecondaryAction: (() -> Unit)? = null,
+) {
     Column(
         modifier = modifier.fillMaxWidth().padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -130,6 +138,9 @@ fun DDEmptyContent(message: String, actionText: String, onAction: () -> Unit, mo
     ) {
         Text(message, style = MaterialTheme.typography.bodyLarge)
         DDPrimaryButton(text = actionText, onClick = onAction)
+        if (secondaryActionText != null && onSecondaryAction != null) {
+            DDSecondaryButton(text = secondaryActionText, onClick = onSecondaryAction)
+        }
     }
 }
 
@@ -449,13 +460,19 @@ fun DDDrinkTypeFilter(selected: DrinkType?, onSelected: (DrinkType?) -> Unit) {
         )
     } else {
         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            item { FilterChip(selected = selected == null, onClick = { onSelected(null) }, label = { Text("전체") }) }
+            item { FilterChip(selected = selected == null, onClick = { onSelected(null) }, label = { Text("전체") }, colors = ddFilterChipColors()) }
             DrinkType.entries.forEach { type ->
-                item { FilterChip(selected = selected == type, onClick = { onSelected(type) }, label = { Text(type.label) }) }
+                item { FilterChip(selected = selected == type, onClick = { onSelected(type) }, label = { Text(type.label) }, colors = ddFilterChipColors()) }
             }
         }
     }
 }
+
+@Composable
+private fun ddFilterChipColors() = FilterChipDefaults.filterChipColors(
+    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+)
 
 @Composable
 fun DDCollectionStatusFilter(selected: CollectionStatus?, onSelected: (CollectionStatus?) -> Unit) {
@@ -469,12 +486,35 @@ fun DDCollectionStatusFilter(selected: CollectionStatus?, onSelected: (Collectio
         )
     } else {
         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            item { FilterChip(selected = selected == null, onClick = { onSelected(null) }, label = { Text("전체") }) }
+            item { FilterChip(selected = selected == null, onClick = { onSelected(null) }, label = { Text("전체") }, colors = ddFilterChipColors()) }
             CollectionStatus.entries.forEach { status ->
-                item { FilterChip(selected = selected == status, onClick = { onSelected(status) }, label = { Text(status.label) }) }
+                item {
+                    FilterChip(
+                        selected = selected == status,
+                        onClick = { onSelected(status) },
+                        label = { Text(status.label) },
+                        colors = ddStatusFilterChipColors(status),
+                    )
+                }
             }
         }
     }
+}
+
+@Composable
+private fun ddStatusFilterChipColors(status: CollectionStatus) = when (status) {
+    CollectionStatus.Repurchase -> FilterChipDefaults.filterChipColors(
+        selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+        selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+    )
+    CollectionStatus.NotForMe -> FilterChipDefaults.filterChipColors(
+        selectedContainerColor = MaterialTheme.colorScheme.tertiaryContainer,
+        selectedLabelColor = MaterialTheme.colorScheme.onTertiaryContainer,
+    )
+    CollectionStatus.Normal -> FilterChipDefaults.filterChipColors(
+        selectedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+        selectedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
 }
 
 @Composable
@@ -536,7 +576,15 @@ fun DDCollectionStatusBadge(status: CollectionStatus) {
             ),
             border = null,
         )
-        CollectionStatus.Normal -> AssistChip(onClick = {}, label = { Text(status.label) })
+        CollectionStatus.Normal -> AssistChip(
+            onClick = {},
+            label = { Text(status.label) },
+            colors = AssistChipDefaults.assistChipColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                labelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            ),
+            border = null,
+        )
     }
 }
 
@@ -577,7 +625,18 @@ fun DDDrinkRecordListItem(record: DrinkRecord, onClick: () -> Unit, modifier: Mo
         ) {
             DDImageThumbnail(record.imageUri)
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(record.name, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(
+                        record.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f),
+                    )
+                    if (record.price != null) {
+                        DDPriceText(record.price, modifier = Modifier.padding(start = 8.dp))
+                    }
+                }
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
                     DDDrinkTypeBadge(record.type)
                     DDCollectionStatusBadge(record.collectionStatus)
