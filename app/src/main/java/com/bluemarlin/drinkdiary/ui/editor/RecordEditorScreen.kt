@@ -56,13 +56,13 @@ fun RecordEditorRoute(
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             if (event is RecordEditorEvent.Saved) {
+                // Navigate first, then check the interstitial — ads must appear after the
+                // screen transition completes, never gate the transition itself (see
+                // app/docs/research/competitor-analysis.md on save-blocking interstitials).
+                onSaved(event.recordId)
                 val activity = context as? Activity
                 if (activity != null) {
-                    appContainer.interstitialAdManager.maybeShowAfterSave(activity) {
-                        onSaved(event.recordId)
-                    }
-                } else {
-                    onSaved(event.recordId)
+                    appContainer.interstitialAdManager.maybeShowAfterSave(activity) {}
                 }
             }
         }

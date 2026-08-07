@@ -12,7 +12,10 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -38,6 +41,7 @@ import com.bluemarlin.drinkdiary.ui.component.DDRatingStars
 import com.bluemarlin.drinkdiary.ui.component.formatPrice
 import com.bluemarlin.drinkdiary.ui.component.formatRecordedDate
 import com.bluemarlin.drinkdiary.ui.navigation.DDScreenScaffold
+import com.bluemarlin.drinkdiary.domain.model.DrinkRecord
 import com.bluemarlin.drinkdiary.domain.model.ratingCriteria
 
 @Composable
@@ -92,14 +96,7 @@ fun RecordDetailRoute(
                                     DDCollectionStatusBadge(record.collectionStatus)
                                 },
                                 rating = { DDRatingStars(record.rating) },
-                                ratingDetails = {
-                                    record.type.ratingCriteria().forEach { criterion ->
-                                        DDInfoRow(
-                                            criterion.label,
-                                            "%.1f".format(record.ratingBreakdown.values[criterion.index]),
-                                        )
-                                    }
-                                },
+                                ratingDetails = { RatingBreakdownRows(record) },
                                 price = formatPrice(record.price),
                                 place = record.place ?: "-",
                                 recordedAt = formatRecordedDate(record.recordedAtMillis),
@@ -125,14 +122,7 @@ fun RecordDetailRoute(
                                     DDCollectionStatusBadge(record.collectionStatus)
                                 },
                                 rating = { DDRatingStars(record.rating) },
-                                ratingDetails = {
-                                    record.type.ratingCriteria().forEach { criterion ->
-                                        DDInfoRow(
-                                            criterion.label,
-                                            "%.1f".format(record.ratingBreakdown.values[criterion.index]),
-                                        )
-                                    }
-                                },
+                                ratingDetails = { RatingBreakdownRows(record) },
                                 price = formatPrice(record.price),
                                 place = record.place ?: "-",
                                 recordedAt = formatRecordedDate(record.recordedAtMillis),
@@ -182,19 +172,45 @@ private fun RecordDetailInfo(
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         Text(name, style = MaterialTheme.typography.headlineSmall)
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), content = typeContent)
-        rating()
-        ratingDetails()
-        DDInfoRow("가격", price)
-        DDInfoRow("장소", place)
-        DDInfoRow("기록 일시", recordedAt)
-        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text("테이스팅 노트", style = MaterialTheme.typography.titleMedium)
-            Text(tastingNote, style = MaterialTheme.typography.bodyMedium)
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+            shape = RoundedCornerShape(8.dp),
+        ) {
+            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), content = typeContent)
+                rating()
+                ratingDetails()
+                DDInfoRow("가격", price)
+                DDInfoRow("장소", place)
+                DDInfoRow("기록 일시", recordedAt)
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text("테이스팅 노트", style = MaterialTheme.typography.titleMedium)
+                    Text(tastingNote, style = MaterialTheme.typography.bodyMedium)
+                }
+            }
         }
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             DDPrimaryButton("수정", onClick = onEdit, modifier = Modifier.weight(1f))
             DDDestructiveButton("삭제", onClick = onDelete, modifier = Modifier.weight(1f))
+        }
+    }
+}
+
+@Composable
+private fun RatingBreakdownRows(record: DrinkRecord) {
+    val breakdown = record.ratingBreakdown
+    val isDetailed = breakdown.values.any { it != record.rating }
+    if (isDetailed) {
+        record.type.ratingCriteria().forEach { criterion ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(criterion.label, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                DDRatingStars(breakdown.values[criterion.index])
+            }
         }
     }
 }

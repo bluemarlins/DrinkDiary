@@ -8,6 +8,7 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -33,6 +34,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -103,8 +105,14 @@ fun DDContainedButton(text: String, onClick: () -> Unit, modifier: Modifier = Mo
 
 @Composable
 fun DDDestructiveButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    TextButton(onClick = onClick, modifier = modifier) {
-        Text(text, color = MaterialTheme.colorScheme.error)
+    OutlinedButton(
+        onClick = onClick,
+        modifier = modifier,
+        shape = RoundedCornerShape(8.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
+        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
+    ) {
+        Text(text)
     }
 }
 
@@ -171,6 +179,7 @@ fun DDConfirmDialog(
         text = { Text(message) },
         confirmButton = { DDDestructiveButton(text = "삭제", onClick = onConfirm) },
         dismissButton = { TextButton(onClick = onDismiss) { Text("취소") } },
+        shape = RoundedCornerShape(8.dp),
     )
 }
 
