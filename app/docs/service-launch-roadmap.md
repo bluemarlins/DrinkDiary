@@ -67,6 +67,34 @@ app/store-listing/            # Play Store 리스팅용 그래픽 원본 (Phase 
 | 스토어 카피/정책 문서 최종본 | Claude | agy 리서치 결과를 반영해 작성 |
 | 산출물 병합 및 최종 결정 | Claude (오케스트레이터) | — |
 
+### 4.1 AI 개발 환경 구성 (Prompting / Skills / Harness / Loop Engineering)
+
+2026-08-07, Claude+agy 조합 개발 방법론(공식 Claude Code 하네스/스킬/루프 엔지니어링 가이드, Anthropic의 장기 실행 에이전트 하네스 원칙, 2025-2026 멀티에이전트 오케스트레이션 동향)을 리서치하고 이 저장소에 실제로 적용했다. "토이 프로젝트 → 실사용 가능한 수준" 격상은 이 환경을 갖춘 뒤 후속 UX 고도화 작업에서 실제로 사용해 달성하는 것이 목표다.
+
+**구성된 것**:
+- `.claude/skills/agy-research/SKILL.md` — 리서치/이미지생성 위임 표준화(모델 선택, 경로/구두점 주의사항, 산출물 라우팅)
+- `.claude/skills/agy-commit/SKILL.md` — commit/push 위임 표준화
+- `.claude/skills/verify-build/SKILL.md` — 빌드/테스트/설치/스크린샷 검증 시퀀스 표준화(uiautomator 좌표 스캔, 광고 배너 크롭 등 이번 세션에서 겪은 시행착오 포함)
+- `.claude/agents/ui-quality-reviewer.md` — 서브에이전트. 격리된 컨텍스트에서 스크린샷을 찍고 경쟁앱 리서치/디자인시스템 발췌 + agy 독립 비평을 받아 구조화된 findings만 반환
+- `.claude/settings.json` — gradlew/adb/git 읽기 명령 allowlist. **의도적으로 `agy ... --dangerously-skip-permissions` 호출 자체와 `git commit`/`git push`는 제외** — 이중 체크포인트를 유지하고 commit/push는 agy에 위임하는 관행이 흐트러지지 않도록 함
+- `CLAUDE.md`에 Verification-first(스크린샷/테스트로 검증 없이 "된 것 같다" 선언 금지), Explore→Plan→Code(화면 전체/여러 파일 걸친 작업은 plan mode 우선) 규칙 추가
+
+**UI 품질 루프** (향후 UX 고도화 작업의 표준 프로세스):
+1. Claude가 화면 구현/수정
+2. `verify-build` skill로 실제 에뮬레이터 스크린샷 확보
+3. `ui-quality-reviewer` 서브에이전트가 agy에 독립 비평 위임 — agy는 Claude가 방금 만든 코드에 편향이 없는 별도 모델이므로 maker-checker 분리가 자연스럽게 성립
+4. Claude가 findings 반영
+5. 최대 3라운드 반복 또는 agy가 "추가 findings 없음"을 보고할 때 종료 — 라운드 수는 TodoWrite로 가시적으로 추적
+
+업그레이드 경로: Compose 스크린샷 테스트(`testing-setup` skill) 도입 시 기계적 pass/fail이 생기므로, 그때 가벼운 Stop hook을 안전하게 추가할 수 있다. 지금은 UX 품질이 정성적 판단이라 무제한 자동 루프 대신 위 반자동 루프로 제한한다.
+
+**시범 실행 결과 (Dashboard, 2026-08-07)**: 새 서브에이전트가 세션 재시작 전이라 수동으로 1회 재현 — agy가 실제로 유효한 findings를 반환해 루프 자체는 검증됨. 발견된 격차(다음 UX 고도화 작업 백로그):
+- Material3 기본 퍼플 테마가 노출됨 — `Theme.kt`가 `primary`/`secondary`/`tertiary`만 브랜드 컬러로 오버라이드하고 `background`/`surface`/`*Container` 롤은 M3 베이스라인 그대로라 카드·세그먼트컨트롤·FAB 배경이 브랜드 컬러(Cellar Green/Malt Gold/Rose)가 아닌 기본 퍼플 계열로 보임
+- 통계 카드/세그먼트 컨트롤 코너 라운딩이 디자인 시스템 규정(8dp 이하)을 초과
+- 컬렉션 카드가 사진/썸네일 없이 텍스트만 있어 "개인 컬렉션" 느낌이 부족, 일반 데이터 테이블처럼 보임
+- 재구매후보/비선호 상태가 본문 텍스트로만 표시되어 스캔성 낮음 — 별도 컬러 칩/뱃지 필요
+- FAB가 목록 마지막 카드 콘텐츠를 가림 (하단 컨텐츠 패딩 부족)
+
 ## 5. Phase별 로드맵
 
 ### Phase 0. 리서치 (완료)
