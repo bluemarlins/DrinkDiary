@@ -1,7 +1,6 @@
 package com.bluemarlin.drinkdiary.ui.theme
 
 import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
@@ -24,18 +23,18 @@ private val DarkColorScheme = darkColorScheme(
     onTertiary = Rose10,
     tertiaryContainer = Rose30,
     onTertiaryContainer = Rose90,
-    background = WarmCharcoal10,
+    background = DeepForest10,
     onBackground = WarmOffWhite90,
-    surface = WarmCharcoal10,
+    surface = DeepForest10,
     onSurface = WarmOffWhite90,
-    surfaceVariant = WarmCharcoal20,
-    onSurfaceVariant = WarmGray80,
-    outline = WarmGray60,
-    surfaceContainerLowest = WarmCharcoal10,
-    surfaceContainerLow = WarmCharcoal15,
-    surfaceContainer = WarmCharcoal20,
-    surfaceContainerHigh = WarmCharcoal25,
-    surfaceContainerHighest = WarmCharcoal30,
+    surfaceVariant = DeepForest20,
+    onSurfaceVariant = MoodyOnSurfaceVariant,
+    outline = MoodyOutline,
+    surfaceContainerLowest = DeepForest10,
+    surfaceContainerLow = DeepForest15,
+    surfaceContainer = DeepForest20,
+    surfaceContainerHigh = DeepForest25,
+    surfaceContainerHighest = DeepForest30,
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -67,7 +66,10 @@ private val LightColorScheme = lightColorScheme(
 
 @Composable
 fun DrinkDiaryTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    // DrinkDiary's dark & moody "wine cellar" palette is the app's brand identity,
+    // not a user-toggleable dark mode — always render dark regardless of the
+    // system theme setting. See app/docs/design/research-immersive-ui.md.
+    darkTheme: Boolean = true,
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit

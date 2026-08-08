@@ -96,9 +96,20 @@ app/store-listing/            # Play Store 리스팅용 그래픽 원본 (Phase 
 | 2 | 재구매후보/비선호 뱃지가 색상 구분 없이 동일해 핵심 차별화 요소(Wish/Pass)가 텍스트로만 구분됨, 나머지 카드들(`DDDashboardSummaryCard` 등)은 여전히 8dp 미준수, "종류별 비중"이 평문 텍스트, 썸네일 placeholder가 카드와 동일 색이라 안 보임 | `DDCollectionStatusBadge`를 상태별 색상 필 칩으로 분리(재구매=Cellar Green, 비선호=Rose), 남은 카드에 8dp shape 일괄 적용, 비중을 3색 프로포셔널 바+범례로 시각화, 썸네일 placeholder를 `surfaceContainerHighest`로 대비 확보 |
 | 3 (최종, 캡 도달) | 회귀 없음 확인, "프로덕션 수준에 근접, 출시 막을 요소 없음"으로 판정. Non-blocking 백로그: 뱃지에 아이콘 글리프 없음(색상만으로 구분), 섹션 헤더와 뱃지 라벨 중복, "사진" 텍스트 대신 카메라 아이콘 고려, 별점 색상이 다소 탁함 | 이번 라운드 캡 도달로 보류 — 다음 UX 작업 백로그로 이월 |
 
-다음 화면(Collection/Detail/Editor)도 동일 루프로 순차 적용 필요.
-- 재구매후보/비선호 상태가 본문 텍스트로만 표시되어 스캔성 낮음 — 별도 컬러 칩/뱃지 필요
-- FAB가 목록 마지막 카드 콘텐츠를 가림 (하단 컨텐츠 패딩 부족)
+이후 Collection, RecordDetail(라이트 테마 기준)도 동일 루프로 각 3라운드 완주, RecordEditor는 세션 한도로 중단(백로그, 아래 참고).
+
+**Pinterest 몰입감 리서치 → 다크 무디(Dark & Moody) 테마 전면 전환 (2026-08-08)** — 사용자가 Pinterest의 "Mobile Application Wine"/"Mobile UI" 레퍼런스를 검토한 뒤, 완성된 라이트 크림 테마가 여전히 "평범/유틸리티적"이라고 판단. agy 리서치(`app/docs/design/research-immersive-ui.md`)를 거쳐 **다크 무디 팔레트 + 글래스모피즘 근사 + 에디토리얼 세리프 + 벤토 레이아웃**으로 전면 전환하기로 결정(AskUserQuestion으로 확정: 전면 전환, Dashboard+RecordDetail 우선). 상세 설계 결정은 `app/docs/design/design-system.md` 4.1절 참고.
+
+| 화면 | 라운드 | 발견 | 조치 |
+|---|---|---|---|
+| Dashboard | 1 | 배경/카드 대비가 탁함, 카드별 글래스 보더 불일치("종류별 비중" 카드에 아예 없음), 재구매후보 뱃지/FAB가 초록 배경에 묻힘 | `DeepForest10` 배경을 더 어둡게, 전체 카드를 `surfaceContainerHigh.copy(alpha=0.88f)`+글래스 보더로 통일, 재구매 뱃지/FAB를 Gold로 재매핑 |
+| Dashboard | 2 | 재구매 뱃지(`secondaryContainer`)가 FAB(`secondary`)보다 칙칙함, FAB가 광고 배너에 거의 붙음 | 뱃지를 FAB와 동일한 `secondary`로 통일(이후 3라운드에서 다시 반투명으로 조정, 아래 RecordDetail 라운드 참고), FAB에 `-12.dp` 오프셋 추가 |
+| Dashboard | 3 (최종, 캡 도달) | 회귀 없음, 픽셀 샘플링으로 뱃지/FAB 색상 일치 및 FAB-배너 간격 확인. 완료 판정 | 미해결 백로그 1건 이월: sticky header 아래로 스크롤된 카드 모서리가 살짝 비치는 클리핑 |
+| RecordDetail | 1 | 정보 카드에 글래스 보더 없음(Dashboard와 불일치), 사진없음 워터마크가 원본 다색 그대로 노출, "수정" 버튼이 다크 전환 전 잔재 색(연한 민트그린, `primary`) | 정보 카드에 `ddGlassBorderModifier()` 적용, 워터마크에 `ColorFilter.tint` 단색화, `DDPrimaryButton`을 `secondary`(Gold)로 재매핑 |
+| RecordDetail | 2 | 재구매 뱃지(풀필 Gold)와 "수정" 버튼(풀필 Gold)이 동일 톤이라 배지가 두 번째 버튼처럼 보임, `DDRatingStars`가 여전히 `primary`(초록) 잔재색 | 배지를 반투명 fill+보더로 격하(`secondary.copy(alpha=0.18f)` + 1dp 보더), `DDRatingStars`를 `secondary`로 재매핑(Dashboard/Collection 별점에도 공유 적용됨) |
+| RecordDetail | 3 (최종, 캡 도달) | 픽셀 샘플링으로 배지/버튼 위계 분리 및 별점 색상 확인, 회귀 없음. 완료 판정 | 미해결 백로그(non-blocking): 빈 값 필드가 단순 "-"만 표시, 히어로 그라디언트와 정보 카드 톤 경계가 다소 어색함 |
+
+**이번 라운드 범위 밖(다음 라운드 백로그)**: Collection/RecordEditor 화면의 다크 무디 재검토, 진짜 backdrop blur 라이브러리 도입, 방사형 차트 테이스팅 시각화, 배경 노이즈 텍스처, 마이크로 인터랙션/햅틱, RecordEditor UI 품질 루프 재개(세션 한도로 중단된 채 남아있음).
 
 ## 5. Phase별 로드맵
 
@@ -175,6 +186,7 @@ app/store-listing/            # Play Store 리스팅용 그래픽 원본 (Phase 
 - ASO 최적화 카피 (제목/짧은 설명/전체 설명)
 - Play Console 리스팅 등록
 - 단계적 출시 전략 (내부 테스트 → 비공개 → 공개 → 프로덕션)
+- **⚠️ 스크린샷 재촬영 필요**: `app/store-listing/`의 기존 스크린샷 세트(Phase 3 산출)는 라이트 크림 테마 기준이라 다크 무디 전환(4.1절) 이후 실제 앱과 다르다. 전체 화면(Collection/Editor 포함) 다크 테마 적용이 끝난 뒤 재촬영해야 한다.
 
 ### Phase 6. 출시 후 운영
 

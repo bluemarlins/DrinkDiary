@@ -24,10 +24,12 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
@@ -62,16 +64,21 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.bluemarlin.drinkdiary.R
 import com.bluemarlin.drinkdiary.domain.model.CollectionStatus
 import com.bluemarlin.drinkdiary.domain.model.DashboardPeriod
 import com.bluemarlin.drinkdiary.domain.model.DrinkRecord
@@ -90,7 +97,19 @@ import kotlinx.coroutines.withContext
 
 @Composable
 fun DDPrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
-    Button(onClick = onClick, modifier = modifier, enabled = enabled, shape = RoundedCornerShape(8.dp)) { Text(text) }
+    // Gold, not the M3 default `primary` (Cellar Green): the dark-moody pivot already
+    // established gold as the "must-pop CTA" color (FAB, rebuy badge) — a pale mint
+    // green button read as a leftover pre-pivot color against the gold/rose palette.
+    Button(
+        onClick = onClick,
+        modifier = modifier,
+        enabled = enabled,
+        shape = RoundedCornerShape(8.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.secondary,
+            contentColor = MaterialTheme.colorScheme.onSecondary,
+        ),
+    ) { Text(text) }
 }
 
 @Composable
@@ -118,7 +137,18 @@ fun DDDestructiveButton(text: String, onClick: () -> Unit, modifier: Modifier = 
 
 @Composable
 fun DDAddRecordFab(onClick: () -> Unit) {
-    FloatingActionButton(onClick = onClick, shape = RoundedCornerShape(8.dp)) {
+    // Explicit gold fill: the FAB is the primary CTA and must be the most visually
+    // prominent element on screen — the default primaryContainer (green) blends into
+    // this app's green-toned dark background instead of standing out.
+    // Extra bottom offset: on screens with the AdMob banner in the bottom bar, the
+    // Scaffold's default FAB margin leaves it almost touching the banner's top edge.
+    FloatingActionButton(
+        onClick = onClick,
+        modifier = Modifier.offset(y = (-12).dp),
+        shape = RoundedCornerShape(8.dp),
+        containerColor = MaterialTheme.colorScheme.secondary,
+        contentColor = MaterialTheme.colorScheme.onSecondary,
+    ) {
         Text("+", style = MaterialTheme.typography.headlineMedium)
     }
 }
@@ -139,15 +169,33 @@ fun DDEmptyContent(
     secondaryActionText: String? = null,
     onSecondaryAction: (() -> Unit)? = null,
 ) {
-    Column(
-        modifier = modifier.fillMaxWidth().padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Text(message, style = MaterialTheme.typography.bodyLarge)
-        DDPrimaryButton(text = actionText, onClick = onAction)
-        if (secondaryActionText != null && onSecondaryAction != null) {
-            DDSecondaryButton(text = secondaryActionText, onClick = onSecondaryAction)
+    Box(modifier = modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.TopCenter) {
+        Box(
+            modifier = Modifier
+                .size(220.dp)
+                .offset(y = (-40).dp)
+                .blur(60.dp)
+                .background(
+                    Brush.radialGradient(
+                        listOf(
+                            MaterialTheme.colorScheme.secondary.copy(alpha = 0.30f),
+                            MaterialTheme.colorScheme.tertiary.copy(alpha = 0.18f),
+                            Color.Transparent,
+                        ),
+                    ),
+                    shape = CircleShape,
+                ),
+        )
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(top = 32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text(message, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onBackground)
+            DDPrimaryButton(text = actionText, onClick = onAction)
+            if (secondaryActionText != null && onSecondaryAction != null) {
+                DDSecondaryButton(text = secondaryActionText, onClick = onSecondaryAction)
+            }
         }
     }
 }
@@ -513,8 +561,8 @@ fun DDCollectionStatusFilter(selected: CollectionStatus?, onSelected: (Collectio
 @Composable
 private fun ddStatusFilterChipColors(status: CollectionStatus) = when (status) {
     CollectionStatus.Repurchase -> FilterChipDefaults.filterChipColors(
-        selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-        selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        selectedContainerColor = MaterialTheme.colorScheme.secondary,
+        selectedLabelColor = MaterialTheme.colorScheme.onSecondary,
     )
     CollectionStatus.NotForMe -> FilterChipDefaults.filterChipColors(
         selectedContainerColor = MaterialTheme.colorScheme.tertiaryContainer,
@@ -571,10 +619,16 @@ fun DDCollectionStatusBadge(status: CollectionStatus) {
             onClick = {},
             label = { Text(status.label) },
             colors = AssistChipDefaults.assistChipColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                labelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                // Gold, not green — a green badge on this app's green-toned dark
+                // background barely reads as an accent. Translucent fill + gold
+                // border/text (not a solid `secondary` fill) so a static status
+                // badge doesn't read as a second tappable CTA next to real gold
+                // buttons like RecordDetail's 수정 — the gold hue still matches
+                // the FAB/button family, just at lower visual weight.
+                containerColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.18f),
+                labelColor = MaterialTheme.colorScheme.secondary,
             ),
-            border = null,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.secondary),
         )
         CollectionStatus.NotForMe -> AssistChip(
             onClick = {},
@@ -599,7 +653,10 @@ fun DDCollectionStatusBadge(status: CollectionStatus) {
 
 @Composable
 fun DDRatingStars(rating: Double) {
-    Text(ratingStarsText(rating), color = MaterialTheme.colorScheme.primary)
+    // Gold, not the M3 default `primary` (Cellar Green) — same leftover pre-pivot
+    // hue clash already fixed for DDPrimaryButton; stars are an accent, not a
+    // brand-identity element, so they follow the established gold accent color.
+    Text(ratingStarsText(rating), color = MaterialTheme.colorScheme.secondary)
 }
 
 private fun ratingStarsText(rating: Double): String {
@@ -662,8 +719,8 @@ fun DDDrinkRecordListItem(record: DrinkRecord, onClick: () -> Unit, modifier: Mo
 @Composable
 fun DDDrinkRecordCard(record: DrinkRecord, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Card(
-        modifier = modifier.fillMaxWidth().clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        modifier = modifier.fillMaxWidth().clickable(onClick = onClick).then(ddGlassBorderModifier()),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.88f)),
         shape = RoundedCornerShape(8.dp),
     ) {
         Row(
@@ -720,16 +777,41 @@ fun DDRecordHeroImage(imageUri: String?, modifier: Modifier = Modifier) {
         val imageWidth = maxWidth * 0.8f
         val imageHeight = (imageWidth * 4f / 3f).coerceAtMost(520.dp)
         if (imageUri == null) {
+            // No photo — a flat placeholder box read as an unfinished dev state, so this
+            // is a mesh-style gradient (brand gold-to-rose) with the app's own icon glyph
+            // as a large translucent watermark instead. Reuses the existing launcher
+            // foreground asset, no new image asset needed.
+            // See app/docs/design/research-immersive-ui.md section 5.
             Box(
                 modifier = Modifier
-                    .width(imageWidth)
-                    .height(220.dp.coerceAtMost(imageHeight))
+                    .fillMaxWidth()
+                    .height(240.dp)
                     .clip(RoundedCornerShape(8.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
-                    .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.4f), RoundedCornerShape(8.dp)),
+                    .background(
+                        Brush.linearGradient(
+                            listOf(
+                                MaterialTheme.colorScheme.secondary.copy(alpha = 0.55f),
+                                MaterialTheme.colorScheme.tertiary.copy(alpha = 0.45f),
+                            ),
+                        ),
+                    ),
                 contentAlignment = Alignment.Center,
             ) {
-                Text("등록된 사진 없음", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Image(
+                    painter = painterResource(R.mipmap.ic_launcher_foreground),
+                    contentDescription = null,
+                    modifier = Modifier.size(140.dp),
+                    alpha = 0.28f,
+                    // Tint to a single flat tone instead of the glyph's full original
+                    // hues — a faded but still multi-color icon read as a translucent
+                    // sticker competing with the gradient, not a brand watermark texture.
+                    colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
+                )
+                Text(
+                    "등록된 사진 없음",
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 16.dp),
+                )
             }
         } else {
             DDUriImage(
@@ -784,14 +866,71 @@ private fun DDUriImage(
 @Composable
 fun DDDashboardSummaryCard(title: String, value: String, modifier: Modifier = Modifier, onClick: (() -> Unit)? = null) {
     Card(
-        modifier = modifier.fillMaxWidth().then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
+        modifier = modifier
+            .fillMaxWidth()
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
+            .then(ddGlassBorderModifier()),
         shape = RoundedCornerShape(8.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.88f)),
     ) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(title, style = MaterialTheme.typography.labelLarge)
             Text(value, style = MaterialTheme.typography.headlineSmall)
         }
     }
+}
+
+/**
+ * Bento-style hero stat tile — full-width, gradient-washed, large serif number.
+ * Used for the single most important Dashboard metric (record count) so the stats
+ * area reads as an asymmetric bento grid instead of a uniform 2x2, per
+ * app/docs/design/research-immersive-ui.md section 2/5.
+ */
+@Composable
+fun DDHeroSummaryCard(title: String, value: String, modifier: Modifier = Modifier) {
+    Card(
+        modifier = modifier.fillMaxWidth().then(ddGlassBorderModifier()),
+        shape = RoundedCornerShape(8.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.linearGradient(
+                        listOf(
+                            MaterialTheme.colorScheme.secondary.copy(alpha = 0.32f),
+                            MaterialTheme.colorScheme.tertiary.copy(alpha = 0.22f),
+                        ),
+                    ),
+                )
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            Text(title, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(
+                value,
+                style = MaterialTheme.typography.displaySmall.copy(fontFamily = FontFamily.Serif),
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+        }
+    }
+}
+
+/**
+ * Approximated "glassmorphism" border: no real backdrop blur (would need a third-party
+ * library), just a translucent container color (applied by the caller) plus a thin
+ * gold-to-rose gradient stroke. See app/docs/design/research-immersive-ui.md.
+ */
+@Composable
+fun ddGlassBorderModifier(shape: androidx.compose.ui.graphics.Shape = RoundedCornerShape(8.dp)): Modifier {
+    val borderBrush = Brush.linearGradient(
+        listOf(
+            MaterialTheme.colorScheme.secondary.copy(alpha = 0.75f),
+            MaterialTheme.colorScheme.tertiary.copy(alpha = 0.75f),
+        ),
+    )
+    return Modifier.border(1.5.dp, borderBrush, shape)
 }
 
 @Composable
@@ -817,7 +956,11 @@ fun DDDrinkTypeRatioCard(
     totalCount: Int,
     modifier: Modifier = Modifier,
 ) {
-    Card(modifier = modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp)) {
+    Card(
+        modifier = modifier.fillMaxWidth().then(ddGlassBorderModifier()),
+        shape = RoundedCornerShape(8.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.88f)),
+    ) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Text("종류별 비중", style = MaterialTheme.typography.labelLarge)
             if (totalCount == 0) {

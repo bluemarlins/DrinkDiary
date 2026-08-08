@@ -42,6 +42,17 @@
 - 화면 내부 텍스트는 Material 3 Typography를 기반으로 통일한다.
 - 화면마다 직접 dp 값을 흩뿌리기보다 spacing 토큰을 사용한다.
 
+### 4.1 다크 무디(Dark & Moody) 테마 — 강제 적용
+
+Pinterest 레퍼런스 리서치(`app/docs/design/research-immersive-ui.md`) 결과에 따라 앱은 시스템 라이트/다크 설정과 무관하게 **항상 다크 테마로 렌더링**한다(브랜드 아이덴티티, 토글 아님). `DrinkDiaryTheme`의 `darkTheme` 기본값이 `true`로 고정되어 있고, `MainActivity`도 `enableEdgeToEdge`에서 시스템 바를 라이트 아이콘으로 강제한다. `LightColorScheme`은 롤백 여지를 위해 코드에는 남아있지만 호출되지 않는다.
+
+- **뉴트럴 팔레트**: 배경/서피스 계열은 `Color.kt`의 `DeepForest10~30`(딥 포레스트 그린)을 사용해 "와인 셀러" 무드를 낸다. primary(Cellar Green)/secondary(Malt Gold)/tertiary(Rose)의 브랜드 컬러 자체와 각 Container 매핑은 라이트 테마 때와 동일하게 유지한다.
+- **골드 = CTA/액센트, 반드시 튀어야 하는 요소**: 배경이 초록 톤이라 `primary`(초록) 계열 요소는 배경에 묻힌다. FAB, `DDPrimaryButton`, 별점(`DDRatingStars`), 재구매 후보 배지의 골드 텍스트/보더는 모두 `secondary`(Gold)를 쓴다. 단, **정적 상태 배지**(재구매 후보 칩)는 `secondary` 반투명 fill + 1dp 보더 + `secondary` 텍스트로 두고, **실제 탭 가능한 CTA**(FAB, PrimaryButton)만 `secondary` 풀필로 채운다 — 둘을 동일한 풀필 골드로 두면 배지가 버튼처럼 보여 CTA의 우선순위가 흐려진다(RecordDetail UI 루프에서 확인된 실제 버그).
+- **글래스모피즘 근사**: 실제 backdrop blur 라이브러리 없이 `ddGlassBorderModifier()`(`Components.kt`, internal public) — `secondary→tertiary` 그래디언트 1.5dp 보더 + `surfaceContainerHigh.copy(alpha=0.88f)` 카드 fill로 "유리 같은" 느낌을 근사한다. 새 카드를 다크 테마 화면에 추가할 때는 이 헬퍼를 재사용한다.
+- **에디토리얼 세리프**: 폰트 에셋 추가 없이 시스템 내장 `FontFamily.Serif`를 Dashboard 히어로 숫자(`DDHeroSummaryCard`)와 RecordDetail 술 이름에 적용한다.
+- **사진 없음 워터마크**: 사진 미등록 시 플레이스홀더는 골드↔로즈 그래디언트 배경 위에 앱 런처 글리프를 `ColorFilter.tint`로 단색화해 28% 알파로 올린다 — 원본 다색 아이콘을 그대로 반투명 처리하면 "빛바랜 스티커"처럼 보이므로 반드시 단색 틴트를 거친다.
+- 현재 이 테마가 적용된 화면은 **Dashboard, RecordDetail**뿐이다. Collection/RecordEditor는 전역 다크 스킴은 상속하지만 벤토 레이아웃·글래스 카드·세리프 등 화면별 재검토는 아직 진행 전(백로그).
+
 ## 5. Action Components
 
 | 컴포넌트 | 역할 | 사용 위치 |
@@ -263,9 +274,11 @@ Astryx(Meta의 AI-에이전트 인지형 디자인 시스템 문서, `app/docs/d
 | `Card`, `FloatingActionButton`, `SegmentedButton` 등에 `shape` 파라미터 생략 | 컴포넌트별로 테마의 `Shapes`를 그대로 상속하는지 여부가 다르다(FAB/SegmentedButton은 상속하지 않는 경우가 실제로 있었다) — **8dp 규정을 지키려면 카드류·FAB·세그먼트 버튼에 `shape = RoundedCornerShape(8.dp)`를 명시적으로 지정**한다. "테마에 이미 8dp로 설정했으니 괜찮겠지"라고 가정하지 않는다. |
 | 임의의 dp 값 사용(`14.dp`, `18.dp`, `20.dp` 등) | `DrinkDiarySpacing` 토큰(4/8/12/16/24/32dp) 밖의 값은 화면마다 미묘하게 다른 간격을 만든다. |
 | 두 개의 인접/중첩 컴포넌트에 동일한 `colorScheme` 롤을 배경으로 사용 | 예: 카드 배경이 `surfaceVariant`인데 그 안의 이미지 placeholder도 `surfaceVariant`를 쓰면 서로 구분이 안 되고 텍스트만 떠 보인다(실제 발생). 부모-자식 관계에 있는 배경색은 항상 인접 롤(예: `surfaceVariant` 위에는 `surfaceContainerHighest`)로 대비를 만든다. |
-| 상태/타입이 다른 도메인 배지를 텍스트 라벨로만 구분 | `DDCollectionStatusBadge`는 재구매 후보/비선호/일반을 텍스트만으로 구분하면 앱의 핵심 차별화 요소(Wish/Pass)가 스캔이 안 된다. **색상까지 함께 구분**한다(재구매=Cellar Green 계열, 비선호=Rose 계열). |
+| 상태/타입이 다른 도메인 배지를 텍스트 라벨로만 구분 | `DDCollectionStatusBadge`는 재구매 후보/비선호/일반을 텍스트만으로 구분하면 앱의 핵심 차별화 요소(Wish/Pass)가 스캔이 안 된다. **색상까지 함께 구분**한다(재구매=Gold 계열, 비선호=Rose 계열 — 다크 테마 전환 후 재구매는 Cellar Green에서 Gold로 재매핑됨, 4.1절 참고). |
 | `LazyColumn` 화면에 `FloatingActionButton`을 얹으면서 `contentPadding` 없이 방치 | 목록 마지막 아이템이 FAB에 가려진다. FAB가 떠 있는 화면의 `LazyColumn`은 `contentPadding = PaddingValues(bottom = 96.dp)` 이상을 준다. |
 | raw `Text`/`Button`/`Card`를 DD* 컴포넌트가 이미 존재하는 상황에서 새로 조합 | 재사용 가능한 `DD*`가 있으면 그것을 쓴다(2절 원칙). 화면 전용 신규 조합이 필요하면 `ui.component` 밖 feature 패키지에 두되, 먼저 이 문서에 없는지 확인한다. |
+| 같은 "액센트 색"이라며 `secondary`와 `secondaryContainer`를 서로 다른 두 컴포넌트(FAB vs 배지)에 섞어 쓰기 | M3의 `*Container` 롤은 base 롤보다 명도/채도가 낮은 톤-다운 변형이라, 같은 색이라고 생각하고 섞으면 나란히 놓였을 때 밝기 불일치가 눈에 띈다(다크 테마 루프에서 실제 발견: FAB=`secondary`인데 배지=`secondaryContainer`라 배지가 칙칙해 보임). **같은 액센트로 묶이는 요소는 base/Container 중 하나로 통일**한다. |
+| 정적 상태 배지(칩)를 실제 탭 가능한 CTA 버튼과 동일한 풀필 색상으로 채우기 | 같은 화면에 풀필 골드 버튼과 풀필 골드 배지가 나란히 있으면 배지가 두 번째 버튼처럼 보여 CTA의 시각적 우선순위가 흐려진다(RecordDetail에서 실제 발견: 재구매 후보 배지 vs 수정 버튼). **정적 배지는 반투명 fill + 얇은 보더 + 컬러 텍스트**로, **탭 가능한 CTA만 풀필**로 구분한다. |
 
 ### 확인 질문 (작업 시작 전 스스로 답해볼 것)
 

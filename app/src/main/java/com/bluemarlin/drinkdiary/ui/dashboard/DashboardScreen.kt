@@ -23,6 +23,7 @@ import com.bluemarlin.drinkdiary.domain.model.CollectionStatus
 import com.bluemarlin.drinkdiary.domain.model.DashboardSummary
 import com.bluemarlin.drinkdiary.ui.component.DDAddRecordFab
 import com.bluemarlin.drinkdiary.ui.component.DDDashboardSummaryCard
+import com.bluemarlin.drinkdiary.ui.component.DDHeroSummaryCard
 import com.bluemarlin.drinkdiary.ui.component.DDDrinkTypeRatioCard
 import com.bluemarlin.drinkdiary.ui.component.DDDrinkRecordCard
 import com.bluemarlin.drinkdiary.ui.component.DDEmptyContent
@@ -59,7 +60,6 @@ fun DashboardRoute(
                 .padding(16.dp),
         ) {
             val contentMaxWidth = if (maxWidth >= 840.dp) 1100.dp else maxWidth
-            val expanded = maxWidth >= 840.dp
             Column(
                 modifier = Modifier.fillMaxSize().widthIn(max = contentMaxWidth),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -71,7 +71,6 @@ fun DashboardRoute(
                     is DashboardUiState.Error -> DDErrorContent(uiState.message)
                     is DashboardUiState.Success -> DashboardSuccessContent(
                         summary = uiState.summary,
-                        expanded = expanded,
                         onOpenRecord = onOpenRecord,
                         onOpenStatus = onOpenStatus,
                     )
@@ -84,7 +83,6 @@ fun DashboardRoute(
 @Composable
 private fun DashboardSuccessContent(
     summary: DashboardSummary,
-    expanded: Boolean,
     onOpenRecord: (Long) -> Unit,
     onOpenStatus: (CollectionStatus) -> Unit,
 ) {
@@ -93,30 +91,17 @@ private fun DashboardSuccessContent(
         contentPadding = PaddingValues(bottom = 96.dp),
     ) {
         item {
-            if (expanded) {
+            // Bento-style asymmetric layout: one large hero tile (기록 수) instead of
+            // a uniform grid, per app/docs/design/research-immersive-ui.md section 2.
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                DDHeroSummaryCard("기록 수", "${summary.totalCount}개")
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                    DDDashboardSummaryCard("기록 수", "${summary.totalCount}개", Modifier.weight(1f))
                     DDDashboardSummaryCard("평균 별점", summary.averageRating?.let { "%.1f".format(it) } ?: "-", Modifier.weight(1f))
                     DDStatusSummaryCard(CollectionStatus.Repurchase, summary.repurchaseCount, Modifier.weight(1f)) {
                         onOpenStatus(CollectionStatus.Repurchase)
                     }
                     DDStatusSummaryCard(CollectionStatus.NotForMe, summary.notForMeCount, Modifier.weight(1f)) {
                         onOpenStatus(CollectionStatus.NotForMe)
-                    }
-                }
-            } else {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                        DDDashboardSummaryCard("기록 수", "${summary.totalCount}개", Modifier.weight(1f))
-                        DDDashboardSummaryCard("평균 별점", summary.averageRating?.let { "%.1f".format(it) } ?: "-", Modifier.weight(1f))
-                    }
-                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                        DDStatusSummaryCard(CollectionStatus.Repurchase, summary.repurchaseCount, Modifier.weight(1f)) {
-                            onOpenStatus(CollectionStatus.Repurchase)
-                        }
-                        DDStatusSummaryCard(CollectionStatus.NotForMe, summary.notForMeCount, Modifier.weight(1f)) {
-                            onOpenStatus(CollectionStatus.NotForMe)
-                        }
                     }
                 }
             }

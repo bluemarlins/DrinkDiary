@@ -27,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import com.bluemarlin.drinkdiary.ui.component.DDCollectionStatusBadge
 import com.bluemarlin.drinkdiary.ui.component.DDConfirmDialog
@@ -38,6 +39,7 @@ import com.bluemarlin.drinkdiary.ui.component.DDLoadingContent
 import com.bluemarlin.drinkdiary.ui.component.DDPrimaryButton
 import com.bluemarlin.drinkdiary.ui.component.DDRecordHeroImage
 import com.bluemarlin.drinkdiary.ui.component.DDRatingStars
+import com.bluemarlin.drinkdiary.ui.component.ddGlassBorderModifier
 import com.bluemarlin.drinkdiary.ui.component.formatPrice
 import com.bluemarlin.drinkdiary.ui.component.formatRecordedDate
 import com.bluemarlin.drinkdiary.ui.navigation.DDScreenScaffold
@@ -171,10 +173,13 @@ private fun RecordDetailInfo(
             .then(if (scrollable) Modifier.verticalScroll(rememberScrollState()) else Modifier),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        Text(name, style = MaterialTheme.typography.headlineSmall)
+        Text(
+            name,
+            style = MaterialTheme.typography.headlineMedium.copy(fontFamily = FontFamily.Serif),
+        )
         Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+            modifier = Modifier.fillMaxWidth().then(ddGlassBorderModifier()),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.88f)),
             shape = RoundedCornerShape(8.dp),
         ) {
             Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
