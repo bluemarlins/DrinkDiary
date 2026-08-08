@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -38,6 +39,7 @@ fun DDScreenScaffold(
     showBannerAd: Boolean = false,
     onDashboardClick: (() -> Unit)? = null,
     onCollectionClick: (() -> Unit)? = null,
+    onSettingsClick: (() -> Unit)? = null,
     onBackClick: (() -> Unit)? = null,
     floatingActionButton: @Composable (() -> Unit)? = null,
     snackbarHost: @Composable (() -> Unit)? = null,
@@ -54,6 +56,7 @@ fun DDScreenScaffold(
                     selectedTab = selectedTab,
                     onDashboardClick = onDashboardClick,
                     onCollectionClick = onCollectionClick,
+                    onSettingsClick = onSettingsClick,
                 )
                 AppScaffold(
                     title = title,
@@ -62,6 +65,7 @@ fun DDScreenScaffold(
                     selectedTab = selectedTab,
                     onDashboardClick = onDashboardClick,
                     onCollectionClick = onCollectionClick,
+                    onSettingsClick = onSettingsClick,
                     onBackClick = onBackClick,
                     floatingActionButton = floatingActionButton,
                     snackbarHost = host,
@@ -76,6 +80,7 @@ fun DDScreenScaffold(
                 selectedTab = selectedTab,
                 onDashboardClick = onDashboardClick,
                 onCollectionClick = onCollectionClick,
+                onSettingsClick = onSettingsClick,
                 onBackClick = onBackClick,
                 floatingActionButton = floatingActionButton,
                 snackbarHost = host,
@@ -94,6 +99,7 @@ private fun AppScaffold(
     selectedTab: String?,
     onDashboardClick: (() -> Unit)?,
     onCollectionClick: (() -> Unit)?,
+    onSettingsClick: (() -> Unit)?,
     onBackClick: (() -> Unit)?,
     floatingActionButton: @Composable (() -> Unit)?,
     snackbarHost: @Composable (() -> Unit),
@@ -115,6 +121,7 @@ private fun AppScaffold(
                         selectedTab = selectedTab,
                         onDashboardClick = onDashboardClick,
                         onCollectionClick = onCollectionClick,
+                        onSettingsClick = onSettingsClick,
                     )
                 }
             }
@@ -146,12 +153,14 @@ fun DDBottomNavigationBar(
     selectedTab: String?,
     onDashboardClick: (() -> Unit)?,
     onCollectionClick: (() -> Unit)?,
+    onSettingsClick: (() -> Unit)? = null,
 ) {
     NavigationBar {
         AppNavigationItems(
             selectedTab = selectedTab,
             onDashboardClick = onDashboardClick,
             onCollectionClick = onCollectionClick,
+            onSettingsClick = onSettingsClick,
         )
     }
 }
@@ -161,6 +170,7 @@ private fun AppNavigationRail(
     selectedTab: String?,
     onDashboardClick: (() -> Unit)?,
     onCollectionClick: (() -> Unit)?,
+    onSettingsClick: (() -> Unit)?,
 ) {
     NavigationRail {
         NavigationRailItem(
@@ -175,6 +185,12 @@ private fun AppNavigationRail(
             icon = { Icon(Icons.AutoMirrored.Filled.List, contentDescription = null) },
             label = { Text("컬렉션") },
         )
+        NavigationRailItem(
+            selected = selectedTab == "settings",
+            onClick = { onSettingsClick?.invoke() },
+            icon = { Icon(Icons.Filled.Settings, contentDescription = null) },
+            label = { Text("설정") },
+        )
     }
 }
 
@@ -183,6 +199,7 @@ private fun RowScope.AppNavigationItems(
     selectedTab: String?,
     onDashboardClick: (() -> Unit)?,
     onCollectionClick: (() -> Unit)?,
+    onSettingsClick: (() -> Unit)?,
 ) {
     NavigationBarItem(
         selected = selectedTab == "dashboard",
@@ -195,5 +212,11 @@ private fun RowScope.AppNavigationItems(
         onClick = { onCollectionClick?.invoke() },
         icon = { Icon(Icons.AutoMirrored.Filled.List, contentDescription = null) },
         label = { Text("컬렉션") },
+    )
+    NavigationBarItem(
+        selected = selectedTab == "settings",
+        onClick = { onSettingsClick?.invoke() },
+        icon = { Icon(Icons.Filled.Settings, contentDescription = null) },
+        label = { Text("설정") },
     )
 }

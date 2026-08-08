@@ -6,14 +6,18 @@ import java.util.Locale
 import com.bluemarlin.drinkdiary.ads.InterstitialAdManager
 import com.bluemarlin.drinkdiary.data.local.DrinkDiaryDatabase
 import com.bluemarlin.drinkdiary.data.repository.DrinkRecordRepositoryImpl
+import com.bluemarlin.drinkdiary.data.repository.ThemePreferenceRepositoryImpl
 import com.bluemarlin.drinkdiary.debug.DebugSeeder
 import com.bluemarlin.drinkdiary.domain.repository.DrinkRecordRepository
+import com.bluemarlin.drinkdiary.domain.repository.ThemePreferenceRepository
 import com.bluemarlin.drinkdiary.domain.usecase.DeleteDrinkRecordUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveDashboardSummaryUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveDrinkRecordUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveDrinkRecordsUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveMonthRecordDatesUseCase
+import com.bluemarlin.drinkdiary.domain.usecase.ObserveThemeModeUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.SaveDrinkRecordUseCase
+import com.bluemarlin.drinkdiary.domain.usecase.SetThemeModeUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -46,6 +50,8 @@ class AppContainer(application: Application) {
 
     private val repository: DrinkRecordRepository =
         DrinkRecordRepositoryImpl(database.drinkRecordDao())
+    private val themePreferenceRepository: ThemePreferenceRepository =
+        ThemePreferenceRepositoryImpl(application)
 
     val observeDrinkRecordsUseCase = ObserveDrinkRecordsUseCase(repository)
     val observeDrinkRecordUseCase = ObserveDrinkRecordUseCase(repository)
@@ -53,6 +59,8 @@ class AppContainer(application: Application) {
     val deleteDrinkRecordUseCase = DeleteDrinkRecordUseCase(repository)
     val observeDashboardSummaryUseCase = ObserveDashboardSummaryUseCase(repository)
     val observeMonthRecordDatesUseCase = ObserveMonthRecordDatesUseCase(repository)
+    val observeThemeModeUseCase = ObserveThemeModeUseCase(themePreferenceRepository)
+    val setThemeModeUseCase = SetThemeModeUseCase(themePreferenceRepository)
 
     val interstitialAdManager = InterstitialAdManager(application)
 }

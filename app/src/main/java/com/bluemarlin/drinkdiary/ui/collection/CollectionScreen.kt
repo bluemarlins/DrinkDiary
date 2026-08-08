@@ -36,6 +36,7 @@ fun CollectionRoute(
     onAddRecord: () -> Unit,
     onOpenRecord: (Long) -> Unit,
     onDashboardClick: () -> Unit,
+    onSettingsClick: () -> Unit,
 ) {
     val state by viewModel.uiState.collectAsState()
     val selectedType by viewModel.selectedType.collectAsState()
@@ -47,6 +48,7 @@ fun CollectionRoute(
         showBannerAd = true,
         onDashboardClick = onDashboardClick,
         onCollectionClick = {},
+        onSettingsClick = onSettingsClick,
         floatingActionButton = { DDAddRecordFab(onClick = onAddRecord) },
     ) { padding ->
         BoxWithConstraints(

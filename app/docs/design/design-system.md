@@ -42,9 +42,9 @@
 - 화면 내부 텍스트는 Material 3 Typography를 기반으로 통일한다.
 - 화면마다 직접 dp 값을 흩뿌리기보다 spacing 토큰을 사용한다.
 
-### 4.1 다크 무디(Dark & Moody) 테마 — 강제 적용
+### 4.1 다크 무디(Dark & Moody) 테마 — 기본값, 사용자 토글 가능(2026-08-08부터)
 
-Pinterest 레퍼런스 리서치(`app/docs/design/research-immersive-ui.md`) 결과에 따라 앱은 시스템 라이트/다크 설정과 무관하게 **항상 다크 테마로 렌더링**한다(브랜드 아이덴티티, 토글 아님). `DrinkDiaryTheme`의 `darkTheme` 기본값이 `true`로 고정되어 있고, `MainActivity`도 `enableEdgeToEdge`에서 시스템 바를 라이트 아이콘으로 강제한다. `LightColorScheme`은 롤백 여지를 위해 코드에는 남아있지만 호출되지 않는다.
+Pinterest 레퍼런스 리서치(`app/docs/design/research-immersive-ui.md`) 결과에 따라 다크 무디 팔레트를 앱의 대표 룩으로 채택했다. 처음에는 "항상 다크, 토글 아님"으로 강제 적용했으나, 이후 설정(Settings) 화면에서 **자동/다크/라이트**를 사용자가 직접 고를 수 있도록 뒤집었다(신규 사용자 기본값은 **자동** — 기기의 라이트/다크 설정을 따름). `MainActivity`가 `appContainer.observeThemeModeUseCase()`를 구독해 실제 다크 여부를 계산하고 `DrinkDiaryTheme(darkTheme = resolvedDarkTheme)`로 넘기며, 상태표시줄/내비게이션 바 아이콘 색도 `LaunchedEffect(resolvedDarkTheme)`로 테마 전환 시 함께 반응한다. `LightColorScheme`은 이제 실제로 호출되는 경로이므로(과거처럼 "코드에만 남겨둔 롤백용"이 아님) 새 컴포넌트를 추가할 때 라이트 테마에서도 읽히는지 함께 고려한다 — 다만 아래 원칙들은 대부분 `colorScheme.*` 롤 참조라 다크/라이트 양쪽에서 자동으로 맞는 색을 가져온다.
 
 - **뉴트럴 팔레트**: 배경/서피스 계열은 `Color.kt`의 `DeepForest10~30`(딥 포레스트 그린)을 사용해 "와인 셀러" 무드를 낸다. primary(Cellar Green)/secondary(Malt Gold)/tertiary(Rose)의 브랜드 컬러 자체와 각 Container 매핑은 라이트 테마 때와 동일하게 유지한다.
 - **골드 = CTA/액센트, 반드시 튀어야 하는 요소**: 배경이 초록 톤이라 `primary`(초록) 계열 요소는 배경에 묻힌다. FAB, `DDPrimaryButton`, 별점(`DDRatingStars`), 재구매 후보 배지의 골드 텍스트/보더는 모두 `secondary`(Gold)를 쓴다. 단, **정적 상태 배지**(재구매 후보 칩)는 `secondary` 반투명 fill + 1dp 보더 + `secondary` 텍스트로 두고, **실제 탭 가능한 CTA**(FAB, PrimaryButton)만 `secondary` 풀필로 채운다 — 둘을 동일한 풀필 골드로 두면 배지가 버튼처럼 보여 CTA의 우선순위가 흐려진다(RecordDetail UI 루프에서 확인된 실제 버그).
@@ -220,6 +220,13 @@ Pinterest 레퍼런스 리서치(`app/docs/design/research-immersive-ui.md`) 결
 | 검증 | DDFormErrorText, DDInlineValidationMessage |
 | 액션 | DDPrimaryButton, DDSecondaryButton |
 | 상태 표시 | DDSnackbarMessage |
+
+### SettingsScreen
+
+| 목적 | 컴포넌트 |
+| --- | --- |
+| 화면 구조 | DDScreenScaffold, DDTopAppBar, DDBottomNavigationBar(3번째 탭 "설정") |
+| 테마 설정 | DDFormSection, DDThemeModeSelector |
 
 ## 12. 추천 구현 위치
 

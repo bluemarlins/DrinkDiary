@@ -91,6 +91,7 @@ import com.bluemarlin.drinkdiary.domain.model.CollectionStatus
 import com.bluemarlin.drinkdiary.domain.model.DashboardPeriod
 import com.bluemarlin.drinkdiary.domain.model.DrinkRecord
 import com.bluemarlin.drinkdiary.domain.model.DrinkType
+import com.bluemarlin.drinkdiary.domain.model.ThemeMode
 import com.bluemarlin.drinkdiary.domain.model.roundToHalf
 import java.text.NumberFormat
 import java.io.File
@@ -603,6 +604,20 @@ fun DDPeriodSegmentedControl(selected: DashboardPeriod, onSelected: (DashboardPe
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(8.dp),
             ) { Text(period.label, maxLines = 1, overflow = TextOverflow.Clip) }
+        }
+    }
+}
+
+@Composable
+fun DDThemeModeSelector(selected: ThemeMode, onSelected: (ThemeMode) -> Unit) {
+    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+        ThemeMode.entries.forEachIndexed { index, mode ->
+            SegmentedButton(
+                selected = selected == mode,
+                onClick = { onSelected(mode) },
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(8.dp),
+            ) { Text(mode.label, maxLines = 1, overflow = TextOverflow.Clip) }
         }
     }
 }

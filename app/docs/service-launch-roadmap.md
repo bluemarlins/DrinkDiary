@@ -144,6 +144,14 @@ app/store-listing/            # Play Store 리스팅용 그래픽 원본 (Phase 
 - `DDDashboardCalendar`(신규, `Components.kt`) — 캘린더 라이브러리 의존성 추가 없이 순수 Compose로 월 그리드 구현. 월요일 시작 요일 배치(한국의 일반적 일요일 시작 관례와 다름 — `ObserveDashboardSummaryUseCase`의 월~일 주간 정의와 하이라이트 밴드가 한 행 안에서 정확히 일치하도록 의도적으로 선택). 기록이 있는 날짜는 Gold 점, 오늘은 Gold 링, 주간 선택 시에만 이번 주 행에 반투명 Gold 밴드 하이라이트(월간/연간은 하이라이트 없음 — 사용자가 AskUserQuestion으로 직접 선택: "월 단위 그리드로 1년 전체를 하이라이트하는 건 불가능하니 이번 달만 표시").
 - **개발용 더미 데이터 30건**: agy(`gemini-3.1-pro-high`)가 유명 와인/위스키/맥주 각 10종의 이름·가격·테이스팅 노트를 조사(`app/docs/dev/seed-data.md`), agy(`gemini-3.6-flash-high`)가 실제 라벨을 스크래핑하지 않고 브랜드 텍스트/로고 없는 오리지널 일러스트 30장을 생성(`app/src/debug/assets/seed_images/`, 5개 병렬 배치로 생성 시간 단축). `DebugSeeder`가 앱 시작 시 기록이 0건이면 자동으로 채워 넣는다 — Android 소스셋이 variant별로 합산되는 방식이라 "같은 클래스를 debug에 두면 main을 오버라이드"하는 방식은 컴파일 에러가 나서(`Redeclaration`), `debug`/`release` 소스셋에 각각 실제 구현/no-op을 따로 둠(`main`에는 두지 않음). `./gradlew :app:assembleRelease` + APK 내 `seed_images` 부재 확인으로 릴리즈 격리 검증 완료.
 
+**설정(Settings) 화면 + Auto/Dark/Light 테마 전환 (2026-08-08)** — 세션 초반 "다크 무디 테마를 항상 강제 적용, 토글 아님"으로 명시적으로 결정했던 것을 사용자 요청으로 명시적으로 뒤집었다. 새 설치 기본값은 **자동(시스템 설정 따름)**으로 사용자가 직접 확인(AskUserQuestion).
+
+- 기존 Room/UseCase 계층 패턴을 그대로 따라 `ThemeMode` enum + `ThemePreferenceRepository`(SharedPreferences 구현, 새 라이브러리 의존성 추가 없음) + `Observe`/`SetThemeModeUseCase` 추가.
+- `MainActivity`가 테마 설정을 구독해 `resolvedDarkTheme`(Auto→`isSystemInDarkTheme()`, Dark→true, Light→false)를 계산, `DrinkDiaryTheme`에 전달. 상태표시줄/내비게이션 바 아이콘 색도 `LaunchedEffect`로 테마 전환 시 함께 반응하도록 변경(과거엔 `enableEdgeToEdge`에서 다크 고정 1회 호출).
+- 하단 내비게이션에 3번째 탭 "설정" 추가 — `scaffold-toolbar-plan.md`의 enum(`DDTopLevelTab`) 리팩터링은 그 문서 자체가 범위 밖이라고 명시한 별도 작업이라 이번엔 기존 문자열 태그(`"dashboard"`/`"collection"`) 관례를 따라 `"settings"`만 추가.
+- 실기기(라이트/다크 모드 모두)에서 Dashboard 캘린더 포함 전체 화면이 라이트 테마에서도 깨지지 않고 읽히는 것을 확인 — 이번 세션에 추가된 컴포넌트들이 전부 `colorScheme.*` 롤 참조라 라이트 테마 전용 버그 없이 자동으로 대응됨. 다만 다크 화면들처럼 3라운드 UI 품질 루프로 라이트 테마를 전면 검증하지는 않음(범위 밖으로 명시, 필요 시 후속 라운드).
+- 앱 완전 종료 후 재시작 시 선택한 테마가 유지되는지(SharedPreferences 영속성) 실기기에서 확인 완료.
+
 ## 5. Phase별 로드맵
 
 ### Phase 0. 리서치 (완료)

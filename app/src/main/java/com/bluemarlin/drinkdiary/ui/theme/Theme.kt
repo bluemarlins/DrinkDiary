@@ -77,10 +77,12 @@ private val LightColorScheme = lightColorScheme(
 
 @Composable
 fun DrinkDiaryTheme(
-    // DrinkDiary's dark & moody "wine cellar" palette is the app's brand identity,
-    // not a user-toggleable dark mode — always render dark regardless of the
-    // system theme setting. See app/docs/design/research-immersive-ui.md.
-    darkTheme: Boolean = true,
+    // Resolved by the caller (MainActivity) from the user's Auto/Dark/Light setting
+    // (ui/settings) — Auto follows the system day/night setting. The dark & moody
+    // "wine cellar" palette (DarkColorScheme below) is still the app's primary brand
+    // look, but it's user-toggleable rather than forced. See app/docs/design/
+    // research-immersive-ui.md for the palette's design rationale.
+    darkTheme: Boolean,
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit

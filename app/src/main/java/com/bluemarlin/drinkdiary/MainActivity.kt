@@ -1,26 +1,28 @@
 package com.bluemarlin.drinkdiary
 
-import android.graphics.Color as AndroidColor
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
 import com.bluemarlin.drinkdiary.ads.ConsentManager
+import com.bluemarlin.drinkdiary.domain.model.ThemeMode
 import com.bluemarlin.drinkdiary.ui.navigation.DrinkDiaryApp
 import com.bluemarlin.drinkdiary.ui.theme.DrinkDiaryTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // App is forced dark regardless of system setting (see DrinkDiaryTheme) —
-        // force light system-bar icons to match, instead of enableEdgeToEdge()'s
-        // default auto-detection based on the system day/night setting.
-        enableEdgeToEdge(
-            statusBarStyle = SystemBarStyle.dark(AndroidColor.TRANSPARENT),
-            navigationBarStyle = SystemBarStyle.dark(AndroidColor.TRANSPARENT),
-        )
+        // Status/nav bar icon color is corrected reactively below (LaunchedEffect) once
+        // the resolved theme (Auto/Dark/Light preference) is known — this initial call
+        // just opts into edge-to-edge, the actual icon appearance is set right after.
+        enableEdgeToEdge()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             window.isNavigationBarContrastEnforced = false
         }
@@ -29,7 +31,22 @@ class MainActivity : ComponentActivity() {
             appContainer.interstitialAdManager.preload(this)
         }
         setContent {
-            DrinkDiaryTheme {
+            val themeMode by appContainer.observeThemeModeUseCase().collectAsState(initial = ThemeMode.Auto)
+            val systemInDarkTheme = isSystemInDarkTheme()
+            val resolvedDarkTheme = when (themeMode) {
+                ThemeMode.Auto -> systemInDarkTheme
+                ThemeMode.Dark -> true
+                ThemeMode.Light -> false
+            }
+
+            val view = LocalView.current
+            LaunchedEffect(resolvedDarkTheme) {
+                val insetsController = WindowCompat.getInsetsController(window, view)
+                insetsController.isAppearanceLightStatusBars = !resolvedDarkTheme
+                insetsController.isAppearanceLightNavigationBars = !resolvedDarkTheme
+            }
+
+            DrinkDiaryTheme(darkTheme = resolvedDarkTheme) {
                 DrinkDiaryApp()
             }
         }

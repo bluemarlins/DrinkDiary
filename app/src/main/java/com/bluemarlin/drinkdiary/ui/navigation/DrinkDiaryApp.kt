@@ -18,6 +18,8 @@ import com.bluemarlin.drinkdiary.ui.detail.RecordDetailRoute
 import com.bluemarlin.drinkdiary.ui.detail.RecordDetailViewModel
 import com.bluemarlin.drinkdiary.ui.editor.RecordEditorRoute
 import com.bluemarlin.drinkdiary.ui.editor.RecordEditorViewModel
+import com.bluemarlin.drinkdiary.ui.settings.SettingsRoute
+import com.bluemarlin.drinkdiary.ui.settings.SettingsViewModel
 
 private object Routes {
     const val Dashboard = "dashboard"
@@ -26,6 +28,7 @@ private object Routes {
     const val Detail = "detail/{recordId}"
     const val EditorNew = "editor/new"
     const val EditorEdit = "editor/{recordId}"
+    const val Settings = "settings"
 }
 
 @Composable
@@ -47,6 +50,7 @@ fun DrinkDiaryApp() {
                 onOpenRecord = { navController.navigate("detail/$it") },
                 onOpenStatus = { navController.navigate("collection/${it.name}") },
                 onCollectionClick = { navController.navigate(Routes.Collection) },
+                onSettingsClick = { navController.navigate(Routes.Settings) },
             )
         }
         composable(Routes.Collection) {
@@ -55,6 +59,7 @@ fun DrinkDiaryApp() {
                 onDashboardClick = { navController.navigate(Routes.Dashboard) },
                 onAddRecord = { navController.navigate(Routes.EditorNew) },
                 onOpenRecord = { navController.navigate("detail/$it") },
+                onSettingsClick = { navController.navigate(Routes.Settings) },
             )
         }
         composable(
@@ -67,6 +72,20 @@ fun DrinkDiaryApp() {
                 onDashboardClick = { navController.navigate(Routes.Dashboard) },
                 onAddRecord = { navController.navigate(Routes.EditorNew) },
                 onOpenRecord = { navController.navigate("detail/$it") },
+                onSettingsClick = { navController.navigate(Routes.Settings) },
+            )
+        }
+        composable(Routes.Settings) {
+            val viewModel: SettingsViewModel = viewModel(
+                factory = SettingsViewModel.Factory(
+                    appContainer.observeThemeModeUseCase,
+                    appContainer.setThemeModeUseCase,
+                ),
+            )
+            SettingsRoute(
+                viewModel = viewModel,
+                onDashboardClick = { navController.navigate(Routes.Dashboard) },
+                onCollectionClick = { navController.navigate(Routes.Collection) },
             )
         }
         composable(
@@ -124,6 +143,7 @@ private fun CollectionEntry(
     onDashboardClick: () -> Unit,
     onAddRecord: () -> Unit,
     onOpenRecord: (Long) -> Unit,
+    onSettingsClick: () -> Unit,
 ) {
     val appContainer = (LocalContext.current.applicationContext as DrinkDiaryApplication).appContainer
     val viewModel: CollectionViewModel = viewModel(
@@ -135,6 +155,7 @@ private fun CollectionEntry(
         onAddRecord = onAddRecord,
         onOpenRecord = onOpenRecord,
         onDashboardClick = onDashboardClick,
+        onSettingsClick = onSettingsClick,
     )
 }
 
