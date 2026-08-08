@@ -152,6 +152,15 @@ app/store-listing/            # Play Store 리스팅용 그래픽 원본 (Phase 
 - 실기기(라이트/다크 모드 모두)에서 Dashboard 캘린더 포함 전체 화면이 라이트 테마에서도 깨지지 않고 읽히는 것을 확인 — 이번 세션에 추가된 컴포넌트들이 전부 `colorScheme.*` 롤 참조라 라이트 테마 전용 버그 없이 자동으로 대응됨. 다만 다크 화면들처럼 3라운드 UI 품질 루프로 라이트 테마를 전면 검증하지는 않음(범위 밖으로 명시, 필요 시 후속 라운드).
 - 앱 완전 종료 후 재시작 시 선택한 테마가 유지되는지(SharedPreferences 영속성) 실기기에서 확인 완료.
 
+**Dashboard 인포그래픽: 타입별 평점 비교 + 주간 트렌드 미니 그래프 (2026-08-08)** — "캘린더만 있으니 대시보드가 밋밋하다"는 사용자 피드백에 따라 진행. 사용자가 차트/드로잉/애니메이션에 외부 라이브러리 사용을 명시적으로 허용해, 프로젝트 최초로 새 UI 라이브러리(Vico)를 도입했다.
+
+- **의존성 추가**: `com.patrykandpatrick.vico:compose-m3` v3.2.3(Compose 네이티브, Material3 컬러 스킴 자동 연동). 값이 3개뿐인 타입별 평점 비교는 시각적 일관성을 위해 라이브러리 없이 순수 Compose(`DDTypeRatingComparisonCard`)로 구현하고, 실제 "차트"가 필요한 8주 트렌드만 Vico(`DDWeeklyTrendChart`)를 사용 — 라이브러리 사용을 필요한 곳에만 한정.
+- `ObserveWeeklyTrendUseCase`(신규) — `DDDashboardCalendar`와 동일한 패턴으로 `selectedPeriod`와 무관하게 항상 최근 8주(월요일 시작) 고정 창을 `Flow<List<Int>>`로 노출.
+- `DashboardSummary`에 `wine/whiskey/beerAverageRating: Double?` 3개 필드 추가(해당 타입 기록 0건이면 null → 카드에 "-" 표시).
+- **버그 1 — Vico 크래시**: `CartesianChartModelProducer.runTransaction { columnModel { series(weeklyCounts) } }`에 `weeklyTrend` StateFlow의 초기값(`emptyList()`)이 그대로 전달되어 `IllegalArgumentException("Series can't be empty")`로 즉시 크래시. `weeklyCounts.isNotEmpty()`일 때만 트랜잭션을 실행하도록 가드 추가로 해결.
+- **버그 2 — 레이아웃 붕괴**: 캘린더+주간 트렌드 차트를 non-scrollable `Column` 안에 순서대로 쌓고, 그 아래 히어로/통계/타입별 평점 카드는 `Modifier.weight(1f)`를 준 `Box`/`LazyColumn`에 맡기는 기존 구조에서, 트렌드 차트(~140dp)가 추가되며 고정 높이 요소의 합이 뷰포트를 넘어서 weighted 영역이 0에 가깝게 coerce됨 — 히어로 카드 이하 전부가 화면에 렌더링되지 않는 상태가 됨(스크린샷으로 발견, `uiautomator dump`로 실제 좌표 확인 후 원인 특정). **해결**: `DashboardRoute` 전체를 하나의 스크롤 가능한 `LazyColumn`으로 재구성 — 세그먼트 컨트롤/캘린더/트렌드 차트도 `item{}`으로 넣고, 상태별 성공 콘텐츠는 `LazyListScope` 확장 함수(`dashboardSuccessItems`)로 변경. "항상 보이는" 요소라는 요구사항은 `when(state)` 분기 밖에 두는 것으로 유지되고, "고정 헤더" 여부와는 무관함을 확인 — `design-system.md` 14절에 재발 방지 규칙으로 기록.
+- 실기기(SM_F971N)에서 주간/월간/연간 탭 전환 시 트렌드 차트는 그대로 유지되고 히어로 카드·종류별 비중·타입별 평점 비교만 갱신되는 것을 확인.
+
 ## 5. Phase별 로드맵
 
 ### Phase 0. 리서치 (완료)

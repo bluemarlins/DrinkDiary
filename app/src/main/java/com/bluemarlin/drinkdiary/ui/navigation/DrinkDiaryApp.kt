@@ -42,6 +42,7 @@ fun DrinkDiaryApp() {
                 factory = DashboardViewModel.Factory(
                     appContainer.observeDashboardSummaryUseCase,
                     appContainer.observeMonthRecordDatesUseCase,
+                    appContainer.observeWeeklyTrendUseCase,
                 ),
             )
             DashboardRoute(

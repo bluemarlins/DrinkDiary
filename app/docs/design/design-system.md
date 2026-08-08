@@ -126,6 +126,7 @@ Pinterest 레퍼런스 리서치(`app/docs/design/research-immersive-ui.md`) 결
 | DDDashboardSummaryCard | 기록 수, 평균 별점 등 요약 지표 표시 | Dashboard |
 | DDStatusSummaryCard | 재구매 후보 수, 비선호 수 표시 | Dashboard |
 | DDDrinkTypeRatioCard | 와인, 위스키, 맥주 비중 표시 | Dashboard |
+| DDTypeRatingComparisonCard | 와인/위스키/맥주 종류별 평균 평점·기록 수 비교(순수 Compose, 라이브러리 불필요) | Dashboard |
 | DDDrinkRecordListItem | 컬렉션 목록의 단일 기록 표시 | Collection |
 | DDDrinkRecordCard | 주요 기록 카드 표시 | Dashboard |
 | DDInfoRow | 상세 화면의 라벨-값 행 표시 | RecordDetail |
@@ -168,6 +169,7 @@ Pinterest 레퍼런스 리서치(`app/docs/design/research-immersive-ui.md`) 결
 | DDRecordedDateText | 기록 일시 표시 포맷 통일 | 목록, 상세 |
 | DDTastingNoteBlock | 테이스팅 노트 표시 | 상세 |
 | DDDashboardCalendar | 이번 달 캘린더 + 기록 날짜 점 표시 + 기간별(주간/월간) 하이라이트 | Dashboard |
+| DDWeeklyTrendChart | 최근 8주 기록 수 미니 바 차트(축 없는 스파크라인 형태) | Dashboard |
 
 도메인 컴포넌트 제약:
 
@@ -175,6 +177,8 @@ Pinterest 레퍼런스 리서치(`app/docs/design/research-immersive-ui.md`) 결
 - `DDCollectionStatusBadge`는 재구매 후보와 비선호를 명확히 구분한다.
 - 별점 표시는 입력용 `DDRatingInput`과 조회용 `DDRatingStars`를 분리한다.
 - `DDDashboardCalendar`는 `DashboardPeriod`와 이번 달 기록 날짜(`Set<LocalDate>`)만 입력받는 순수 표시 컴포넌트다. 월 이동은 지원하지 않는다(항상 이번 달 고정 — `ObserveDashboardSummaryUseCase`의 "오늘 기준" 범위 계산과 동일한 전제). 요일 헤더는 월요일 시작(월화수목금토일)으로, 주간 하이라이트가 `ObserveDashboardSummaryUseCase`의 월~일 주간 정의와 한 행 안에서 정확히 일치하도록 한다(한국의 일반적인 일요일 시작 캘린더 관례와는 다름 — 의도적인 선택).
+- `DDDashboardCalendar`, `DDWeeklyTrendChart`는 둘 다 `DashboardViewModel.selectedPeriod`와 무관하게 항상 고정된 창(이번 달 / 최근 8주)을 보여준다 — 주간/월간/연간 탭 전환은 이 둘에 영향을 주지 않는다.
+- `DDWeeklyTrendChart`는 Vico(`com.patrykandpatrick.vico:compose-m3`, Compose 네이티브 차트 라이브러리)를 사용하는 유일한 컴포넌트다. `CartesianChartModelProducer`에 빈 리스트를 전달하면 `IllegalArgumentException("Series can't be empty")`로 즉시 크래시하므로, `weeklyCounts`가 비어 있을 때(StateFlow 초기값)는 `runTransaction` 호출 자체를 건너뛴다 — 이 가드를 제거하지 않는다.
 
 ## 11. 화면별 사용 컴포넌트
 
@@ -184,8 +188,8 @@ Pinterest 레퍼런스 리서치(`app/docs/design/research-immersive-ui.md`) 결
 | --- | --- |
 | 화면 구조 | DDScreenScaffold, DDTopAppBar, DDBottomNavigationBar |
 | 기간 선택 | DDPeriodSegmentedControl |
-| 캘린더 | DDDashboardCalendar |
-| 요약 표시 | DDDashboardSummaryCard, DDStatusSummaryCard, DDDrinkTypeRatioCard |
+| 캘린더 · 트렌드 | DDDashboardCalendar, DDWeeklyTrendChart |
+| 요약 표시 | DDDashboardSummaryCard, DDStatusSummaryCard, DDDrinkTypeRatioCard, DDTypeRatingComparisonCard |
 | 주요 기록 표시 | DDDrinkRecordCard, DDRatingStars, DDCollectionStatusBadge |
 | 상태 표시 | DDLoadingContent, DDEmptyContent, DDErrorContent |
 | 기록 등록 | DDAddRecordFab |
@@ -294,6 +298,7 @@ Astryx(Meta의 AI-에이전트 인지형 디자인 시스템 문서, `app/docs/d
 | 같은 "액센트 색"이라며 `secondary`와 `secondaryContainer`를 서로 다른 두 컴포넌트(FAB vs 배지)에 섞어 쓰기 | M3의 `*Container` 롤은 base 롤보다 명도/채도가 낮은 톤-다운 변형이라, 같은 색이라고 생각하고 섞으면 나란히 놓였을 때 밝기 불일치가 눈에 띈다(다크 테마 루프에서 실제 발견: FAB=`secondary`인데 배지=`secondaryContainer`라 배지가 칙칙해 보임). **같은 액센트로 묶이는 요소는 base/Container 중 하나로 통일**한다. |
 | 정적 상태 배지(칩)를 실제 탭 가능한 CTA 버튼과 동일한 풀필 색상으로 채우기 | 같은 화면에 풀필 골드 버튼과 풀필 골드 배지가 나란히 있으면 배지가 두 번째 버튼처럼 보여 CTA의 시각적 우선순위가 흐려진다(RecordDetail에서 실제 발견: 재구매 후보 배지 vs 수정 버튼). **정적 배지는 반투명 fill + 얇은 보더 + 컬러 텍스트**로, **탭 가능한 CTA만 풀필**로 구분한다. |
 | `FilterChip`/`AssistChip`의 선택색을 커스터마이징하면서 `selectedContainerColor`/`selectedLabelColor`만 지정하고 `selectedLeadingIconColor`는 빠뜨리기 | 아이콘이 M3 기본 틴트로 남아 라벨 텍스트와 다른 색이 되고, 커스텀 배경색과의 대비도 검증되지 않은 상태로 남는다(Collection에서 실제 발견: 골드 배경에 연한 크림색 체크 아이콘이 ~1.4:1로 바래 보임). **선택 색상을 커스터마이징할 때는 container/label/leadingIcon 세 가지를 항상 함께 지정**한다. |
+| 고정 높이 컴포넌트(캘린더, 차트 등)를 non-scrollable `Column` 안에 여러 개 쌓고, 나머지 콘텐츠는 `Modifier.weight(1f)`를 준 `LazyColumn`/`Box`에 맡기기 | 고정 높이 컴포넌트들의 합이 뷰포트를 넘으면 weighted 자식은 0에 가까운 높이로 coerce되어 그 아래 콘텐츠(히어로 카드, 통계 등)가 완전히 사라진다(Dashboard에 `DDWeeklyTrendChart` 추가 시 실제 발견 — 캘린더+트렌드차트만으로 화면이 꽉 차서 나머지 전부 미표시). **화면 상단에 여러 개의 "항상 보이는" 고정 높이 요소를 배치해야 한다면, 그 요소들과 나머지 콘텐츠를 하나의 스크롤 가능한 `LazyColumn`의 `item{}`들로 함께 넣는다** — non-scrollable 헤더 + weighted 스크롤 영역 조합은 헤더 높이 합계가 커지는 순간 깨진다. |
 
 ### 확인 질문 (작업 시작 전 스스로 답해볼 것)
 

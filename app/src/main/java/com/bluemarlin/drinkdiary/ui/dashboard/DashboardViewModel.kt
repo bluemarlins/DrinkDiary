@@ -7,6 +7,7 @@ import com.bluemarlin.drinkdiary.domain.model.DashboardPeriod
 import com.bluemarlin.drinkdiary.domain.model.DashboardSummary
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveDashboardSummaryUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveMonthRecordDatesUseCase
+import com.bluemarlin.drinkdiary.domain.usecase.ObserveWeeklyTrendUseCase
 import java.time.LocalDate
 import java.time.YearMonth
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,6 +30,7 @@ sealed interface DashboardUiState {
 class DashboardViewModel(
     private val observeDashboardSummaryUseCase: ObserveDashboardSummaryUseCase,
     observeMonthRecordDatesUseCase: ObserveMonthRecordDatesUseCase,
+    observeWeeklyTrendUseCase: ObserveWeeklyTrendUseCase,
 ) : ViewModel() {
     val selectedPeriod = MutableStateFlow(DashboardPeriod.Monthly)
 
@@ -47,6 +49,12 @@ class DashboardViewModel(
         .catch { emit(emptySet()) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptySet())
 
+    // Also independent of `selectedPeriod` — a trend needs a fixed rolling window
+    // regardless of which summary period tab is selected.
+    val weeklyTrend: StateFlow<List<Int>> = observeWeeklyTrendUseCase()
+        .catch { emit(emptyList()) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
     fun selectPeriod(period: DashboardPeriod) {
         selectedPeriod.value = period
     }
@@ -54,9 +62,10 @@ class DashboardViewModel(
     class Factory(
         private val observeDashboardSummaryUseCase: ObserveDashboardSummaryUseCase,
         private val observeMonthRecordDatesUseCase: ObserveMonthRecordDatesUseCase,
+        private val observeWeeklyTrendUseCase: ObserveWeeklyTrendUseCase,
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            DashboardViewModel(observeDashboardSummaryUseCase, observeMonthRecordDatesUseCase) as T
+            DashboardViewModel(observeDashboardSummaryUseCase, observeMonthRecordDatesUseCase, observeWeeklyTrendUseCase) as T
     }
 }

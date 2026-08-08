@@ -3,6 +3,7 @@ package com.bluemarlin.drinkdiary.domain.usecase
 import com.bluemarlin.drinkdiary.domain.model.CollectionStatus
 import com.bluemarlin.drinkdiary.domain.model.DashboardPeriod
 import com.bluemarlin.drinkdiary.domain.model.DashboardSummary
+import com.bluemarlin.drinkdiary.domain.model.DrinkRecord
 import com.bluemarlin.drinkdiary.domain.model.DrinkType
 import com.bluemarlin.drinkdiary.domain.repository.DrinkRecordRepository
 import java.time.Instant
@@ -28,6 +29,9 @@ class ObserveDashboardSummaryUseCase(
                     wineCount = records.count { it.type == DrinkType.Wine },
                     whiskeyCount = records.count { it.type == DrinkType.Whiskey },
                     beerCount = records.count { it.type == DrinkType.Beer },
+                    wineAverageRating = records.averageRatingForType(DrinkType.Wine),
+                    whiskeyAverageRating = records.averageRatingForType(DrinkType.Whiskey),
+                    beerAverageRating = records.averageRatingForType(DrinkType.Beer),
                     repurchaseCount = records.count { it.collectionStatus == CollectionStatus.Repurchase },
                     notForMeCount = records.count { it.collectionStatus == CollectionStatus.NotForMe },
                     repurchaseRecords = records.filter { it.collectionStatus == CollectionStatus.Repurchase },
@@ -58,6 +62,9 @@ class ObserveDashboardSummaryUseCase(
 
     private fun LocalDate.startOfDayMillis(zone: ZoneId): Long =
         atStartOfDay(zone).toInstant().toEpochMilli()
+
+    private fun List<DrinkRecord>.averageRatingForType(type: DrinkType): Double? =
+        filter { it.type == type }.takeIf { it.isNotEmpty() }?.map { it.rating }?.average()
 
     private data class MillisRange(
         val startMillis: Long,

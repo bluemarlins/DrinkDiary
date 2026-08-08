@@ -89,9 +89,17 @@ import androidx.compose.ui.unit.dp
 import com.bluemarlin.drinkdiary.R
 import com.bluemarlin.drinkdiary.domain.model.CollectionStatus
 import com.bluemarlin.drinkdiary.domain.model.DashboardPeriod
+import com.bluemarlin.drinkdiary.domain.model.DashboardSummary
 import com.bluemarlin.drinkdiary.domain.model.DrinkRecord
 import com.bluemarlin.drinkdiary.domain.model.DrinkType
 import com.bluemarlin.drinkdiary.domain.model.ThemeMode
+import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
+import com.patrykandpatrick.vico.compose.cartesian.data.CartesianChartModelProducer
+import com.patrykandpatrick.vico.compose.cartesian.data.columnModel
+import com.patrykandpatrick.vico.compose.cartesian.layer.rememberColumnCartesianLayer
+import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
+import com.patrykandpatrick.vico.compose.common.ProvideVicoTheme
+import com.patrykandpatrick.vico.compose.m3.common.rememberM3VicoTheme
 import com.bluemarlin.drinkdiary.domain.model.roundToHalf
 import java.text.NumberFormat
 import java.io.File
@@ -1265,6 +1273,96 @@ private fun DDRatioLegendItem(label: String, count: Int, total: Int, color: Colo
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
         Box(Modifier.size(8.dp).clip(RoundedCornerShape(2.dp)).background(color))
         Text("$label $percent%", style = MaterialTheme.typography.bodySmall)
+    }
+}
+
+// Vico (com.patrykandpatrick.vico:compose-m3) bar chart — a real charting library for
+// this one, since it's a genuine 8-point trend that benefits from proper entrance
+// animation; DDTypeRatingComparisonCard below only has 3 values so stays plain Compose
+// for visual consistency with DDDrinkTypeRatioCard instead. `rememberM3VicoTheme()` +
+// `ProvideVicoTheme` pull chart colors straight from MaterialTheme.colorScheme (primary/
+// secondary/tertiary), so no manual color wiring is needed. Axes are intentionally
+// omitted (both default to null) for a clean sparkline/mini-chart look.
+@Composable
+fun DDWeeklyTrendChart(weeklyCounts: List<Int>, modifier: Modifier = Modifier) {
+    val modelProducer = remember { CartesianChartModelProducer() }
+    LaunchedEffect(weeklyCounts) {
+        if (weeklyCounts.isNotEmpty()) {
+            modelProducer.runTransaction {
+                columnModel { series(weeklyCounts) }
+            }
+        }
+    }
+    Card(
+        modifier = modifier.fillMaxWidth().then(ddGlassBorderModifier()),
+        shape = RoundedCornerShape(8.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.88f)),
+    ) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("최근 8주 기록 추이", style = MaterialTheme.typography.labelLarge)
+            ProvideVicoTheme(rememberM3VicoTheme()) {
+                CartesianChartHost(
+                    chart = rememberCartesianChart(rememberColumnCartesianLayer()),
+                    modelProducer = modelProducer,
+                    modifier = Modifier.fillMaxWidth().height(72.dp),
+                )
+            }
+        }
+    }
+}
+
+// Same color roles as DDDrinkTypeRatioCard (와인=tertiary/Rose, 위스키=secondary/Gold,
+// 맥주=primary/Green) so the two type-breakdown cards read as one consistent language —
+// this answers "뭘 좋아하는지" (average rating) where the ratio card only answers
+// "뭘 많이 마셨는지" (count).
+@Composable
+fun DDTypeRatingComparisonCard(summary: DashboardSummary, modifier: Modifier = Modifier) {
+    Card(
+        modifier = modifier.fillMaxWidth().then(ddGlassBorderModifier()),
+        shape = RoundedCornerShape(8.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.88f)),
+    ) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            Text("종류별 평점 비교", style = MaterialTheme.typography.labelLarge)
+            DDTypeRatingRow("와인", summary.wineCount, summary.wineAverageRating, MaterialTheme.colorScheme.tertiary)
+            DDTypeRatingRow("위스키", summary.whiskeyCount, summary.whiskeyAverageRating, MaterialTheme.colorScheme.secondary)
+            DDTypeRatingRow("맥주", summary.beerCount, summary.beerAverageRating, MaterialTheme.colorScheme.primary)
+        }
+    }
+}
+
+@Composable
+private fun DDTypeRatingRow(label: String, count: Int, averageRating: Double?, color: Color) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text("$label ${count}회", style = MaterialTheme.typography.bodyMedium)
+            Text(
+                averageRating?.let { "★ %.1f".format(it) } ?: "-",
+                style = MaterialTheme.typography.titleMedium,
+                color = color,
+            )
+        }
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(6.dp)
+                .clip(RoundedCornerShape(3.dp))
+                .background(color.copy(alpha = 0.18f)),
+        ) {
+            if (averageRating != null) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(fraction = (averageRating / 5.0).toFloat().coerceIn(0f, 1f))
+                        .fillMaxHeight()
+                        .clip(RoundedCornerShape(3.dp))
+                        .background(color),
+                )
+            }
+        }
     }
 }
 

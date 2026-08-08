@@ -16,6 +16,7 @@ import com.bluemarlin.drinkdiary.domain.usecase.ObserveDrinkRecordUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveDrinkRecordsUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveMonthRecordDatesUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveThemeModeUseCase
+import com.bluemarlin.drinkdiary.domain.usecase.ObserveWeeklyTrendUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.SaveDrinkRecordUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.SetThemeModeUseCase
 import kotlinx.coroutines.CoroutineScope
@@ -59,6 +60,7 @@ class AppContainer(application: Application) {
     val deleteDrinkRecordUseCase = DeleteDrinkRecordUseCase(repository)
     val observeDashboardSummaryUseCase = ObserveDashboardSummaryUseCase(repository)
     val observeMonthRecordDatesUseCase = ObserveMonthRecordDatesUseCase(repository)
+    val observeWeeklyTrendUseCase = ObserveWeeklyTrendUseCase(repository)
     val observeThemeModeUseCase = ObserveThemeModeUseCase(themePreferenceRepository)
     val setThemeModeUseCase = SetThemeModeUseCase(themePreferenceRepository)
 
