@@ -1,6 +1,5 @@
 package com.bluemarlin.drinkdiary.ui.component
 
-import android.app.DatePickerDialog
 import android.content.Context
 import android.content.res.Configuration
 import android.graphics.ImageDecoder
@@ -42,6 +41,9 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDefaults
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -53,10 +55,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -90,6 +95,7 @@ import java.text.NumberFormat
 import java.io.File
 import java.time.Instant
 import java.time.ZoneId
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import java.util.UUID
@@ -116,7 +122,17 @@ fun DDPrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modi
 
 @Composable
 fun DDSecondaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
-    OutlinedButton(onClick = onClick, modifier = modifier, enabled = enabled, shape = RoundedCornerShape(8.dp)) { Text(text) }
+    // Gold outline, not the M3 default `primary` (Cellar Green) — matches this app's
+    // established rule that Gold carries every interactive/CTA accent, Green is
+    // reserved for brand identity and drink-type badges only.
+    OutlinedButton(
+        onClick = onClick,
+        modifier = modifier,
+        enabled = enabled,
+        shape = RoundedCornerShape(8.dp),
+        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.secondary),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.secondary),
+    ) { Text(text) }
 }
 
 @Composable
@@ -233,6 +249,15 @@ fun DDConfirmDialog(
     )
 }
 
+// Gold focus border/label/cursor, not the M3 default `primary` (Cellar Green) —
+// same "Gold=interactive accent" rule applied to buttons/chips/rating input.
+@Composable
+private fun ddTextFieldColors() = OutlinedTextFieldDefaults.colors(
+    focusedBorderColor = MaterialTheme.colorScheme.secondary,
+    focusedLabelColor = MaterialTheme.colorScheme.secondary,
+    cursorColor = MaterialTheme.colorScheme.secondary,
+)
+
 @Composable
 fun DDTextField(label: String, value: String, onValueChange: (String) -> Unit, modifier: Modifier = Modifier, error: String? = null) {
     OutlinedTextField(
@@ -243,6 +268,7 @@ fun DDTextField(label: String, value: String, onValueChange: (String) -> Unit, m
         isError = error != null,
         supportingText = error?.let { { Text(it) } },
         singleLine = true,
+        colors = ddTextFieldColors(),
     )
 }
 
@@ -257,6 +283,7 @@ fun DDNumberField(label: String, value: String, onValueChange: (String) -> Unit,
         isError = error != null,
         supportingText = error?.let { { Text(it) } },
         singleLine = true,
+        colors = ddTextFieldColors(),
     )
 }
 
@@ -266,11 +293,13 @@ fun DDMultilineTextField(label: String, value: String, onValueChange: (String) -
         value = value,
         onValueChange = onValueChange,
         label = { Text(label) },
+        colors = ddTextFieldColors(),
         modifier = modifier.fillMaxWidth(),
         minLines = 3,
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DDDateTimeField(
     label: String,
@@ -279,26 +308,14 @@ fun DDDateTimeField(
     modifier: Modifier = Modifier,
     error: String? = null,
 ) {
-    val context = LocalContext.current
     val zone = ZoneId.systemDefault()
-    val date = Instant.ofEpochMilli(valueMillis).atZone(zone).toLocalDate()
-    val showPicker = {
-        DatePickerDialog(
-            context,
-            { _, year, month, dayOfMonth ->
-                val selectedMillis = java.time.LocalDate.of(year, month + 1, dayOfMonth)
-                    .atStartOfDay(zone)
-                    .toInstant()
-                    .toEpochMilli()
-                onValueChange(selectedMillis)
-            },
-            date.year,
-            date.monthValue - 1,
-            date.dayOfMonth,
-        ).show()
-    }
+    // Compose Material3's own DatePickerDialog, not the legacy android.app.DatePickerDialog
+    // — the legacy dialog renders as a light-themed system dialog with M2 teal accents and
+    // English button labels, jarring against the app's forced dark/gold theme. The M3
+    // version automatically inherits DrinkDiaryTheme's color scheme.
+    var showPicker by remember { mutableStateOf(false) }
 
-    Box(modifier = modifier.fillMaxWidth().clickable(onClick = showPicker)) {
+    Box(modifier = modifier.fillMaxWidth().clickable(onClick = { showPicker = true })) {
         OutlinedTextField(
             value = formatRecordedDate(valueMillis),
             onValueChange = {},
@@ -310,6 +327,52 @@ fun DDDateTimeField(
             supportingText = error?.let { { Text(it) } },
             singleLine = true,
         )
+    }
+
+    if (showPicker) {
+        // Known limitation: on a device set to a non-Korean system locale, the M3
+        // DatePicker's month/weekday chrome ("August 2026", "S M T W T F S") still renders
+        // in that locale — it resolves via Compose's own text.intl.Locale (tied to the
+        // Activity's real Configuration), which neither `Locale.setDefault()` nor a
+        // `LocalConfiguration` override reaches. Confirm/취소 and the color scheme are
+        // already correctly forced Korean/dark; fully localizing the picker's internal
+        // chrome would need wrapping the Activity's base context locale (attachBaseContext)
+        // — out of scope for this round, tracked in service-launch-roadmap.md.
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = Instant.ofEpochMilli(valueMillis).atZone(zone)
+                .toLocalDate().atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli(),
+        )
+        DatePickerDialog(
+            onDismissRequest = { showPicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        datePickerState.selectedDateMillis?.let { utcMillis ->
+                            val selectedMillis = Instant.ofEpochMilli(utcMillis).atZone(ZoneOffset.UTC)
+                                .toLocalDate().atStartOfDay(zone).toInstant().toEpochMilli()
+                            onValueChange(selectedMillis)
+                        }
+                        showPicker = false
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.secondary),
+                ) { Text("확인") }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showPicker = false },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.secondary),
+                ) { Text("취소") }
+            },
+        ) {
+            DatePicker(
+                state = datePickerState,
+                colors = DatePickerDefaults.colors(
+                    selectedDayContainerColor = MaterialTheme.colorScheme.secondary,
+                    selectedDayContentColor = MaterialTheme.colorScheme.onSecondary,
+                    todayDateBorderColor = MaterialTheme.colorScheme.secondary,
+                ),
+            )
+        }
     }
 }
 
@@ -420,7 +483,13 @@ fun DDRatingInput(
             Text(
                 text = ratingStarsText(rating),
                 style = MaterialTheme.typography.headlineSmall,
-                color = if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                color = when {
+                    !enabled -> MaterialTheme.colorScheme.onSurfaceVariant
+                    // Echoes the error color on the glyphs themselves, not just the
+                    // caption below — same signal DDTextField gives via its border.
+                    error != null -> MaterialTheme.colorScheme.error
+                    else -> MaterialTheme.colorScheme.secondary
+                },
             )
             Text(
                 text = "%.1f".format(rating),
@@ -449,7 +518,9 @@ fun DDDrinkTypeSelector(selected: DrinkType?, onSelected: (DrinkType) -> Unit, e
                 onSelected = onSelected,
             )
         } else {
-            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+            SingleChoiceSegmentedButtonRow(
+                modifier = Modifier.fillMaxWidth().then(ddSelectorErrorModifier(error)),
+            ) {
                 DrinkType.entries.forEachIndexed { index, type ->
                     SegmentedButton(
                         selected = selected == type,
@@ -464,6 +535,18 @@ fun DDDrinkTypeSelector(selected: DrinkType?, onSelected: (DrinkType) -> Unit, e
     }
 }
 
+// Shared visual error affordance for selector-style controls (segmented rows) that
+// have no built-in error state of their own — a border echoes the same signal
+// DDTextField gives via its border, so error controls aren't only distinguishable
+// by the caption text below them.
+@Composable
+private fun ddSelectorErrorModifier(error: String?): Modifier =
+    if (error != null) {
+        Modifier.border(1.5.dp, MaterialTheme.colorScheme.error, RoundedCornerShape(10.dp)).padding(2.dp)
+    } else {
+        Modifier
+    }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DDCollectionStatusSelector(selected: CollectionStatus?, onSelected: (CollectionStatus) -> Unit, error: String? = null) {
@@ -477,13 +560,26 @@ fun DDCollectionStatusSelector(selected: CollectionStatus?, onSelected: (Collect
                 onSelected = onSelected,
             )
         } else {
-            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+            SingleChoiceSegmentedButtonRow(
+                modifier = Modifier.fillMaxWidth().then(ddSelectorErrorModifier(error)),
+            ) {
                 CollectionStatus.entries.forEachIndexed { index, status ->
                     SegmentedButton(
                         selected = selected == status,
                         onClick = { onSelected(status) },
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(8.dp),
+                        // Rose for 비선호, matching DDCollectionStatusBadge's established
+                        // Wish(Gold)/Pass(Rose) color language — the M3 default would
+                        // render every selected chip in the same gold tone.
+                        colors = if (status == CollectionStatus.NotForMe) {
+                            SegmentedButtonDefaults.colors(
+                                activeContainerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                                activeContentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                            )
+                        } else {
+                            SegmentedButtonDefaults.colors()
+                        },
                     ) { Text(status.label, maxLines = 1, overflow = TextOverflow.Clip) }
                 }
             }
@@ -627,7 +723,13 @@ private fun <T> DDOptionDropdown(
 ) {
     var expanded by remember { mutableStateOf(false) }
     Box {
-        OutlinedButton(onClick = { expanded = true }, modifier = Modifier.fillMaxWidth()) {
+        OutlinedButton(
+            onClick = { expanded = true },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(8.dp),
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.secondary),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.secondary),
+        ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,

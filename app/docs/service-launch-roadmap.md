@@ -125,6 +125,19 @@ app/store-listing/            # Play Store 리스팅용 그래픽 원본 (Phase 
 - 별점 채우기/리스트 아이템 등장/FAB에 `AnimatedVisibility`/`animateColorAsState`/`animateContentSize` 등 신규 라이브러리 없이 구현 가능한 모션 제안 — 다음 라운드(#29) plan mode에서 구체 적용 범위 결정 필요
 - 디자인 철학 "우아한 심도(Elegant Depth)" 4원칙(어둠을 캔버스로/빛으로 안내/절제된 감정 표현/활자가 곧 디자인)을 향후 컴포넌트 결정의 판단 기준으로 채택
 
+**컴포넌트 디자인 시스템 통일 + RecordEditor 다크 테마 완주 (2026-08-08)** — 리서치 결과를 바탕으로 아직 손대지 않았던 컴포넌트(Button 계열의 Secondary/Dropdown, Text Field, RecordEditor 별점 입력)에 "Gold=인터랙션/CTA, Green=브랜드 정체성" 규칙을 마저 적용하고, 코드 탐색 중 발견한 실제 갭(Theme.kt에 `error` 색상 롤이 전혀 채워지지 않아 M3 베이스라인 빨강이 노출되던 문제)도 함께 수정. 세션 한도로 중단됐던 RecordEditor UI 품질 루프(task #17)를 이 기회에 재개해 3라운드 완주.
+
+- `Theme.kt`: Dark/Light 둘 다 `error`/`onError`/`errorContainer`/`onErrorContainer`를 기존 Rose 패밀리로 채움 — `DDDestructiveButton`/`DDFormErrorText`/텍스트 필드 에러 테두리가 전부 자동으로 Rose 계열로 통일됨
+- `DDSecondaryButton`/`DDOptionDropdown`: Gold 아웃라인으로 재매핑
+- `DDTextField`/`DDNumberField`/`DDMultilineTextField`: 포커스 시 Gold 테두리/라벨/커서
+- `DDRatingInput`: 별 색상을 `primary`(초록)에서 `secondary`(Gold)로
+
+| 화면 | 라운드 | 발견 | 조치 |
+|---|---|---|---|
+| RecordEditor | 1 | `DDCollectionStatusSelector`의 비선호가 재구매후보와 동일 Gold 선택색(Wish/Pass 규칙 위반), 세그먼트 선택기/별점 입력이 에러 시 캡션 텍스트만 표시(컨트롤 자체는 무변화), 공유 컴포넌트인 "뒤로" 버튼이 여전히 Green, 포트레이트 레이아웃에서 사진 섹션이 취소/저장 버튼보다 아래에 위치, 기록 일시 필드가 레거시 `android.app.DatePickerDialog`(라이트 배경+틸 M2 액센트+영어 버튼) 사용 | 비선호를 Rose(`tertiaryContainer`)로 재매핑, 세그먼트 선택기에 에러 시 로즈 테두리 추가+별점 글리프를 에러 색상으로, 뒤로 버튼 Gold로, 사진 섹션을 액션 버튼보다 위로 재배치(`RecordEditorFields`+`RecordEditorActions`로 분리), 레거시 다이얼로그를 Compose M3 `DatePickerDialog`로 교체(다크 테마+Gold 자동 상속, 버튼 라벨 한글화) |
+| RecordEditor | 2 | M3 DatePicker 다이얼로그 자체는 다크+Gold로 잘 나오지만 내부 달력 텍스트("Select date", "August 2026", "S M T W T F S")가 여전히 영어 | `Locale.setDefault`/`LocalConfiguration` 오버라이드 둘 다 시도했으나 M3 DatePicker가 `text.intl.Locale`(Activity의 실제 Configuration에 종속)로 로케일을 읽어 두 방법 모두 적용 안 됨 확인 |
+| RecordEditor | 3 (최종, 캡 도달) | 회귀 없음, agy 독립 비평도 프로덕션 준비 완료 판정 | 미해결 백로그(non-blocking, 의도적으로 범위 밖): 날짜 선택기 내부 달력 텍스트 로케일 — 완전 해결하려면 Activity `attachBaseContext` 수준의 앱 전역 로케일 래핑이 필요해 이번 라운드 범위 밖으로 명시적으로 남김(`DDDateTimeField` 코드 주석에 근거 문서화됨) |
+
 ## 5. Phase별 로드맵
 
 ### Phase 0. 리서치 (완료)

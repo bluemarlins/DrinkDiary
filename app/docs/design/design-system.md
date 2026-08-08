@@ -51,8 +51,11 @@ Pinterest 레퍼런스 리서치(`app/docs/design/research-immersive-ui.md`) 결
 - **글래스모피즘 근사**: 실제 backdrop blur 라이브러리 없이 `ddGlassBorderModifier()`(`Components.kt`, internal public) — `secondary→tertiary` 그래디언트 1.5dp 보더 + `surfaceContainerHigh.copy(alpha=0.88f)` 카드 fill로 "유리 같은" 느낌을 근사한다. 새 카드를 다크 테마 화면에 추가할 때는 이 헬퍼를 재사용한다.
 - **에디토리얼 세리프**: 폰트 에셋 추가 없이 시스템 내장 `FontFamily.Serif`를 Dashboard 히어로 숫자(`DDHeroSummaryCard`)와 RecordDetail 술 이름에 적용한다.
 - **사진 없음 워터마크**: 사진 미등록 시 플레이스홀더는 골드↔로즈 그래디언트 배경 위에 앱 런처 글리프를 `ColorFilter.tint`로 단색화해 28% 알파로 올린다 — 원본 다색 아이콘을 그대로 반투명 처리하면 "빛바랜 스티커"처럼 보이므로 반드시 단색 틴트를 거친다.
-- 현재 이 테마가 적용된 화면은 **Dashboard, RecordDetail, Collection**이다. RecordEditor는 전역 다크 스킴은 상속하지만 화면별 재검토는 아직 진행 전(백로그).
+- 현재 이 테마가 적용된 화면은 **Dashboard, RecordDetail, Collection, RecordEditor** 전부다.
 - **선택된 필터 칩의 시각 언어**: `FilterChip`이 선택되면 골드 풀필 + 체크 아이콘(`Icons.Filled.Check`)으로 표시한다(Dashboard 기간 세그먼트의 "✓ 월간"과 동일한 문법). `FilterChipDefaults.filterChipColors()`에서 `selectedContainerColor`/`selectedLabelColor`만 지정하고 `selectedLeadingIconColor`를 빠뜨리면 아이콘이 M3 기본 틴트(연한 크림색)로 남아 골드 배경 대비 ~1.4:1로 바래 보인다 — **선택 색상을 커스터마이징할 때는 라벨과 아이콘 색을 항상 함께 지정**한다.
+- **에러 색상 = Rose**: `Theme.kt`의 `error`/`onError`/`errorContainer`/`onErrorContainer`는 M3 베이스라인 빨강 대신 기존 Rose 패밀리(`Rose80/40/90/30/10`)로 채워져 있다. `DDDestructiveButton`, `DDFormErrorText`, 텍스트 필드의 `isError` 테두리는 모두 `colorScheme.error`를 참조하므로 이 한 곳만 맞으면 자동으로 통일된다. 세그먼트 선택기(`DDDrinkTypeSelector` 등)나 별점 입력(`DDRatingInput`)처럼 `isError` 개념이 없는 커스텀 컨트롤은 에러 시 캡션 텍스트만으로는 부족하다 — 컨트롤 자체에도 `colorScheme.error` 보더/텍스트 색을 입혀야 한다(`ddSelectorErrorModifier` 참고).
+- **Wish/Pass는 상태 배지뿐 아니라 선택 컨트롤에도 적용**: `DDCollectionStatusSelector`(RecordEditor의 세그먼트 선택기)의 비선호도 `DDCollectionStatusBadge`와 동일하게 Rose(`tertiaryContainer`)를 쓴다 — Gold(재구매/일반)와 섞이면 Wish/Pass 구분이 선택 컨트롤에서부터 무너진다.
+- **알려진 한계 — 날짜 선택기 로케일**: `DDDateTimeField`는 Compose Material3 `DatePickerDialog`를 쓰며 버튼 라벨(확인/취소)과 색상은 한글/Gold로 고정되어 있지만, 내부 달력 텍스트(월 이름, 요일 헤더)는 기기 시스템 로케일을 따른다. `Locale.setDefault()`/`LocalConfiguration` 오버라이드 둘 다 이 텍스트에는 적용되지 않음을 확인함(M3 DatePicker가 `androidx.compose.ui.text.intl.Locale`로 Activity의 실제 Configuration을 직접 읽기 때문) — 완전히 고치려면 `attachBaseContext` 수준의 앱 전역 로케일 래핑이 필요해 의도적으로 범위 밖으로 남김.
 
 ## 5. Action Components
 

@@ -23,6 +23,13 @@ private val DarkColorScheme = darkColorScheme(
     onTertiary = Rose10,
     tertiaryContainer = Rose30,
     onTertiaryContainer = Rose90,
+    // Reuses the Rose family instead of M3's baseline red — errors/destructive actions
+    // read as part of the app's palette ("절제된 감정 표현", research-component-motion-ux.md
+    // section 4) rather than a jarring off-brand color.
+    error = Rose80,
+    onError = Rose10,
+    errorContainer = Rose30,
+    onErrorContainer = Rose90,
     background = DeepForest10,
     onBackground = WarmOffWhite90,
     surface = DeepForest10,
@@ -50,6 +57,10 @@ private val LightColorScheme = lightColorScheme(
     onTertiary = Color.White,
     tertiaryContainer = Rose90,
     onTertiaryContainer = Rose10,
+    error = Rose40,
+    onError = Color.White,
+    errorContainer = Rose90,
+    onErrorContainer = Rose10,
     background = Cream99,
     onBackground = WarmCharcoal10,
     surface = Cream99,

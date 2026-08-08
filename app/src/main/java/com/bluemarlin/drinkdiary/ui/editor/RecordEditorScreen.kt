@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -103,12 +105,13 @@ fun RecordEditorRoute(
                                 modifier = Modifier.widthIn(max = 360.dp),
                             )
                         }
-                        RecordEditorForm(
-                            state = state,
-                            viewModel = viewModel,
-                            onBack = onBack,
+                        Column(
                             modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()),
-                        )
+                            verticalArrangement = Arrangement.spacedBy(18.dp),
+                        ) {
+                            RecordEditorFields(state = state, viewModel = viewModel)
+                            RecordEditorActions(onBack = onBack, onSave = viewModel::save, saving = state.saving)
+                        }
                     }
                 } else {
                     Column(
@@ -118,14 +121,14 @@ fun RecordEditorRoute(
                             .verticalScroll(rememberScrollState()),
                         verticalArrangement = Arrangement.spacedBy(18.dp),
                     ) {
-                        RecordEditorForm(
-                            state = state,
-                            viewModel = viewModel,
-                            onBack = onBack,
-                        )
+                        RecordEditorFields(state = state, viewModel = viewModel)
+                        // 사진 comes before the action row, not after — a form filled
+                        // top-to-bottom shouldn't hit 취소/저장 before reaching photo
+                        // attachment, which would otherwise be stranded below "the end".
                         DDFormSection("사진") {
                             DDImagePicker(state.input.imageUri, viewModel::updateImageUri)
                         }
+                        RecordEditorActions(onBack = onBack, onSave = viewModel::save, saving = state.saving)
                     }
                 }
             }
@@ -134,10 +137,9 @@ fun RecordEditorRoute(
 }
 
 @Composable
-private fun RecordEditorForm(
+private fun RecordEditorFields(
     state: RecordEditorUiState,
     viewModel: RecordEditorViewModel,
-    onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -175,7 +177,10 @@ private fun RecordEditorForm(
                         Text("세부 평가 평균 %.1f".format(representativeRating))
                     }
                 }
-                TextButton(onClick = viewModel::toggleRatingBreakdown) {
+                TextButton(
+                    onClick = viewModel::toggleRatingBreakdown,
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.secondary),
+                ) {
                     Text(if (state.input.ratingBreakdownExpanded) "접기 ▲" else "세부 평가 ▼")
                 }
             }
@@ -197,9 +202,13 @@ private fun RecordEditorForm(
             )
             DDMultilineTextField("테이스팅 노트", state.input.tastingNote, viewModel::updateTastingNote)
         }
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            DDSecondaryButton("취소", onClick = onBack, modifier = Modifier.weight(1f))
-            DDPrimaryButton("저장", onClick = viewModel::save, modifier = Modifier.weight(1f), enabled = !state.saving)
-        }
+    }
+}
+
+@Composable
+private fun RecordEditorActions(onBack: () -> Unit, onSave: () -> Unit, saving: Boolean, modifier: Modifier = Modifier) {
+    Row(modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        DDSecondaryButton("취소", onClick = onBack, modifier = Modifier.weight(1f))
+        DDPrimaryButton("저장", onClick = onSave, modifier = Modifier.weight(1f), enabled = !saving)
     }
 }

@@ -2,6 +2,7 @@ package com.bluemarlin.drinkdiary
 
 import android.app.Application
 import androidx.room.Room
+import java.util.Locale
 import com.bluemarlin.drinkdiary.ads.InterstitialAdManager
 import com.bluemarlin.drinkdiary.data.local.DrinkDiaryDatabase
 import com.bluemarlin.drinkdiary.data.repository.DrinkRecordRepositoryImpl
@@ -18,6 +19,12 @@ class DrinkDiaryApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        // DrinkDiary is Korean-only (no other locale is supported anywhere in the UI —
+        // see CLAUDE.md). Some Compose Material3 components (the DatePicker's month/
+        // weekday chrome) read `Locale.getDefault()` directly rather than the app's own
+        // Korean strings, so on a device set to a non-Korean system locale they'd render
+        // in English otherwise. Force the JVM default once at startup.
+        Locale.setDefault(Locale.KOREAN)
         appContainer = AppContainer(this)
     }
 }
