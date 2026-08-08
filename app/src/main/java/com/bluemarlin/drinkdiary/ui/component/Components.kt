@@ -5,6 +5,11 @@ import android.content.res.Configuration
 import android.graphics.ImageDecoder
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
@@ -637,7 +642,13 @@ fun DDThemeModeSelector(selected: ThemeMode, onSelected: (ThemeMode) -> Unit) {
 // ObserveDashboardSummaryUseCase's Monday-Sunday week definition as a single contiguous
 // row, rather than splitting across two visual rows.
 @Composable
-fun DDDashboardCalendar(period: DashboardPeriod, recordDates: Set<LocalDate>, modifier: Modifier = Modifier) {
+fun DDDashboardCalendar(
+    period: DashboardPeriod,
+    recordDates: Set<LocalDate>,
+    expanded: Boolean,
+    onToggleExpanded: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val today = remember { LocalDate.now() }
     val yearMonth = remember { YearMonth.from(today) }
     val firstOfMonth = yearMonth.atDay(1)
@@ -653,71 +664,96 @@ fun DDDashboardCalendar(period: DashboardPeriod, recordDates: Set<LocalDate>, mo
         shape = RoundedCornerShape(8.dp),
     ) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(
-                "${yearMonth.year}년 ${yearMonth.monthValue}월",
-                style = MaterialTheme.typography.titleMedium.copy(fontFamily = FontFamily.Serif),
-            )
-            Row(modifier = Modifier.fillMaxWidth()) {
-                listOf("월", "화", "수", "목", "금", "토", "일").forEach { label ->
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        label,
-                        modifier = Modifier.weight(1f),
-                        textAlign = TextAlign.Center,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        "${yearMonth.year}년 ${yearMonth.monthValue}월",
+                        style = MaterialTheme.typography.titleMedium.copy(fontFamily = FontFamily.Serif),
                     )
+                    if (!expanded) {
+                        Text(
+                            "이번 달 기록 ${recordDates.size}일",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+                TextButton(
+                    onClick = onToggleExpanded,
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.secondary),
+                ) {
+                    Text(if (expanded) "접기 ▲" else "펼치기 ▼")
                 }
             }
-            for (week in 0 until totalWeeks) {
-                val weekDates = (0..6).map { dayOfWeekIndex ->
-                    val dayNumber = week * 7 + dayOfWeekIndex - firstDayOffset + 1
-                    if (dayNumber in 1..daysInMonth) yearMonth.atDay(dayNumber) else null
-                }
-                val highlightRow = period == DashboardPeriod.Weekly &&
-                    weekDates.any { it != null && !it.isBefore(currentWeekStart) && !it.isAfter(currentWeekEnd) }
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(8.dp))
-                        .then(
-                            if (highlightRow) {
-                                Modifier.background(MaterialTheme.colorScheme.secondary.copy(alpha = 0.18f))
-                            } else {
-                                Modifier
-                            },
-                        )
-                        .padding(vertical = 4.dp),
-                ) {
-                    weekDates.forEach { date ->
-                        Box(modifier = Modifier.weight(1f).aspectRatio(1f), contentAlignment = Alignment.Center) {
-                            if (date != null) {
-                                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(26.dp)
-                                            .then(
-                                                if (date == today) {
-                                                    Modifier.border(1.5.dp, MaterialTheme.colorScheme.secondary, CircleShape)
-                                                } else {
-                                                    Modifier
-                                                },
-                                            ),
-                                        contentAlignment = Alignment.Center,
-                                    ) {
-                                        Text(date.dayOfMonth.toString(), style = MaterialTheme.typography.bodySmall)
+            AnimatedVisibility(
+                visible = expanded,
+                enter = fadeIn() + expandVertically(),
+                exit = fadeOut() + shrinkVertically(),
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        listOf("월", "화", "수", "목", "금", "토", "일").forEach { label ->
+                            Text(
+                                label,
+                                modifier = Modifier.weight(1f),
+                                textAlign = TextAlign.Center,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                    for (week in 0 until totalWeeks) {
+                        val weekDates = (0..6).map { dayOfWeekIndex ->
+                            val dayNumber = week * 7 + dayOfWeekIndex - firstDayOffset + 1
+                            if (dayNumber in 1..daysInMonth) yearMonth.atDay(dayNumber) else null
+                        }
+                        val highlightRow = period == DashboardPeriod.Weekly &&
+                            weekDates.any { it != null && !it.isBefore(currentWeekStart) && !it.isAfter(currentWeekEnd) }
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .then(
+                                    if (highlightRow) {
+                                        Modifier.background(MaterialTheme.colorScheme.secondary.copy(alpha = 0.18f))
+                                    } else {
+                                        Modifier
+                                    },
+                                )
+                                .padding(vertical = 4.dp),
+                        ) {
+                            weekDates.forEach { date ->
+                                Box(modifier = Modifier.weight(1f).aspectRatio(1f), contentAlignment = Alignment.Center) {
+                                    if (date != null) {
+                                        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(26.dp)
+                                                    .then(
+                                                        if (date == today) {
+                                                            Modifier.border(1.5.dp, MaterialTheme.colorScheme.secondary, CircleShape)
+                                                        } else {
+                                                            Modifier
+                                                        },
+                                                    ),
+                                                contentAlignment = Alignment.Center,
+                                            ) {
+                                                Text(date.dayOfMonth.toString(), style = MaterialTheme.typography.bodySmall)
+                                            }
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(4.dp)
+                                                    .clip(CircleShape)
+                                                    .background(
+                                                        if (date in recordDates) {
+                                                            MaterialTheme.colorScheme.secondary
+                                                        } else {
+                                                            Color.Transparent
+                                                        },
+                                                    ),
+                                            )
+                                        }
                                     }
-                                    Box(
-                                        modifier = Modifier
-                                            .size(4.dp)
-                                            .clip(CircleShape)
-                                            .background(
-                                                if (date in recordDates) {
-                                                    MaterialTheme.colorScheme.secondary
-                                                } else {
-                                                    Color.Transparent
-                                                },
-                                            ),
-                                    )
                                 }
                             }
                         }

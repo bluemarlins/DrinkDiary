@@ -177,6 +177,7 @@ Pinterest 레퍼런스 리서치(`app/docs/design/research-immersive-ui.md`) 결
 - `DDCollectionStatusBadge`는 재구매 후보와 비선호를 명확히 구분한다.
 - 별점 표시는 입력용 `DDRatingInput`과 조회용 `DDRatingStars`를 분리한다.
 - `DDDashboardCalendar`는 `DashboardPeriod`와 이번 달 기록 날짜(`Set<LocalDate>`)만 입력받는 순수 표시 컴포넌트다. 월 이동은 지원하지 않는다(항상 이번 달 고정 — `ObserveDashboardSummaryUseCase`의 "오늘 기준" 범위 계산과 동일한 전제). 요일 헤더는 월요일 시작(월화수목금토일)으로, 주간 하이라이트가 `ObserveDashboardSummaryUseCase`의 월~일 주간 정의와 한 행 안에서 정확히 일치하도록 한다(한국의 일반적인 일요일 시작 캘린더 관례와는 다름 — 의도적인 선택).
+- `DDDashboardCalendar`는 `expanded: Boolean`, `onToggleExpanded: () -> Unit`를 받는 상태 호이스팅 컴포넌트다(기본 접힘, 상태는 `DashboardRoute`의 `remember { mutableStateOf(false) }`로 보관 — 영속화하지 않음, 화면 재진입 시마다 접힌 채로 시작). 헤더 행(월 타이틀 + 토글)은 항상 보이고, 접힌 상태에서는 "이번 달 기록 N일" 한 줄 요약을 대신 보여준다. 토글 버튼 텍스트("펼치기 ▼"/"접기 ▲")와 `TextButton` + `secondary` 컨텐츠 컬러 스타일은 `RecordEditorScreen`의 "세부 평가" 토글 패턴을 그대로 재사용한 것 — 새 토글 인터랙션을 만들 때는 이 관례를 따른다. 그리드 컨텐츠는 `AnimatedVisibility(fadeIn() + expandVertically(), fadeOut() + shrinkVertically())`로 감싼다 — `research-component-motion-ux.md` 2절이 권장하는 패턴을 이 컴포넌트에서 처음 적용했다.
 - `DDDashboardCalendar`, `DDWeeklyTrendChart`는 둘 다 `DashboardViewModel.selectedPeriod`와 무관하게 항상 고정된 창(이번 달 / 최근 8주)을 보여준다 — 주간/월간/연간 탭 전환은 이 둘에 영향을 주지 않는다.
 - `DDWeeklyTrendChart`는 Vico(`com.patrykandpatrick.vico:compose-m3`, Compose 네이티브 차트 라이브러리)를 사용하는 유일한 컴포넌트다. `CartesianChartModelProducer`에 빈 리스트를 전달하면 `IllegalArgumentException("Series can't be empty")`로 즉시 크래시하므로, `weeklyCounts`가 비어 있을 때(StateFlow 초기값)는 `runTransaction` 호출 자체를 건너뛴다 — 이 가드를 제거하지 않는다.
 
@@ -188,9 +189,10 @@ Pinterest 레퍼런스 리서치(`app/docs/design/research-immersive-ui.md`) 결
 | --- | --- |
 | 화면 구조 | DDScreenScaffold, DDTopAppBar, DDBottomNavigationBar |
 | 기간 선택 | DDPeriodSegmentedControl |
-| 캘린더 · 트렌드 | DDDashboardCalendar, DDWeeklyTrendChart |
+| 트렌드(항상 표시, 상단) | DDWeeklyTrendChart |
 | 요약 표시 | DDDashboardSummaryCard, DDStatusSummaryCard, DDDrinkTypeRatioCard, DDTypeRatingComparisonCard |
 | 주요 기록 표시 | DDDrinkRecordCard, DDRatingStars, DDCollectionStatusBadge |
+| 캘린더(접힘 기본, 최하단) | DDDashboardCalendar |
 | 상태 표시 | DDLoadingContent, DDEmptyContent, DDErrorContent |
 | 기록 등록 | DDAddRecordFab |
 

@@ -161,6 +161,13 @@ app/store-listing/            # Play Store 리스팅용 그래픽 원본 (Phase 
 - **버그 2 — 레이아웃 붕괴**: 캘린더+주간 트렌드 차트를 non-scrollable `Column` 안에 순서대로 쌓고, 그 아래 히어로/통계/타입별 평점 카드는 `Modifier.weight(1f)`를 준 `Box`/`LazyColumn`에 맡기는 기존 구조에서, 트렌드 차트(~140dp)가 추가되며 고정 높이 요소의 합이 뷰포트를 넘어서 weighted 영역이 0에 가깝게 coerce됨 — 히어로 카드 이하 전부가 화면에 렌더링되지 않는 상태가 됨(스크린샷으로 발견, `uiautomator dump`로 실제 좌표 확인 후 원인 특정). **해결**: `DashboardRoute` 전체를 하나의 스크롤 가능한 `LazyColumn`으로 재구성 — 세그먼트 컨트롤/캘린더/트렌드 차트도 `item{}`으로 넣고, 상태별 성공 콘텐츠는 `LazyListScope` 확장 함수(`dashboardSuccessItems`)로 변경. "항상 보이는" 요소라는 요구사항은 `when(state)` 분기 밖에 두는 것으로 유지되고, "고정 헤더" 여부와는 무관함을 확인 — `design-system.md` 14절에 재발 방지 규칙으로 기록.
 - 실기기(SM_F971N)에서 주간/월간/연간 탭 전환 시 트렌드 차트는 그대로 유지되고 히어로 카드·종류별 비중·타입별 평점 비교만 갱신되는 것을 확인.
 
+**Dashboard 재배치: 캘린더 하단 이동 + 접기/펼치기 (2026-08-08)** — 실기기 검증에서 "캘린더가 화면을 너무 많이 차지해 한눈에 파악이라는 대시보드 목적이 흐려진다"는 사용자 피드백에 따라 진행. UX 논의에서 "요약 통계를 먼저 보여주고 캘린더는 필요할 때 찾아보는 보조 정보로 내리자"는 방향에 합의.
+
+- **순서 변경**: 세그먼트 컨트롤 → 주간 트렌드(그대로 상단, 항상 표시) → 상태별 콘텐츠(히어로/통계/종류별 비중/타입별 평점 비교/재구매·비선호 목록) → **캘린더(신규 위치, 최하단)**.
+- **캘린더 접기/펼치기**: `DDDashboardCalendar`에 `expanded`/`onToggleExpanded` 파라미터 추가, 기본 접힘. 접힌 상태는 "이번 달 기록 N일" 한 줄 요약만 보여주고, 펼치면 기존 월 그리드가 나타난다. 토글 UI는 새로 만들지 않고 `RecordEditorScreen`의 기존 "세부 평가 ▼/접기 ▲" 패턴(`TextButton` + `secondary` 컬러)을 그대로 재사용. 그리드 등장/소멸에는 `research-component-motion-ux.md`가 처음부터 권장했지만 어디에도 적용된 적 없던 `AnimatedVisibility(fadeIn()+expandVertically())` 조합을 이번에 처음 실제로 적용.
+- **디자인 스킬 확인**: 사용자가 "design 관련 skill이 있으면 설정해서 인포그래픽 개선 방안을 마련해달라"고 요청 — 확인 결과 프로젝트/전역 어디에도 전용 디자인 Skill은 없음(`jetpack-compose-m3`=Wear OS 전용, `styles`=실험적 Compose Styles API, 둘 다 무관). 이 프로젝트에서 디자인 리서치 역할은 이미 `agy-research` 스킬(`research-immersive-ui.md`, `research-component-motion-ux.md`를 생산한 도구)과 `ui-quality-reviewer` 서브에이전트가 맡고 있어, 새 스킬을 만들지 않고 그대로 활용하기로 함 — 인포그래픽 개선 제안 리서치를 별도로 진행(아래 항목).
+- 실기기 대신 에뮬레이터(`Medium_Phone_API_36.1`)에서 검증 — 이 세션 중 실기기(R3KL406ERJM)가 반복적으로 adb 연결이 끊겨 에뮬레이터로 전환. `uiautomator dump` 기반 정확한 좌표로 접기/펼치기 양방향 토글, "이번 달 기록 3일" 캡션, 순서 변경을 모두 확인.
+
 ## 5. Phase별 로드맵
 
 ### Phase 0. 리서치 (완료)

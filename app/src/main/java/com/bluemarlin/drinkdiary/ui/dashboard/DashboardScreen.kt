@@ -18,6 +18,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.bluemarlin.drinkdiary.domain.model.CollectionStatus
@@ -50,6 +53,7 @@ fun DashboardRoute(
     val period by viewModel.selectedPeriod.collectAsState()
     val recordDates by viewModel.recordDatesInMonth.collectAsState()
     val weeklyTrend by viewModel.weeklyTrend.collectAsState()
+    var calendarExpanded by remember { mutableStateOf(false) }
 
     DDScreenScaffold(
         title = "대시보드",
@@ -79,7 +83,6 @@ fun DashboardRoute(
                 contentPadding = PaddingValues(bottom = 96.dp),
             ) {
                 item { DDPeriodSegmentedControl(selected = period, onSelected = viewModel::selectPeriod) }
-                item { DDDashboardCalendar(period = period, recordDates = recordDates) }
                 item { DDWeeklyTrendChart(weeklyCounts = weeklyTrend) }
                 when (val uiState = state) {
                     DashboardUiState.Loading -> item { DDLoadingContent() }
@@ -89,6 +92,14 @@ fun DashboardRoute(
                         summary = uiState.summary,
                         onOpenRecord = onOpenRecord,
                         onOpenStatus = onOpenStatus,
+                    )
+                }
+                item {
+                    DDDashboardCalendar(
+                        period = period,
+                        recordDates = recordDates,
+                        expanded = calendarExpanded,
+                        onToggleExpanded = { calendarExpanded = !calendarExpanded },
                     )
                 }
             }
