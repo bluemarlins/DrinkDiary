@@ -19,7 +19,7 @@ For quick things without file output, drop the redirect and just read stdout.
 
 | Task type | Model |
 |---|---|
-| Research (web search, competitive analysis, policy fact-finding) | `gemini-3.1-pro-high` |
+| Research (web search, competitive analysis, policy fact-finding) | `gemini-3.5-flash-medium` |
 | Image generation (icons, graphics, screenshots critique) | `gemini-3.6-flash-high` |
 | Mechanical/no-reasoning tasks (see `agy-commit`) | `gemini-3.5-flash-medium` |
 
