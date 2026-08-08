@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -87,6 +88,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -101,9 +103,12 @@ import com.bluemarlin.drinkdiary.domain.model.ThemeMode
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
 import com.patrykandpatrick.vico.compose.cartesian.data.CartesianChartModelProducer
 import com.patrykandpatrick.vico.compose.cartesian.data.columnModel
+import com.patrykandpatrick.vico.compose.cartesian.layer.ColumnCartesianLayer
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberColumnCartesianLayer
 import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
+import com.patrykandpatrick.vico.compose.common.Fill
 import com.patrykandpatrick.vico.compose.common.ProvideVicoTheme
+import com.patrykandpatrick.vico.compose.common.component.rememberLineComponent
 import com.patrykandpatrick.vico.compose.m3.common.rememberM3VicoTheme
 import com.bluemarlin.drinkdiary.domain.model.roundToHalf
 import java.text.NumberFormat
@@ -1198,7 +1203,7 @@ fun DDDashboardSummaryCard(title: String, value: String, modifier: Modifier = Mo
  * app/docs/design/research-immersive-ui.md section 2/5.
  */
 @Composable
-fun DDHeroSummaryCard(title: String, value: String, modifier: Modifier = Modifier) {
+fun DDHeroSummaryCard(title: String, value: String, caption: String? = null, modifier: Modifier = Modifier) {
     Card(
         modifier = modifier.fillMaxWidth().then(ddGlassBorderModifier()),
         shape = RoundedCornerShape(8.dp),
@@ -1221,9 +1226,16 @@ fun DDHeroSummaryCard(title: String, value: String, modifier: Modifier = Modifie
             Text(title, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Text(
                 value,
-                style = MaterialTheme.typography.displaySmall.copy(fontFamily = FontFamily.Serif),
-                color = MaterialTheme.colorScheme.onSurface,
+                style = MaterialTheme.typography.displayMedium.copy(fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold),
+                color = MaterialTheme.colorScheme.secondary,
             )
+            if (caption != null) {
+                Text(
+                    caption,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                )
+            }
         }
     }
 }
@@ -1277,20 +1289,25 @@ fun DDDrinkTypeRatioCard(
             if (totalCount == 0) {
                 Text("기록이 없습니다.", style = MaterialTheme.typography.bodyMedium)
             } else {
+                // Capsule track (height/2 corner radius) instead of a squared-off bar, with
+                // an inline Serif percentage label per wide-enough segment and a thin gold
+                // accent border on the largest-share segment — approximates a "glow" without
+                // real blur/shadow per app/docs/design/design-system.md section 14.
+                val maxCount = maxOf(wineCount, whiskeyCount, beerCount)
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(10.dp)
-                        .clip(RoundedCornerShape(4.dp)),
+                        .height(28.dp)
+                        .clip(RoundedCornerShape(14.dp)),
                 ) {
                     if (wineCount > 0) {
-                        Box(Modifier.weight(wineCount.toFloat()).fillMaxHeight().background(MaterialTheme.colorScheme.tertiary))
+                        DDRatioSegment(wineCount, totalCount, maxCount, MaterialTheme.colorScheme.tertiary, MaterialTheme.colorScheme.onTertiary)
                     }
                     if (whiskeyCount > 0) {
-                        Box(Modifier.weight(whiskeyCount.toFloat()).fillMaxHeight().background(MaterialTheme.colorScheme.secondary))
+                        DDRatioSegment(whiskeyCount, totalCount, maxCount, MaterialTheme.colorScheme.secondary, MaterialTheme.colorScheme.onSecondary)
                     }
                     if (beerCount > 0) {
-                        Box(Modifier.weight(beerCount.toFloat()).fillMaxHeight().background(MaterialTheme.colorScheme.primary))
+                        DDRatioSegment(beerCount, totalCount, maxCount, MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.onPrimary)
                     }
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -1299,6 +1316,33 @@ fun DDDrinkTypeRatioCard(
                     DDRatioLegendItem("맥주", beerCount, totalCount, MaterialTheme.colorScheme.primary)
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun RowScope.DDRatioSegment(count: Int, total: Int, maxCount: Int, color: Color, onColor: Color) {
+    val percent = (count * 100) / total
+    Box(
+        modifier = Modifier
+            .weight(count.toFloat())
+            .fillMaxHeight()
+            .background(color)
+            .then(
+                if (count == maxCount) {
+                    Modifier.border(1.dp, MaterialTheme.colorScheme.secondary.copy(alpha = 0.6f))
+                } else {
+                    Modifier
+                },
+            ),
+        contentAlignment = Alignment.Center,
+    ) {
+        if (percent >= 15) {
+            Text(
+                "$percent%",
+                style = MaterialTheme.typography.labelSmall.copy(fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold),
+                color = onColor,
+            )
         }
     }
 }
@@ -1337,8 +1381,23 @@ fun DDWeeklyTrendChart(weeklyCounts: List<Int>, modifier: Modifier = Modifier) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("최근 8주 기록 추이", style = MaterialTheme.typography.labelLarge)
             ProvideVicoTheme(rememberM3VicoTheme()) {
+                val goldColor = MaterialTheme.colorScheme.secondary
                 CartesianChartHost(
-                    chart = rememberCartesianChart(rememberColumnCartesianLayer()),
+                    chart = rememberCartesianChart(
+                        rememberColumnCartesianLayer(
+                            columnProvider = ColumnCartesianLayer.ColumnProvider.series(
+                                rememberLineComponent(
+                                    fill = Fill(
+                                        Brush.verticalGradient(
+                                            listOf(goldColor.copy(alpha = 0.95f), goldColor.copy(alpha = 0.25f)),
+                                        ),
+                                    ),
+                                    thickness = 16.dp,
+                                    shape = RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp),
+                                ),
+                            ),
+                        ),
+                    ),
                     modelProducer = modelProducer,
                     modifier = Modifier.fillMaxWidth().height(72.dp),
                 )

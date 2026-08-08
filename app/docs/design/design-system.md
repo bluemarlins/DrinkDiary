@@ -123,9 +123,10 @@ Pinterest 레퍼런스 리서치(`app/docs/design/research-immersive-ui.md`) 결
 | DDScreenScaffold | 공통 TopBar, BottomBar, FAB 슬롯 제공 | 모든 주요 화면 |
 | DDTopAppBar | 화면 제목과 상단 액션 표시 | 모든 주요 화면 |
 | DDBottomNavigationBar | Dashboard, Collection 탭 제공 | 앱 루트 |
+| DDHeroSummaryCard | 대시보드 최상단 히어로 통계(현재 "기록 수") — 큰 Gold Serif 숫자 + 옵션 `caption` 한 줄 | Dashboard |
 | DDDashboardSummaryCard | 기록 수, 평균 별점 등 요약 지표 표시 | Dashboard |
 | DDStatusSummaryCard | 재구매 후보 수, 비선호 수 표시 | Dashboard |
-| DDDrinkTypeRatioCard | 와인, 위스키, 맥주 비중 표시 | Dashboard |
+| DDDrinkTypeRatioCard | 와인, 위스키, 맥주 비중을 캡슐형 트랙 + 세그먼트별 인라인 % 텍스트로 표시 | Dashboard |
 | DDTypeRatingComparisonCard | 와인/위스키/맥주 종류별 평균 평점·기록 수 비교(순수 Compose, 라이브러리 불필요) | Dashboard |
 | DDDrinkRecordListItem | 컬렉션 목록의 단일 기록 표시 | Collection |
 | DDDrinkRecordCard | 주요 기록 카드 표시 | Dashboard |
@@ -139,8 +140,8 @@ Pinterest 레퍼런스 리서치(`app/docs/design/research-immersive-ui.md`) 결
 - 기록 목록 아이템에는 이름, 주류 종류, 별점, 컬렉션 상태, 기록 일시를 우선 표시한다.
 - 가격과 장소는 공간이 부족한 목록에서는 생략 가능하지만 상세 화면에서는 표시한다.
 - 이미지가 없거나 로드 실패한 경우 대체 이미지를 표시한다.
-
-## 9. Feedback Components
+- `DDHeroSummaryCard`의 `value`는 `displayMedium` + `FontFamily.Serif` + `FontWeight.Bold` + `secondary`(Gold) 색상을 쓴다 — 다른 통계 카드(`DDDashboardSummaryCard` 등)의 텍스트 색은 그대로 `onSurface` 계열로 유지해, 화면당 "가장 중요한 지표 하나"만 Gold 대형 숫자로 강조되는 위계를 지킨다. `caption`은 옵트인 파라미터(기본 `null`)이므로 감성 문구가 필요 없는 재사용처에는 영향 없음.
+- `DDDrinkTypeRatioCard`의 세그먼트 인라인 % 텍스트는 세그먼트가 전체의 15% 미만일 때는 렌더링하지 않는다(좁은 세그먼트에서 텍스트 클리핑 방지) — 하단 범례가 모든 세그먼트의 정확한 %를 항상 보여주므로 정보 손실은 없다. 가장 비중이 큰 세그먼트(동률이면 해당 전부)에는 `secondary.copy(alpha=0.6f)` 1dp 보더를 추가해 강조하되, 실제 blur/glow는 쓰지 않는다(14절 규칙과 동일한 이유).
 
 | 컴포넌트 | 역할 | 사용 위치 |
 | --- | --- | --- |
@@ -169,7 +170,7 @@ Pinterest 레퍼런스 리서치(`app/docs/design/research-immersive-ui.md`) 결
 | DDRecordedDateText | 기록 일시 표시 포맷 통일 | 목록, 상세 |
 | DDTastingNoteBlock | 테이스팅 노트 표시 | 상세 |
 | DDDashboardCalendar | 이번 달 캘린더 + 기록 날짜 점 표시 + 기간별(주간/월간) 하이라이트 | Dashboard |
-| DDWeeklyTrendChart | 최근 8주 기록 수 미니 바 차트(축 없는 스파크라인 형태) | Dashboard |
+| DDWeeklyTrendChart | 최근 8주 기록 수 미니 바 차트(축 없는 스파크라인 형태, 막대 상단 라운딩 + 세로 Gold 그라데이션) | Dashboard |
 
 도메인 컴포넌트 제약:
 
@@ -180,6 +181,7 @@ Pinterest 레퍼런스 리서치(`app/docs/design/research-immersive-ui.md`) 결
 - `DDDashboardCalendar`는 `expanded: Boolean`, `onToggleExpanded: () -> Unit`를 받는 상태 호이스팅 컴포넌트다(기본 접힘, 상태는 `DashboardRoute`의 `remember { mutableStateOf(false) }`로 보관 — 영속화하지 않음, 화면 재진입 시마다 접힌 채로 시작). 헤더 행(월 타이틀 + 토글)은 항상 보이고, 접힌 상태에서는 "이번 달 기록 N일" 한 줄 요약을 대신 보여준다. 토글 버튼 텍스트("펼치기 ▼"/"접기 ▲")와 `TextButton` + `secondary` 컨텐츠 컬러 스타일은 `RecordEditorScreen`의 "세부 평가" 토글 패턴을 그대로 재사용한 것 — 새 토글 인터랙션을 만들 때는 이 관례를 따른다. 그리드 컨텐츠는 `AnimatedVisibility(fadeIn() + expandVertically(), fadeOut() + shrinkVertically())`로 감싼다 — `research-component-motion-ux.md` 2절이 권장하는 패턴을 이 컴포넌트에서 처음 적용했다.
 - `DDDashboardCalendar`, `DDWeeklyTrendChart`는 둘 다 `DashboardViewModel.selectedPeriod`와 무관하게 항상 고정된 창(이번 달 / 최근 8주)을 보여준다 — 주간/월간/연간 탭 전환은 이 둘에 영향을 주지 않는다.
 - `DDWeeklyTrendChart`는 Vico(`com.patrykandpatrick.vico:compose-m3`, Compose 네이티브 차트 라이브러리)를 사용하는 유일한 컴포넌트다. `CartesianChartModelProducer`에 빈 리스트를 전달하면 `IllegalArgumentException("Series can't be empty")`로 즉시 크래시하므로, `weeklyCounts`가 비어 있을 때(StateFlow 초기값)는 `runTransaction` 호출 자체를 건너뛴다 — 이 가드를 제거하지 않는다.
+- `DDWeeklyTrendChart`의 컬럼 스타일(상단만 둥근 모서리 + 세로 Gold 그라데이션)은 `rememberColumnCartesianLayer(columnProvider = ColumnCartesianLayer.ColumnProvider.series(rememberLineComponent(fill = Fill(Brush.verticalGradient(...)), thickness = ..., shape = RoundedCornerShape(topStart = ..., topEnd = ...))))`로 구현한다 — `rememberM3VicoTheme()`가 제공하는 기본 컬럼 색상을 이 커스텀 `columnProvider`가 오버라이드한다. Vico 3.2.3의 `Fill`은 `Color`와 `Brush` 두 생성자를 모두 지원하고(`compose-m3` 아닌 `compose` 모듈의 `com.patrykandpatrick.vico.compose.common.Fill`), `rememberLineComponent`의 `shape` 파라미터는 Compose의 `Shape`를 그대로 받으므로 Vico 전용 셰이프 클래스는 필요 없다 — 이 API는 `.gradle` 캐시의 실제 아티팩트(`javap`)와 공식 샘플 저장소(`RockMetalRatios.kt`, `ElectricCarSales.kt`)로 직접 검증했다(추측 아님).
 
 ## 11. 화면별 사용 컴포넌트
 

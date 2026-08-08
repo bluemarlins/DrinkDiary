@@ -116,7 +116,11 @@ private fun LazyListScope.dashboardSuccessItems(
         // Bento-style asymmetric layout: one large hero tile (기록 수) instead of
         // a uniform grid, per app/docs/design/research-immersive-ui.md section 2.
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            DDHeroSummaryCard("기록 수", "${summary.totalCount}개")
+            DDHeroSummaryCard(
+                title = "기록 수",
+                value = "${summary.totalCount}개",
+                caption = "DrinkDiary에 담긴 나만의 테이스팅 기록",
+            )
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
                 DDDashboardSummaryCard("평균 별점", summary.averageRating?.let { "%.1f".format(it) } ?: "-", Modifier.weight(1f))
                 DDStatusSummaryCard(CollectionStatus.Repurchase, summary.repurchaseCount, Modifier.weight(1f)) {

@@ -177,6 +177,13 @@ app/store-listing/            # Play Store 리스팅용 그래픽 원본 (Phase 
 - 종류별 평점 비교는 단색 비례 바 대신 5단계 다이아몬드 세그먼트 게이지(4.0 이상=골드, 3.0 미만=로즈)로 전환하는 안도 제시됨.
 - 다음 라운드에서 이 중 어떤 항목을 실제로 구현할지는 사용자 승인 필요.
 
+**인포그래픽 개선 TOP 3 구현 (2026-08-08)** — 위 제안서의 우선순위 1→2→3을 사용자 승인 하에 순서대로 구현.
+
+- **히어로 카드**: `DDHeroSummaryCard`의 `value`를 `displaySmall`→`displayMedium`+`FontWeight.Bold`+Gold(`secondary`) 색상으로 확대, 옵트인 `caption` 파라미터 추가("DrinkDiary에 담긴 나만의 테이스팅 기록"). 보더(gold-to-rose 그라데이션)는 기존 `ddGlassBorderModifier()`로 이미 충족되어 있어 변경 없음.
+- **주종 비율 바**: `DDDrinkTypeRatioCard`를 10dp 각진 바 → 28dp 캡슐 트랙(`RoundedCornerShape(14.dp)`)으로, 세그먼트가 15% 이상일 때만 인라인 Serif % 텍스트, 최대 비중 세그먼트에 얇은 Gold 보더로 강조. 미니 주종 아이콘은 **범위 밖으로 제외** — `material-icons-extended`(대용량 아이콘팩) 추가가 필요해 "불필요한 의존성 지양" 원칙과 충돌.
+- **주간 트렌드 차트**: Vico 컬럼을 상단 라운딩(`RoundedCornerShape(topStart/topEnd = 6.dp)`) + 세로 Gold 그라데이션 채우기로 커스텀. Vico API는 추측하지 않고 Gradle 캐시의 `compose-android-3.2.3.aar`를 직접 추출해 `javap`로 `rememberLineComponent`의 정확한 파라미터 순서를 확인하고, 공식 샘플(`RockMetalRatios.kt`, `ElectricCarSales.kt`)로 `Fill(Brush)`/`ColumnCartesianLayer.ColumnProvider.series()` 사용법을 검증 — 결과적으로 첫 빌드에 컴파일 에러 없이 성공(이전 라운드의 "추측하지 않기" 교훈이 실제로 시간을 절약함). 피크/현재 주차 강조 도트는 **범위 밖으로 제외** — Vico 커스텀 `CartesianLayerDecoration` 구현이 필요한 별도 과제.
+- 에뮬레이터에서 확인: 세 컴포넌트 모두 정상 렌더링, 주간/월간 탭 전환 시 트렌드 차트 유지 + 통계/비율 바 갱신에 회귀 없음.
+
 ## 5. Phase별 로드맵
 
 ### Phase 0. 리서치 (완료)
