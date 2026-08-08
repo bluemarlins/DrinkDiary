@@ -168,6 +168,15 @@ app/store-listing/            # Play Store 리스팅용 그래픽 원본 (Phase 
 - **디자인 스킬 확인**: 사용자가 "design 관련 skill이 있으면 설정해서 인포그래픽 개선 방안을 마련해달라"고 요청 — 확인 결과 프로젝트/전역 어디에도 전용 디자인 Skill은 없음(`jetpack-compose-m3`=Wear OS 전용, `styles`=실험적 Compose Styles API, 둘 다 무관). 이 프로젝트에서 디자인 리서치 역할은 이미 `agy-research` 스킬(`research-immersive-ui.md`, `research-component-motion-ux.md`를 생산한 도구)과 `ui-quality-reviewer` 서브에이전트가 맡고 있어, 새 스킬을 만들지 않고 그대로 활용하기로 함 — 인포그래픽 개선 제안 리서치를 별도로 진행(아래 항목).
 - 실기기 대신 에뮬레이터(`Medium_Phone_API_36.1`)에서 검증 — 이 세션 중 실기기(R3KL406ERJM)가 반복적으로 adb 연결이 끊겨 에뮬레이터로 전환. `uiautomator dump` 기반 정확한 좌표로 접기/펼치기 양방향 토글, "이번 달 기록 3일" 캡션, 순서 변경을 모두 확인.
 
+**인포그래픽 대시보드 개선 제안 리서치 (2026-08-08)** — `agy-research`(`gemini-3.5-flash-medium`)로 델리게이트해 Spotify Wrapped/Duolingo/Oura Ring/Notion류 습관 트래킹 앱의 인포그래픽 패턴을 조사하고, DrinkDiary 대시보드 4개 컴포넌트(히어로 통계 카드, 주종 비율 바, 종류별 평점 비교, 주간 트렌드 차트)에 대한 구체적 before/after 제안을 `app/docs/design/research-infographic-dashboard.md`에 저장. **이 문서는 승인된 계획이 아니라 검토용 제안서** — 자동 구현하지 않았다.
+
+**핵심 발견사항**:
+- 우선순위 1위 제안: 히어로 카드를 48sp Serif 골드 숫자 + 감성 서브텍스트 + 골드-로즈 그라데이션 보더로 전면 개편 — 대시보드 진입 시 첫인상에 가장 큰 영향, 백엔드/DB 변경 없이 Compose 스타일링만으로 구현 가능.
+- 우선순위 2위: 주종 비율 바를 3분할 사각 바 → 캡슐형 트랙 + 미니 아이콘 + 인라인 Serif 텍스트로 전환.
+- 우선순위 3위: 주간 트렌드 차트에서 Vico 격자선 제거, 막대 상단 라운딩 + 세로 골드 그라데이션 채우기.
+- 종류별 평점 비교는 단색 비례 바 대신 5단계 다이아몬드 세그먼트 게이지(4.0 이상=골드, 3.0 미만=로즈)로 전환하는 안도 제시됨.
+- 다음 라운드에서 이 중 어떤 항목을 실제로 구현할지는 사용자 승인 필요.
+
 ## 5. Phase별 로드맵
 
 ### Phase 0. 리서치 (완료)
