@@ -167,12 +167,14 @@ Pinterest 레퍼런스 리서치(`app/docs/design/research-immersive-ui.md`) 결
 | DDPriceText | 가격 표시 포맷 통일 | 목록, 상세 |
 | DDRecordedDateText | 기록 일시 표시 포맷 통일 | 목록, 상세 |
 | DDTastingNoteBlock | 테이스팅 노트 표시 | 상세 |
+| DDDashboardCalendar | 이번 달 캘린더 + 기록 날짜 점 표시 + 기간별(주간/월간) 하이라이트 | Dashboard |
 
 도메인 컴포넌트 제약:
 
 - `DDDrinkTypeBadge`는 와인, 위스키, 맥주 외 값을 표시하지 않는다.
 - `DDCollectionStatusBadge`는 재구매 후보와 비선호를 명확히 구분한다.
 - 별점 표시는 입력용 `DDRatingInput`과 조회용 `DDRatingStars`를 분리한다.
+- `DDDashboardCalendar`는 `DashboardPeriod`와 이번 달 기록 날짜(`Set<LocalDate>`)만 입력받는 순수 표시 컴포넌트다. 월 이동은 지원하지 않는다(항상 이번 달 고정 — `ObserveDashboardSummaryUseCase`의 "오늘 기준" 범위 계산과 동일한 전제). 요일 헤더는 월요일 시작(월화수목금토일)으로, 주간 하이라이트가 `ObserveDashboardSummaryUseCase`의 월~일 주간 정의와 한 행 안에서 정확히 일치하도록 한다(한국의 일반적인 일요일 시작 캘린더 관례와는 다름 — 의도적인 선택).
 
 ## 11. 화면별 사용 컴포넌트
 
@@ -182,6 +184,7 @@ Pinterest 레퍼런스 리서치(`app/docs/design/research-immersive-ui.md`) 결
 | --- | --- |
 | 화면 구조 | DDScreenScaffold, DDTopAppBar, DDBottomNavigationBar |
 | 기간 선택 | DDPeriodSegmentedControl |
+| 캘린더 | DDDashboardCalendar |
 | 요약 표시 | DDDashboardSummaryCard, DDStatusSummaryCard, DDDrinkTypeRatioCard |
 | 주요 기록 표시 | DDDrinkRecordCard, DDRatingStars, DDCollectionStatusBadge |
 | 상태 표시 | DDLoadingContent, DDEmptyContent, DDErrorContent |

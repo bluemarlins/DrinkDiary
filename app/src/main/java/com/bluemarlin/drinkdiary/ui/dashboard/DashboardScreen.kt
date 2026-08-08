@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import com.bluemarlin.drinkdiary.domain.model.CollectionStatus
 import com.bluemarlin.drinkdiary.domain.model.DashboardSummary
 import com.bluemarlin.drinkdiary.ui.component.DDAddRecordFab
+import com.bluemarlin.drinkdiary.ui.component.DDDashboardCalendar
 import com.bluemarlin.drinkdiary.ui.component.DDDashboardSummaryCard
 import com.bluemarlin.drinkdiary.ui.component.DDHeroSummaryCard
 import com.bluemarlin.drinkdiary.ui.component.DDDrinkTypeRatioCard
@@ -43,6 +44,7 @@ fun DashboardRoute(
 ) {
     val state by viewModel.uiState.collectAsState()
     val period by viewModel.selectedPeriod.collectAsState()
+    val recordDates by viewModel.recordDatesInMonth.collectAsState()
 
     DDScreenScaffold(
         title = "대시보드",
@@ -65,6 +67,7 @@ fun DashboardRoute(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 DDPeriodSegmentedControl(selected = period, onSelected = viewModel::selectPeriod)
+                DDDashboardCalendar(period = period, recordDates = recordDates)
                 when (val uiState = state) {
                     DashboardUiState.Loading -> DDLoadingContent()
                     DashboardUiState.Empty -> DDEmptyContent("선택한 기간에 기록이 없습니다.", "기록 추가", onAddRecord)

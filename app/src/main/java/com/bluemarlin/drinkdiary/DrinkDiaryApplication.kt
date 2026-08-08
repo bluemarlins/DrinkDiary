@@ -6,12 +6,17 @@ import java.util.Locale
 import com.bluemarlin.drinkdiary.ads.InterstitialAdManager
 import com.bluemarlin.drinkdiary.data.local.DrinkDiaryDatabase
 import com.bluemarlin.drinkdiary.data.repository.DrinkRecordRepositoryImpl
+import com.bluemarlin.drinkdiary.debug.DebugSeeder
 import com.bluemarlin.drinkdiary.domain.repository.DrinkRecordRepository
 import com.bluemarlin.drinkdiary.domain.usecase.DeleteDrinkRecordUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveDashboardSummaryUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveDrinkRecordUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveDrinkRecordsUseCase
+import com.bluemarlin.drinkdiary.domain.usecase.ObserveMonthRecordDatesUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.SaveDrinkRecordUseCase
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class DrinkDiaryApplication : Application() {
     lateinit var appContainer: AppContainer
@@ -26,6 +31,9 @@ class DrinkDiaryApplication : Application() {
         // in English otherwise. Force the JVM default once at startup.
         Locale.setDefault(Locale.KOREAN)
         appContainer = AppContainer(this)
+        // Seeds dummy data in debug builds only; no-op in release — see
+        // app/src/debug/.../debug/DebugSeeder.kt and app/src/release/.../debug/DebugSeeder.kt.
+        CoroutineScope(Dispatchers.IO).launch { DebugSeeder.seedIfNeeded(this@DrinkDiaryApplication, appContainer) }
     }
 }
 
@@ -44,6 +52,7 @@ class AppContainer(application: Application) {
     val saveDrinkRecordUseCase = SaveDrinkRecordUseCase(repository)
     val deleteDrinkRecordUseCase = DeleteDrinkRecordUseCase(repository)
     val observeDashboardSummaryUseCase = ObserveDashboardSummaryUseCase(repository)
+    val observeMonthRecordDatesUseCase = ObserveMonthRecordDatesUseCase(repository)
 
     val interstitialAdManager = InterstitialAdManager(application)
 }

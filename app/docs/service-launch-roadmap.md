@@ -138,6 +138,12 @@ app/store-listing/            # Play Store 리스팅용 그래픽 원본 (Phase 
 | RecordEditor | 2 | M3 DatePicker 다이얼로그 자체는 다크+Gold로 잘 나오지만 내부 달력 텍스트("Select date", "August 2026", "S M T W T F S")가 여전히 영어 | `Locale.setDefault`/`LocalConfiguration` 오버라이드 둘 다 시도했으나 M3 DatePicker가 `text.intl.Locale`(Activity의 실제 Configuration에 종속)로 로케일을 읽어 두 방법 모두 적용 안 됨 확인 |
 | RecordEditor | 3 (최종, 캡 도달) | 회귀 없음, agy 독립 비평도 프로덕션 준비 완료 판정 | 미해결 백로그(non-blocking, 의도적으로 범위 밖): 날짜 선택기 내부 달력 텍스트 로케일 — 완전 해결하려면 Activity `attachBaseContext` 수준의 앱 전역 로케일 래핑이 필요해 이번 라운드 범위 밖으로 명시적으로 남김(`DDDateTimeField` 코드 주석에 근거 문서화됨) |
 
+**Dashboard 캘린더 연동 + 개발용 더미 데이터 30건 (2026-08-08)** — "Theme만 바뀌었지 컴포넌트 자체의 변화가 크게 느껴지지 않는다"는 사용자 피드백에 따라, 첫 컴포넌트 단위 개선으로 Dashboard의 `DDPeriodSegmentedControl`(주간/월간/연간)을 실제 캘린더 뷰와 연동했다.
+
+- `ObserveMonthRecordDatesUseCase`(신규) — 이번 달 전체의 기록 날짜를 `Set<LocalDate>`로 관찰. `DashboardViewModel`에 `selectedPeriod`와 독립된 `recordDatesInMonth` StateFlow로 노출(캘린더 점 표시는 선택된 기간과 무관하게 항상 이번 달 전체 기준).
+- `DDDashboardCalendar`(신규, `Components.kt`) — 캘린더 라이브러리 의존성 추가 없이 순수 Compose로 월 그리드 구현. 월요일 시작 요일 배치(한국의 일반적 일요일 시작 관례와 다름 — `ObserveDashboardSummaryUseCase`의 월~일 주간 정의와 하이라이트 밴드가 한 행 안에서 정확히 일치하도록 의도적으로 선택). 기록이 있는 날짜는 Gold 점, 오늘은 Gold 링, 주간 선택 시에만 이번 주 행에 반투명 Gold 밴드 하이라이트(월간/연간은 하이라이트 없음 — 사용자가 AskUserQuestion으로 직접 선택: "월 단위 그리드로 1년 전체를 하이라이트하는 건 불가능하니 이번 달만 표시").
+- **개발용 더미 데이터 30건**: agy(`gemini-3.1-pro-high`)가 유명 와인/위스키/맥주 각 10종의 이름·가격·테이스팅 노트를 조사(`app/docs/dev/seed-data.md`), agy(`gemini-3.6-flash-high`)가 실제 라벨을 스크래핑하지 않고 브랜드 텍스트/로고 없는 오리지널 일러스트 30장을 생성(`app/src/debug/assets/seed_images/`, 5개 병렬 배치로 생성 시간 단축). `DebugSeeder`가 앱 시작 시 기록이 0건이면 자동으로 채워 넣는다 — Android 소스셋이 variant별로 합산되는 방식이라 "같은 클래스를 debug에 두면 main을 오버라이드"하는 방식은 컴파일 에러가 나서(`Redeclaration`), `debug`/`release` 소스셋에 각각 실제 구현/no-op을 따로 둠(`main`에는 두지 않음). `./gradlew :app:assembleRelease` + APK 내 `seed_images` 부재 확인으로 릴리즈 격리 검증 완료.
+
 ## 5. Phase별 로드맵
 
 ### Phase 0. 리서치 (완료)

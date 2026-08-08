@@ -6,6 +6,9 @@ import androidx.lifecycle.viewModelScope
 import com.bluemarlin.drinkdiary.domain.model.DashboardPeriod
 import com.bluemarlin.drinkdiary.domain.model.DashboardSummary
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveDashboardSummaryUseCase
+import com.bluemarlin.drinkdiary.domain.usecase.ObserveMonthRecordDatesUseCase
+import java.time.LocalDate
+import java.time.YearMonth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -25,6 +28,7 @@ sealed interface DashboardUiState {
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class DashboardViewModel(
     private val observeDashboardSummaryUseCase: ObserveDashboardSummaryUseCase,
+    observeMonthRecordDatesUseCase: ObserveMonthRecordDatesUseCase,
 ) : ViewModel() {
     val selectedPeriod = MutableStateFlow(DashboardPeriod.Monthly)
 
@@ -37,15 +41,22 @@ class DashboardViewModel(
         .catch { emit(DashboardUiState.Error("대시보드를 불러오지 못했습니다.")) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DashboardUiState.Loading)
 
+    // Independent of `selectedPeriod` — the calendar always shows which days in the
+    // current month have records, regardless of whether Weekly/Monthly/Yearly is selected.
+    val recordDatesInMonth: StateFlow<Set<LocalDate>> = observeMonthRecordDatesUseCase(YearMonth.now())
+        .catch { emit(emptySet()) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptySet())
+
     fun selectPeriod(period: DashboardPeriod) {
         selectedPeriod.value = period
     }
 
     class Factory(
         private val observeDashboardSummaryUseCase: ObserveDashboardSummaryUseCase,
+        private val observeMonthRecordDatesUseCase: ObserveMonthRecordDatesUseCase,
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            DashboardViewModel(observeDashboardSummaryUseCase) as T
+            DashboardViewModel(observeDashboardSummaryUseCase, observeMonthRecordDatesUseCase) as T
     }
 }

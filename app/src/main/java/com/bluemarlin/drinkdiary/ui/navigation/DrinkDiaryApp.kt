@@ -36,7 +36,10 @@ fun DrinkDiaryApp() {
     NavHost(navController = navController, startDestination = Routes.Dashboard) {
         composable(Routes.Dashboard) {
             val viewModel: DashboardViewModel = viewModel(
-                factory = DashboardViewModel.Factory(appContainer.observeDashboardSummaryUseCase),
+                factory = DashboardViewModel.Factory(
+                    appContainer.observeDashboardSummaryUseCase,
+                    appContainer.observeMonthRecordDatesUseCase,
+                ),
             )
             DashboardRoute(
                 viewModel = viewModel,

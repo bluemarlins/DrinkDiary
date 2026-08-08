@@ -83,6 +83,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.bluemarlin.drinkdiary.R
@@ -94,8 +95,11 @@ import com.bluemarlin.drinkdiary.domain.model.roundToHalf
 import java.text.NumberFormat
 import java.io.File
 import java.time.Instant
+import java.time.LocalDate
+import java.time.YearMonth
 import java.time.ZoneId
 import java.time.ZoneOffset
+import java.time.temporal.TemporalAdjusters
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import java.util.UUID
@@ -599,6 +603,104 @@ fun DDPeriodSegmentedControl(selected: DashboardPeriod, onSelected: (DashboardPe
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(8.dp),
             ) { Text(period.label, maxLines = 1, overflow = TextOverflow.Clip) }
+        }
+    }
+}
+
+// Month-grid calendar tied to the period selector above. No calendar library dependency
+// (none exists in this project) — a plain Row/Column grid over java.time, same pattern
+// already used for other custom layouts (e.g. DDDrinkTypeRatioCard). Monday-first columns
+// (not the usual Korean Sunday-first convention) so the Weekly highlight below matches
+// ObserveDashboardSummaryUseCase's Monday-Sunday week definition as a single contiguous
+// row, rather than splitting across two visual rows.
+@Composable
+fun DDDashboardCalendar(period: DashboardPeriod, recordDates: Set<LocalDate>, modifier: Modifier = Modifier) {
+    val today = remember { LocalDate.now() }
+    val yearMonth = remember { YearMonth.from(today) }
+    val firstOfMonth = yearMonth.atDay(1)
+    val daysInMonth = yearMonth.lengthOfMonth()
+    val firstDayOffset = firstOfMonth.dayOfWeek.value - 1 // Monday=1..Sunday=7 -> 0..6
+    val totalWeeks = (firstDayOffset + daysInMonth + 6) / 7
+    val currentWeekStart = today.with(TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY))
+    val currentWeekEnd = currentWeekStart.plusDays(6)
+
+    Card(
+        modifier = modifier.fillMaxWidth().then(ddGlassBorderModifier()),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.88f)),
+        shape = RoundedCornerShape(8.dp),
+    ) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(
+                "${yearMonth.year}년 ${yearMonth.monthValue}월",
+                style = MaterialTheme.typography.titleMedium.copy(fontFamily = FontFamily.Serif),
+            )
+            Row(modifier = Modifier.fillMaxWidth()) {
+                listOf("월", "화", "수", "목", "금", "토", "일").forEach { label ->
+                    Text(
+                        label,
+                        modifier = Modifier.weight(1f),
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+            for (week in 0 until totalWeeks) {
+                val weekDates = (0..6).map { dayOfWeekIndex ->
+                    val dayNumber = week * 7 + dayOfWeekIndex - firstDayOffset + 1
+                    if (dayNumber in 1..daysInMonth) yearMonth.atDay(dayNumber) else null
+                }
+                val highlightRow = period == DashboardPeriod.Weekly &&
+                    weekDates.any { it != null && !it.isBefore(currentWeekStart) && !it.isAfter(currentWeekEnd) }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .then(
+                            if (highlightRow) {
+                                Modifier.background(MaterialTheme.colorScheme.secondary.copy(alpha = 0.18f))
+                            } else {
+                                Modifier
+                            },
+                        )
+                        .padding(vertical = 4.dp),
+                ) {
+                    weekDates.forEach { date ->
+                        Box(modifier = Modifier.weight(1f).aspectRatio(1f), contentAlignment = Alignment.Center) {
+                            if (date != null) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(26.dp)
+                                            .then(
+                                                if (date == today) {
+                                                    Modifier.border(1.5.dp, MaterialTheme.colorScheme.secondary, CircleShape)
+                                                } else {
+                                                    Modifier
+                                                },
+                                            ),
+                                        contentAlignment = Alignment.Center,
+                                    ) {
+                                        Text(date.dayOfMonth.toString(), style = MaterialTheme.typography.bodySmall)
+                                    }
+                                    Box(
+                                        modifier = Modifier
+                                            .size(4.dp)
+                                            .clip(CircleShape)
+                                            .background(
+                                                if (date in recordDates) {
+                                                    MaterialTheme.colorScheme.secondary
+                                                } else {
+                                                    Color.Transparent
+                                                },
+                                            ),
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
