@@ -111,6 +111,20 @@ app/store-listing/            # Play Store 리스팅용 그래픽 원본 (Phase 
 
 **이번 라운드 범위 밖(다음 라운드 백로그)**: Collection/RecordEditor 화면의 다크 무디 재검토, 진짜 backdrop blur 라이브러리 도입, 방사형 차트 테이스팅 시각화, 배경 노이즈 텍스처, 마이크로 인터랙션/햅틱, RecordEditor UI 품질 루프 재개(세션 한도로 중단된 채 남아있음).
 
+**Collection 다크 무디 적용 + 컴포넌트/모션/섀도우 리서치 (2026-08-08)** — 위 백로그 중 Collection을 이어서 진행, 3라운드 루프 완주.
+
+| 라운드 | 발견 | 조치 |
+|---|---|---|
+| 1 | `DDDrinkRecordListItem`(리스트 카드)이 무스타일 `ElevatedCard`, 종류/상태 필터의 "전체" 선택 상태가 `primaryContainer`(초록)라 배경 대비 ~1.7:1로 거의 안 보이고 선택 여부를 알리는 다른 단서(체크 아이콘 등)도 없음 | 리스트 카드를 Dashboard와 동일한 글래스 보더+`surfaceContainerHigh` 스타일로 전환, `ddFilterChipColors()` 선택 색상을 Gold(`secondary`/`onSecondary`)로 재매핑 + 8개 필터 칩 전체에 선택 시 체크 아이콘(`Icons.Filled.Check`) 추가 |
+| 2 | 체크 아이콘이 `selectedLeadingIconColor` 미지정으로 M3 기본 틴트(밝은 크림색)를 써서 Gold 배경 대비 ~1.4:1로 바랜 것처럼 보임(라벨 텍스트와 불일치) | `ddFilterChipColors()`/`ddStatusFilterChipColors()` 3개 분기 전부에 `selectedLeadingIconColor`를 라벨 색상과 동일하게 명시 |
+| 3 (최종, 캡 도달) | 회귀 없음, agy 독립 비평 6개 루브릭 항목 전부 PASS, "Production-Ready: YES" 판정 | 미해결 백로그(non-blocking): 썸네일이 실제 이미지 URI 없는 샘플 데이터라 "사진" 텍스트만 표시 — 실 이미지 데이터로 재검증 필요 |
+
+병행하여 agy(`gemini-3.1-pro-high`)로 Button/Text Field/Chips/Card/Image 컴포넌트별 디자인 방향 + Compose 모션/애니메이션 + 다크모드 그림자/Elevation 리서치를 진행해 `app/docs/design/research-component-motion-ux.md`에 저장. **핵심 발견사항**:
+- 정적 배지는 아웃라인/반투명, 실제 탭 가능한 CTA만 풀필 — 이미 RecordDetail 라운드에서 실전 발견한 패턴과 리서치 결론이 일치(교차 검증됨)
+- 다크모드에서는 전통적 drop-shadow 대신 M3 Tonal Elevation 사용 권장 — 현재 카드들의 `elevation=0.dp` + 글래스 보더 조합이 이미 이 원칙에 부합
+- 별점 채우기/리스트 아이템 등장/FAB에 `AnimatedVisibility`/`animateColorAsState`/`animateContentSize` 등 신규 라이브러리 없이 구현 가능한 모션 제안 — 다음 라운드(#29) plan mode에서 구체 적용 범위 결정 필요
+- 디자인 철학 "우아한 심도(Elegant Depth)" 4원칙(어둠을 캔버스로/빛으로 안내/절제된 감정 표현/활자가 곧 디자인)을 향후 컴포넌트 결정의 판단 기준으로 채택
+
 ## 5. Phase별 로드맵
 
 ### Phase 0. 리서치 (완료)

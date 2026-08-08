@@ -32,6 +32,8 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
@@ -42,12 +44,12 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -517,19 +519,49 @@ fun DDDrinkTypeFilter(selected: DrinkType?, onSelected: (DrinkType?) -> Unit) {
         )
     } else {
         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            item { FilterChip(selected = selected == null, onClick = { onSelected(null) }, label = { Text("전체") }, colors = ddFilterChipColors()) }
+            item {
+                FilterChip(
+                    selected = selected == null,
+                    onClick = { onSelected(null) },
+                    label = { Text("전체") },
+                    leadingIcon = ddFilterChipLeadingIcon(selected == null),
+                    colors = ddFilterChipColors(),
+                )
+            }
             DrinkType.entries.forEach { type ->
-                item { FilterChip(selected = selected == type, onClick = { onSelected(type) }, label = { Text(type.label) }, colors = ddFilterChipColors()) }
+                item {
+                    FilterChip(
+                        selected = selected == type,
+                        onClick = { onSelected(type) },
+                        label = { Text(type.label) },
+                        leadingIcon = ddFilterChipLeadingIcon(selected == type),
+                        colors = ddFilterChipColors(),
+                    )
+                }
             }
         }
     }
 }
 
+// Solid gold, not `primaryContainer` (green) — a green selected-chip fill reads at
+// ~1.7:1 contrast against this app's green-toned dark background (measured in the
+// Collection UI quality loop), barely distinguishable from the unselected state.
 @Composable
 private fun ddFilterChipColors() = FilterChipDefaults.filterChipColors(
-    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+    selectedContainerColor = MaterialTheme.colorScheme.secondary,
+    selectedLabelColor = MaterialTheme.colorScheme.onSecondary,
+    // Without this, Compose falls back to its own default leading-icon tint instead
+    // of matching the deliberately-chosen label color, leaving the checkmark washed
+    // out against the gold fill (~1.4:1 contrast, found in the Collection UI loop).
+    selectedLeadingIconColor = MaterialTheme.colorScheme.onSecondary,
 )
+
+private fun ddFilterChipLeadingIcon(selected: Boolean): @Composable (() -> Unit)? =
+    if (selected) {
+        { Icon(Icons.Filled.Check, contentDescription = null, modifier = Modifier.size(FilterChipDefaults.IconSize)) }
+    } else {
+        null
+    }
 
 @Composable
 fun DDCollectionStatusFilter(selected: CollectionStatus?, onSelected: (CollectionStatus?) -> Unit) {
@@ -543,13 +575,22 @@ fun DDCollectionStatusFilter(selected: CollectionStatus?, onSelected: (Collectio
         )
     } else {
         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            item { FilterChip(selected = selected == null, onClick = { onSelected(null) }, label = { Text("전체") }, colors = ddFilterChipColors()) }
+            item {
+                FilterChip(
+                    selected = selected == null,
+                    onClick = { onSelected(null) },
+                    label = { Text("전체") },
+                    leadingIcon = ddFilterChipLeadingIcon(selected == null),
+                    colors = ddFilterChipColors(),
+                )
+            }
             CollectionStatus.entries.forEach { status ->
                 item {
                     FilterChip(
                         selected = selected == status,
                         onClick = { onSelected(status) },
                         label = { Text(status.label) },
+                        leadingIcon = ddFilterChipLeadingIcon(selected == status),
                         colors = ddStatusFilterChipColors(status),
                     )
                 }
@@ -563,14 +604,17 @@ private fun ddStatusFilterChipColors(status: CollectionStatus) = when (status) {
     CollectionStatus.Repurchase -> FilterChipDefaults.filterChipColors(
         selectedContainerColor = MaterialTheme.colorScheme.secondary,
         selectedLabelColor = MaterialTheme.colorScheme.onSecondary,
+        selectedLeadingIconColor = MaterialTheme.colorScheme.onSecondary,
     )
     CollectionStatus.NotForMe -> FilterChipDefaults.filterChipColors(
         selectedContainerColor = MaterialTheme.colorScheme.tertiaryContainer,
         selectedLabelColor = MaterialTheme.colorScheme.onTertiaryContainer,
+        selectedLeadingIconColor = MaterialTheme.colorScheme.onTertiaryContainer,
     )
     CollectionStatus.Normal -> FilterChipDefaults.filterChipColors(
         selectedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
         selectedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        selectedLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
     )
 }
 
@@ -683,7 +727,11 @@ fun DDRecordedDateText(recordedAtMillis: Long, modifier: Modifier = Modifier) {
 
 @Composable
 fun DDDrinkRecordListItem(record: DrinkRecord, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    ElevatedCard(modifier = modifier.fillMaxWidth().clickable(onClick = onClick), shape = RoundedCornerShape(8.dp)) {
+    Card(
+        modifier = modifier.fillMaxWidth().clickable(onClick = onClick).then(ddGlassBorderModifier()),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.88f)),
+        shape = RoundedCornerShape(8.dp),
+    ) {
         Row(
             modifier = Modifier.padding(12.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),

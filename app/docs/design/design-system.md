@@ -51,7 +51,8 @@ Pinterest 레퍼런스 리서치(`app/docs/design/research-immersive-ui.md`) 결
 - **글래스모피즘 근사**: 실제 backdrop blur 라이브러리 없이 `ddGlassBorderModifier()`(`Components.kt`, internal public) — `secondary→tertiary` 그래디언트 1.5dp 보더 + `surfaceContainerHigh.copy(alpha=0.88f)` 카드 fill로 "유리 같은" 느낌을 근사한다. 새 카드를 다크 테마 화면에 추가할 때는 이 헬퍼를 재사용한다.
 - **에디토리얼 세리프**: 폰트 에셋 추가 없이 시스템 내장 `FontFamily.Serif`를 Dashboard 히어로 숫자(`DDHeroSummaryCard`)와 RecordDetail 술 이름에 적용한다.
 - **사진 없음 워터마크**: 사진 미등록 시 플레이스홀더는 골드↔로즈 그래디언트 배경 위에 앱 런처 글리프를 `ColorFilter.tint`로 단색화해 28% 알파로 올린다 — 원본 다색 아이콘을 그대로 반투명 처리하면 "빛바랜 스티커"처럼 보이므로 반드시 단색 틴트를 거친다.
-- 현재 이 테마가 적용된 화면은 **Dashboard, RecordDetail**뿐이다. Collection/RecordEditor는 전역 다크 스킴은 상속하지만 벤토 레이아웃·글래스 카드·세리프 등 화면별 재검토는 아직 진행 전(백로그).
+- 현재 이 테마가 적용된 화면은 **Dashboard, RecordDetail, Collection**이다. RecordEditor는 전역 다크 스킴은 상속하지만 화면별 재검토는 아직 진행 전(백로그).
+- **선택된 필터 칩의 시각 언어**: `FilterChip`이 선택되면 골드 풀필 + 체크 아이콘(`Icons.Filled.Check`)으로 표시한다(Dashboard 기간 세그먼트의 "✓ 월간"과 동일한 문법). `FilterChipDefaults.filterChipColors()`에서 `selectedContainerColor`/`selectedLabelColor`만 지정하고 `selectedLeadingIconColor`를 빠뜨리면 아이콘이 M3 기본 틴트(연한 크림색)로 남아 골드 배경 대비 ~1.4:1로 바래 보인다 — **선택 색상을 커스터마이징할 때는 라벨과 아이콘 색을 항상 함께 지정**한다.
 
 ## 5. Action Components
 
@@ -279,6 +280,7 @@ Astryx(Meta의 AI-에이전트 인지형 디자인 시스템 문서, `app/docs/d
 | raw `Text`/`Button`/`Card`를 DD* 컴포넌트가 이미 존재하는 상황에서 새로 조합 | 재사용 가능한 `DD*`가 있으면 그것을 쓴다(2절 원칙). 화면 전용 신규 조합이 필요하면 `ui.component` 밖 feature 패키지에 두되, 먼저 이 문서에 없는지 확인한다. |
 | 같은 "액센트 색"이라며 `secondary`와 `secondaryContainer`를 서로 다른 두 컴포넌트(FAB vs 배지)에 섞어 쓰기 | M3의 `*Container` 롤은 base 롤보다 명도/채도가 낮은 톤-다운 변형이라, 같은 색이라고 생각하고 섞으면 나란히 놓였을 때 밝기 불일치가 눈에 띈다(다크 테마 루프에서 실제 발견: FAB=`secondary`인데 배지=`secondaryContainer`라 배지가 칙칙해 보임). **같은 액센트로 묶이는 요소는 base/Container 중 하나로 통일**한다. |
 | 정적 상태 배지(칩)를 실제 탭 가능한 CTA 버튼과 동일한 풀필 색상으로 채우기 | 같은 화면에 풀필 골드 버튼과 풀필 골드 배지가 나란히 있으면 배지가 두 번째 버튼처럼 보여 CTA의 시각적 우선순위가 흐려진다(RecordDetail에서 실제 발견: 재구매 후보 배지 vs 수정 버튼). **정적 배지는 반투명 fill + 얇은 보더 + 컬러 텍스트**로, **탭 가능한 CTA만 풀필**로 구분한다. |
+| `FilterChip`/`AssistChip`의 선택색을 커스터마이징하면서 `selectedContainerColor`/`selectedLabelColor`만 지정하고 `selectedLeadingIconColor`는 빠뜨리기 | 아이콘이 M3 기본 틴트로 남아 라벨 텍스트와 다른 색이 되고, 커스텀 배경색과의 대비도 검증되지 않은 상태로 남는다(Collection에서 실제 발견: 골드 배경에 연한 크림색 체크 아이콘이 ~1.4:1로 바래 보임). **선택 색상을 커스터마이징할 때는 container/label/leadingIcon 세 가지를 항상 함께 지정**한다. |
 
 ### 확인 질문 (작업 시작 전 스스로 답해볼 것)
 
