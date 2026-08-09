@@ -1,0 +1,158 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 3,
+    "identityHash": "0b57cca2cc5ebf94108ff5cc307cb4ea",
+    "entities": [
+      {
+        "tableName": "drink_records",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `type` TEXT NOT NULL, `name` TEXT NOT NULL, `imageUri` TEXT, `price` INTEGER, `place` TEXT, `tastingNote` TEXT, `rating` REAL NOT NULL, `tastingTags` TEXT NOT NULL, `abv` REAL, `volumeMl` INTEGER, `collectionStatus` TEXT NOT NULL, `recordedAtMillis` INTEGER NOT NULL, `createdAtMillis` INTEGER NOT NULL, `updatedAtMillis` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "imageUri",
+            "columnName": "imageUri",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "price",
+            "columnName": "price",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "place",
+            "columnName": "place",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "tastingNote",
+            "columnName": "tastingNote",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "rating",
+            "columnName": "rating",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tastingTags",
+            "columnName": "tastingTags",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "abv",
+            "columnName": "abv",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "volumeMl",
+            "columnName": "volumeMl",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "collectionStatus",
+            "columnName": "collectionStatus",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "recordedAtMillis",
+            "columnName": "recordedAtMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAtMillis",
+            "columnName": "createdAtMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAtMillis",
+            "columnName": "updatedAtMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_drink_records_recordedAtMillis",
+            "unique": false,
+            "columnNames": [
+              "recordedAtMillis"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_drink_records_recordedAtMillis` ON `${TABLE_NAME}` (`recordedAtMillis`)"
+          },
+          {
+            "name": "index_drink_records_type",
+            "unique": false,
+            "columnNames": [
+              "type"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_drink_records_type` ON `${TABLE_NAME}` (`type`)"
+          },
+          {
+            "name": "index_drink_records_collectionStatus",
+            "unique": false,
+            "columnNames": [
+              "collectionStatus"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_drink_records_collectionStatus` ON `${TABLE_NAME}` (`collectionStatus`)"
+          },
+          {
+            "name": "index_drink_records_type_collectionStatus",
+            "unique": false,
+            "columnNames": [
+              "type",
+              "collectionStatus"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_drink_records_type_collectionStatus` ON `${TABLE_NAME}` (`type`, `collectionStatus`)"
+          },
+          {
+            "name": "index_drink_records_recordedAtMillis_collectionStatus",
+            "unique": false,
+            "columnNames": [
+              "recordedAtMillis",
+              "collectionStatus"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_drink_records_recordedAtMillis_collectionStatus` ON `${TABLE_NAME}` (`recordedAtMillis`, `collectionStatus`)"
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '0b57cca2cc5ebf94108ff5cc307cb4ea')"
+    ]
+  }
+}

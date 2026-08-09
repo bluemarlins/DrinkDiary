@@ -39,12 +39,12 @@ import com.bluemarlin.drinkdiary.ui.component.DDLoadingContent
 import com.bluemarlin.drinkdiary.ui.component.DDPrimaryButton
 import com.bluemarlin.drinkdiary.ui.component.DDRecordHeroImage
 import com.bluemarlin.drinkdiary.ui.component.DDRatingStars
+import com.bluemarlin.drinkdiary.ui.component.DDTastingTagList
 import com.bluemarlin.drinkdiary.ui.component.ddGlassBorderModifier
 import com.bluemarlin.drinkdiary.ui.component.formatPrice
 import com.bluemarlin.drinkdiary.ui.component.formatRecordedDate
 import com.bluemarlin.drinkdiary.ui.navigation.DDScreenScaffold
 import com.bluemarlin.drinkdiary.domain.model.DrinkRecord
-import com.bluemarlin.drinkdiary.domain.model.ratingCriteria
 
 @Composable
 fun RecordDetailRoute(
@@ -98,7 +98,7 @@ fun RecordDetailRoute(
                                     DDCollectionStatusBadge(record.collectionStatus)
                                 },
                                 rating = { DDRatingStars(record.rating) },
-                                ratingDetails = { RatingBreakdownRows(record) },
+                                ratingDetails = { TastingTagRows(record) },
                                 price = formatPrice(record.price),
                                 place = record.place ?: "-",
                                 recordedAt = formatRecordedDate(record.recordedAtMillis),
@@ -124,7 +124,7 @@ fun RecordDetailRoute(
                                     DDCollectionStatusBadge(record.collectionStatus)
                                 },
                                 rating = { DDRatingStars(record.rating) },
-                                ratingDetails = { RatingBreakdownRows(record) },
+                                ratingDetails = { TastingTagRows(record) },
                                 price = formatPrice(record.price),
                                 place = record.place ?: "-",
                                 recordedAt = formatRecordedDate(record.recordedAtMillis),
@@ -203,19 +203,10 @@ private fun RecordDetailInfo(
 }
 
 @Composable
-private fun RatingBreakdownRows(record: DrinkRecord) {
-    val breakdown = record.ratingBreakdown
-    val isDetailed = breakdown.values.any { it != record.rating }
-    if (isDetailed) {
-        record.type.ratingCriteria().forEach { criterion ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(criterion.label, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                DDRatingStars(breakdown.values[criterion.index])
-            }
-        }
+private fun TastingTagRows(record: DrinkRecord) {
+    if (record.tastingTags.isEmpty()) return
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text("테이스팅 태그", color = MaterialTheme.colorScheme.onSurfaceVariant)
+        DDTastingTagList(record.tastingTags)
     }
 }

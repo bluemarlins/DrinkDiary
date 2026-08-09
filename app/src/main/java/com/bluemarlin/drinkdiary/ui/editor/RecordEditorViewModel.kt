@@ -7,10 +7,8 @@ import com.bluemarlin.drinkdiary.domain.model.AppError
 import com.bluemarlin.drinkdiary.domain.model.AppResult
 import com.bluemarlin.drinkdiary.domain.model.CollectionStatus
 import com.bluemarlin.drinkdiary.domain.model.DrinkRecordInput
-import com.bluemarlin.drinkdiary.domain.model.DrinkRatingBreakdown
 import com.bluemarlin.drinkdiary.domain.model.DrinkType
 import com.bluemarlin.drinkdiary.domain.model.SaveDrinkRecordError
-import com.bluemarlin.drinkdiary.domain.model.update
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveDrinkRecordUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.SaveDrinkRecordUseCase
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -60,9 +58,10 @@ class RecordEditorViewModel(
                             priceText = record.price?.toString().orEmpty(),
                             place = record.place.orEmpty(),
                             tastingNote = record.tastingNote.orEmpty(),
+                            tastingTags = record.tastingTags.toSet(),
                             rating = record.rating,
-                            ratingBreakdown = record.ratingBreakdown,
-                            ratingBreakdownExpanded = false,
+                            abv = record.abv,
+                            volumeMl = record.volumeMl,
                             collectionStatus = record.collectionStatus,
                             recordedAtMillis = record.recordedAtMillis,
                         ),
@@ -72,34 +71,21 @@ class RecordEditorViewModel(
         }
     }
 
-    fun updateType(value: DrinkType) = updateInput {
-        it.copy(
-            type = value,
-            ratingBreakdown = DrinkRatingBreakdown.fromRepresentativeRating(it.rating),
-        )
-    }
+    // Tags stay as-is when the type changes: a tag the user already picked shouldn't vanish
+    // because they corrected the drink type, and the picker keeps showing off-catalog keys.
+    fun updateType(value: DrinkType) = updateInput { it.copy(type = value) }
     fun updateName(value: String) = updateInput { it.copy(name = value) }
     fun updateImageUri(value: String?) = updateInput { it.copy(imageUri = value) }
     fun updatePrice(value: String) = updateInput { it.copy(priceText = value) }
     fun updatePlace(value: String) = updateInput { it.copy(place = value) }
     fun updateTastingNote(value: String) = updateInput { it.copy(tastingNote = value) }
-    fun updateRating(value: Double) = updateInput {
-        it.copy(
-            rating = value,
-            ratingBreakdown = DrinkRatingBreakdown.fromRepresentativeRating(value),
-        )
+    fun updateRating(value: Double) = updateInput { it.copy(rating = value) }
+
+    fun toggleTastingTag(key: String) = updateInput {
+        val tags = if (key in it.tastingTags) it.tastingTags - key else it.tastingTags + key
+        it.copy(tastingTags = tags)
     }
 
-    fun toggleRatingBreakdown() = updateInput { it.copy(ratingBreakdownExpanded = !it.ratingBreakdownExpanded) }
-
-    fun updateDetailRating(index: Int, value: Double) = updateInput {
-        val breakdown = it.ratingBreakdown.update(index, value)
-        it.copy(
-            rating = breakdown.average,
-            ratingBreakdown = breakdown,
-            ratingBreakdownExpanded = true,
-        )
-    }
     fun updateCollectionStatus(value: CollectionStatus) = updateInput { it.copy(collectionStatus = value) }
     fun updateRecordedAtMillis(value: Long) = updateInput { it.copy(recordedAtMillis = value) }
 

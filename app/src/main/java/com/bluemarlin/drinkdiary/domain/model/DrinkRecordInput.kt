@@ -8,9 +8,11 @@ data class DrinkRecordInput(
     val priceText: String = "",
     val place: String = "",
     val tastingNote: String = "",
+    /** Set rather than List because membership is checked on every chip render. */
+    val tastingTags: Set<String> = emptySet(),
     val rating: Double = 0.0,
-    val ratingBreakdown: DrinkRatingBreakdown = DrinkRatingBreakdown(),
-    val ratingBreakdownExpanded: Boolean = false,
+    val abv: Double? = null,
+    val volumeMl: Int? = null,
     val collectionStatus: CollectionStatus? = CollectionStatus.Normal,
     val recordedAtMillis: Long = System.currentTimeMillis(),
 )

@@ -29,7 +29,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.bluemarlin.drinkdiary.DrinkDiaryApplication
-import com.bluemarlin.drinkdiary.domain.model.ratingCriteria
 import com.bluemarlin.drinkdiary.ui.component.DDCollectionStatusSelector
 import com.bluemarlin.drinkdiary.ui.component.DDDateTimeField
 import com.bluemarlin.drinkdiary.ui.component.DDDrinkTypeSelector
@@ -41,6 +40,7 @@ import com.bluemarlin.drinkdiary.ui.component.DDNumberField
 import com.bluemarlin.drinkdiary.ui.component.DDPrimaryButton
 import com.bluemarlin.drinkdiary.ui.component.DDRatingInput
 import com.bluemarlin.drinkdiary.ui.component.DDSecondaryButton
+import com.bluemarlin.drinkdiary.ui.component.DDTastingTagPicker
 import com.bluemarlin.drinkdiary.ui.component.DDTextField
 import com.bluemarlin.drinkdiary.ui.navigation.DDScreenScaffold
 
@@ -159,41 +159,21 @@ private fun RecordEditorFields(
             DDTextField("장소", state.input.place, viewModel::updatePlace)
         }
         DDFormSection("평가") {
-            val representativeRating = if (state.input.ratingBreakdownExpanded) {
-                state.input.ratingBreakdown.average
-            } else {
-                state.input.rating
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text("별점")
+                DDRatingInput(
+                    rating = state.input.rating,
+                    onRatingChange = viewModel::updateRating,
+                    error = state.validationError.rating,
+                )
             }
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text("대표 별점")
-                    DDRatingInput(
-                        rating = representativeRating,
-                        onRatingChange = viewModel::updateRating,
-                        error = state.validationError.rating,
-                        enabled = !state.input.ratingBreakdownExpanded,
-                    )
-                    if (state.input.ratingBreakdownExpanded) {
-                        Text("세부 평가 평균 %.1f".format(representativeRating))
-                    }
-                }
-                TextButton(
-                    onClick = viewModel::toggleRatingBreakdown,
-                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.secondary),
-                ) {
-                    Text(if (state.input.ratingBreakdownExpanded) "접기 ▲" else "세부 평가 ▼")
-                }
-            }
-            if (state.input.ratingBreakdownExpanded) {
-                state.input.type?.ratingCriteria()?.forEach { criterion ->
-                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text(criterion.label)
-                        DDRatingInput(
-                            rating = state.input.ratingBreakdown.values[criterion.index],
-                            onRatingChange = { viewModel.updateDetailRating(criterion.index, it) },
-                        )
-                    }
-                }
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text("테이스팅 태그")
+                DDTastingTagPicker(
+                    type = state.input.type,
+                    selected = state.input.tastingTags,
+                    onToggle = viewModel::toggleTastingTag,
+                )
             }
             DDCollectionStatusSelector(
                 selected = state.input.collectionStatus,

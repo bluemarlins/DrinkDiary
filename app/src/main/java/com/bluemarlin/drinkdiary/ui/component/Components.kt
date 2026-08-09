@@ -22,6 +22,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.aspectRatio
@@ -99,7 +101,11 @@ import com.bluemarlin.drinkdiary.domain.model.DashboardPeriod
 import com.bluemarlin.drinkdiary.domain.model.DashboardSummary
 import com.bluemarlin.drinkdiary.domain.model.DrinkRecord
 import com.bluemarlin.drinkdiary.domain.model.DrinkType
+import com.bluemarlin.drinkdiary.domain.model.TagCategory
 import com.bluemarlin.drinkdiary.domain.model.ThemeMode
+import com.bluemarlin.drinkdiary.domain.model.findTastingTag
+import com.bluemarlin.drinkdiary.domain.model.tagCategoryLabel
+import com.bluemarlin.drinkdiary.domain.model.tastingTags
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
 import com.patrykandpatrick.vico.compose.cartesian.data.CartesianChartModelProducer
 import com.patrykandpatrick.vico.compose.cartesian.data.columnModel
@@ -824,6 +830,142 @@ private fun ddFilterChipLeadingIcon(selected: Boolean): @Composable (() -> Unit)
     } else {
         null
     }
+
+/**
+ * Multi-select tasting tag picker — the app's only multi-select chip surface; every other
+ * `FilterChip` here picks exactly one value.
+ *
+ * Uses `FlowRow` rather than the horizontally-scrolling `LazyRow` the filters use, because a
+ * type offers 30-40 tags and side-scrolling through them hides most of the vocabulary. Only
+ * the beginner-friendly tags show until the user expands, so the default state stays short
+ * enough not to bury the rest of the form.
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun DDTastingTagPicker(
+    type: DrinkType?,
+    selected: Set<String>,
+    onToggle: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    if (type == null) {
+        Text(
+            "주류 종류를 먼저 선택하면 태그를 고를 수 있습니다.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        return
+    }
+
+    var expanded by remember { mutableStateOf(false) }
+    var customText by remember { mutableStateOf("") }
+    val catalog = remember(type) { type.tastingTags() }
+    // Tags the user typed in themselves, or picked under a different drink type before
+    // switching — keep showing them so switching type never silently drops a selection.
+    val customTags = remember(selected, catalog) {
+        selected.filter { key -> catalog.none { it.key == key } }
+    }
+
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        TagCategory.entries.forEach { category ->
+            val all = catalog.filter { it.category == category }
+            if (all.isEmpty()) return@forEach
+            // Anything already chosen stays visible when collapsed, otherwise collapsing
+            // would hide a selection the user just made.
+            val visible = if (expanded) all else all.filter { it.isBasic || it.key in selected }
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(
+                    type.tagCategoryLabel(category),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    visible.forEach { tag ->
+                        FilterChip(
+                            selected = tag.key in selected,
+                            onClick = { onToggle(tag.key) },
+                            label = { Text(tag.label) },
+                            leadingIcon = ddFilterChipLeadingIcon(tag.key in selected),
+                            colors = ddFilterChipColors(),
+                        )
+                    }
+                }
+            }
+        }
+
+        if (customTags.isNotEmpty()) {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(
+                    "직접 추가",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    customTags.forEach { key ->
+                        FilterChip(
+                            selected = true,
+                            onClick = { onToggle(key) },
+                            label = { Text(findTastingTag(key)?.label ?: key) },
+                            leadingIcon = ddFilterChipLeadingIcon(true),
+                            colors = ddFilterChipColors(),
+                        )
+                    }
+                }
+            }
+        }
+
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedTextField(
+                value = customText,
+                onValueChange = { customText = it },
+                label = { Text("직접 입력") },
+                singleLine = true,
+                modifier = Modifier.weight(1f),
+            )
+            TextButton(
+                onClick = {
+                    val text = customText.trim()
+                    if (text.isNotEmpty()) {
+                        onToggle(text)
+                        customText = ""
+                    }
+                },
+                enabled = customText.isNotBlank(),
+                colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.secondary),
+            ) { Text("추가") }
+        }
+
+        TextButton(
+            onClick = { expanded = !expanded },
+            colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.secondary),
+        ) {
+            Text(if (expanded) "접기 ▲" else "더보기 ▼")
+        }
+    }
+}
+
+/** Read-only tag display for the detail screen. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun DDTastingTagList(tags: List<String>, modifier: Modifier = Modifier) {
+    if (tags.isEmpty()) return
+    FlowRow(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        tags.forEach { key ->
+            AssistChip(
+                onClick = {},
+                label = { Text(findTastingTag(key)?.label ?: key) },
+                colors = AssistChipDefaults.assistChipColors(
+                    containerColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.18f),
+                    labelColor = MaterialTheme.colorScheme.secondary,
+                ),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.secondary.copy(alpha = 0.6f)),
+            )
+        }
+    }
+}
 
 @Composable
 fun DDCollectionStatusFilter(selected: CollectionStatus?, onSelected: (CollectionStatus?) -> Unit) {

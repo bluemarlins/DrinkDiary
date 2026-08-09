@@ -6,7 +6,6 @@ import com.bluemarlin.drinkdiary.domain.model.DashboardPeriod
 import com.bluemarlin.drinkdiary.domain.model.DashboardSummary
 import com.bluemarlin.drinkdiary.domain.model.DrinkRecord
 import com.bluemarlin.drinkdiary.domain.model.DrinkRecordFilter
-import com.bluemarlin.drinkdiary.domain.model.DrinkRatingBreakdown
 import com.bluemarlin.drinkdiary.domain.model.DrinkType
 import com.bluemarlin.drinkdiary.domain.repository.DrinkRecordRepository
 import java.time.LocalDateTime
@@ -104,8 +103,10 @@ class ObserveDashboardSummaryUseCaseTest {
         price = null,
         place = null,
         tastingNote = null,
+        tastingTags = emptyList(),
         rating = rating,
-        ratingBreakdown = DrinkRatingBreakdown.fromRepresentativeRating(rating),
+        abv = null,
+        volumeMl = null,
         collectionStatus = status,
         recordedAtMillis = recordedAtMillis,
     )
