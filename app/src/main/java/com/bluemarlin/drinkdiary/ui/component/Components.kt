@@ -35,6 +35,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -67,6 +68,8 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
@@ -116,7 +119,9 @@ import com.patrykandpatrick.vico.compose.common.Fill
 import com.patrykandpatrick.vico.compose.common.ProvideVicoTheme
 import com.patrykandpatrick.vico.compose.common.component.rememberLineComponent
 import com.patrykandpatrick.vico.compose.m3.common.rememberM3VicoTheme
-import com.bluemarlin.drinkdiary.domain.model.roundToHalf
+import com.bluemarlin.drinkdiary.domain.model.MAX_RATING
+import com.bluemarlin.drinkdiary.domain.model.MIN_RATING
+import com.bluemarlin.drinkdiary.domain.model.roundToStep
 import java.text.NumberFormat
 import java.io.File
 import java.time.Instant
@@ -495,6 +500,16 @@ private suspend fun copyImageToInternalStorage(context: Context, sourceUri: Uri)
         }.getOrNull()
     }
 
+/**
+ * Single overall rating on a drag slider, 0.1 steps.
+ *
+ * Replaced a `-`/`+` stepper that moved in half-stars: reaching 4.0 from the unset 0.0 took
+ * eight taps, which the feature audit measured as the single biggest cost in creating a
+ * record. A drag lands anywhere in the range in one gesture.
+ *
+ * `steps` counts the intervals *between* the ends, so the 0.5..5.0 range at 0.1 apart needs
+ * 44, not 45. Values still get rounded on the way out because Slider reports raw floats.
+ */
 @Composable
 fun DDRatingInput(
     rating: Double,
@@ -502,32 +517,35 @@ fun DDRatingInput(
     error: String? = null,
     enabled: Boolean = true,
 ) {
+    val hasRating = rating >= MIN_RATING
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-            DDSecondaryButton(
-                text = "-",
-                onClick = { onRatingChange((rating - 0.5).coerceAtLeast(0.5)) },
-                enabled = enabled && rating > 0.5,
-            )
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = ratingStarsText(rating),
-                style = MaterialTheme.typography.headlineSmall,
+                // "-" until the user has actually rated, so an untouched slider parked at the
+                // low end doesn't read as a deliberate 0.5.
+                text = if (hasRating) "★ %.1f".format(rating) else "★ -",
+                style = MaterialTheme.typography.titleMedium.copy(fontFamily = FontFamily.Serif),
                 color = when {
                     !enabled -> MaterialTheme.colorScheme.onSurfaceVariant
-                    // Echoes the error color on the glyphs themselves, not just the
-                    // caption below — same signal DDTextField gives via its border.
+                    // Echoes the error color on the value itself, not just the caption
+                    // below — same signal DDTextField gives via its border.
                     error != null -> MaterialTheme.colorScheme.error
-                    else -> MaterialTheme.colorScheme.secondary
+                    hasRating -> MaterialTheme.colorScheme.secondary
+                    else -> MaterialTheme.colorScheme.onSurfaceVariant
                 },
+                modifier = Modifier.widthIn(min = 64.dp),
             )
-            Text(
-                text = "%.1f".format(rating),
-                style = MaterialTheme.typography.titleMedium,
-            )
-            DDSecondaryButton(
-                text = "+",
-                onClick = { onRatingChange((rating + 0.5).coerceAtMost(5.0)) },
-                enabled = enabled && rating < 5.0,
+            Slider(
+                value = rating.coerceIn(MIN_RATING, MAX_RATING).toFloat(),
+                onValueChange = { onRatingChange(roundToStep(it.toDouble())) },
+                valueRange = MIN_RATING.toFloat()..MAX_RATING.toFloat(),
+                steps = 44,
+                enabled = enabled,
+                colors = SliderDefaults.colors(
+                    thumbColor = MaterialTheme.colorScheme.secondary,
+                    activeTrackColor = MaterialTheme.colorScheme.secondary,
+                ),
+                modifier = Modifier.weight(1f),
             )
         }
         if (error != null) Text(error, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
@@ -1105,24 +1123,21 @@ fun DDCollectionStatusBadge(status: CollectionStatus) {
     }
 }
 
+/**
+ * One star plus the number, not five glyphs. Ratings move in 0.1 steps, and a five-glyph row
+ * can only resolve halves — 4.3 and 4.5 would render identically in exactly the lists users
+ * scan. This also matches the format DDTypeRatingComparisonCard already used.
+ */
 @Composable
 fun DDRatingStars(rating: Double) {
     // Gold, not the M3 default `primary` (Cellar Green) — same leftover pre-pivot
-    // hue clash already fixed for DDPrimaryButton; stars are an accent, not a
-    // brand-identity element, so they follow the established gold accent color.
-    Text(ratingStarsText(rating), color = MaterialTheme.colorScheme.secondary)
-}
-
-private fun ratingStarsText(rating: Double): String {
-    val normalized = roundToHalf(rating).coerceIn(0.0, 5.0)
-    val fullStars = normalized.toInt()
-    val hasHalf = normalized - fullStars == 0.5
-    val emptyStars = 5 - fullStars - if (hasHalf) 1 else 0
-    return buildString {
-        repeat(fullStars) { append("★") }
-        if (hasHalf) append("½")
-        repeat(emptyStars) { append("☆") }
-    }
+    // hue clash already fixed for DDPrimaryButton; the star is an accent, not a
+    // brand-identity element, so it follows the established gold accent color.
+    Text(
+        text = "★ %.1f".format(rating),
+        color = MaterialTheme.colorScheme.secondary,
+        style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Serif),
+    )
 }
 
 @Composable

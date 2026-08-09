@@ -30,7 +30,7 @@ Room을 사용한다.
 | place | String | Yes | 마신 장소 또는 구매 장소 |
 | tastingNote | String | Yes | 테이스팅 메모(자유 서술) |
 | tastingTags | String | No | 테이스팅 태그 키 목록, 구분자 결합 문자열 — 아래 3.1절 |
-| rating | Double | No | 별점 0.5~5.0, 0.5 단위 |
+| rating | Double | No | 별점 0.5~5.0, **0.1 단위** — 아래 3.3절 |
 | abv | Double | Yes | 도수(%). NULL은 "미입력"이며 주종 기본값으로 해석 — 아래 3.2절 |
 | volumeMl | Int | Yes | 용량(ml). NULL 해석은 `abv`와 동일 |
 | collectionStatus | String | No | `Normal`, `Repurchase`, `NotForMe` 중 하나 |
@@ -55,6 +55,14 @@ Room을 사용한다.
 `abv`와 `volumeMl`의 NULL은 "값 없음"이 아니라 **"사용자가 입력하지 않음 → 주종 기본값으로 추정"**을 뜻한다. 에디터는 주종 기본값을 화면에 보여주되 사용자가 건드리지 않으면 저장하지 않는다. 읽을 때는 `DrinkRecord.effectiveAbv` / `effectiveVolumeMl`이 `DrinkType.defaultAbv()` / `defaultVolumeMl()`로 대체하고, `isIntakeEstimated`가 추정 여부를 알려준다.
 
 플래그 컬럼을 따로 두지 않아 컬럼이 하나 줄고, 대신 **기본값을 나중에 바꾸면 미입력 기록의 추정치가 함께 바뀐다**. 추정치이므로 의도된 동작으로 본다.
+
+### 3.3 별점 단위 (0.5 → 0.1)
+
+별점은 0.5~5.0을 **0.1 단위**로 받는다. 컬럼은 처음부터 `REAL`이라 **마이그레이션이 필요 없었고**, 기존 0.5 단위 값은 0.1의 배수라 그대로 유효하다. 바뀐 것은 `domain/model/DrinkRating.kt`의 검증 규칙뿐이다.
+
+검증에서 `(rating * 10).rem(1.0) == 0.0` 같은 형태는 쓰지 않는다. 10을 곱하면 이진 부동소수 오차가 되살아나(`4.3 * 10`은 `43.000000000000007`) 슬라이더가 정상적으로 만든 값을 거부한다. `roundToStep()`으로 반올림한 값과 허용 오차로 비교한다.
+
+슬라이더는 연속 실수를 주므로 **저장·검증 전에 `roundToStep()`으로 소수점 1자리로 스냅**한다. 그러지 않으면 `4.300000000000001`이 DB에 들어가고 이후 모든 비교가 같은 허용 오차를 떠안게 된다.
 
 ## 4. Kotlin Entity 예시
 
@@ -95,7 +103,7 @@ Enum은 DB에 문자열로 저장하는 것을 권장한다.
 | --- | --- |
 | type | 와인, 위스키, 맥주만 허용 |
 | name | 공백만 있는 값 저장 금지 |
-| rating | 1~5 범위 권장 |
+| rating | 0.5~5.0, 0.1 단위. 0.0은 '미평가'라 저장 불가 |
 | collectionStatus | 일반 기록, 재구매 후보, 비선호만 허용 |
 | price | 선택값, 입력 시 0 이상 |
 | imageUri | 선택값, URI 문자열만 저장 |

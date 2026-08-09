@@ -87,7 +87,7 @@ Pinterest 레퍼런스 리서치(`app/docs/design/research-immersive-ui.md`) 결
 | DDMultilineTextField | 테이스팅 노트 입력 | 기록 등록/수정 |
 | DDDateTimeField | 기록 일시 선택 | 기록 등록/수정 |
 | DDImagePicker | 사진 선택 및 미리보기 | 기록 등록/수정 |
-| DDRatingInput | 5점 기준 별점 입력 | 기록 등록/수정 |
+| DDRatingInput | 총점 하나를 드래그 슬라이더로 입력(0.5~5.0, 0.1 단위) | 기록 등록/수정 |
 | DDFormSection | 입력 항목을 의미 단위로 묶는 섹션 | 기록 등록/수정 |
 | DDFormErrorText | 필드 단위 오류 메시지 표시 | 기록 등록/수정 |
 
@@ -170,7 +170,7 @@ Pinterest 레퍼런스 리서치(`app/docs/design/research-immersive-ui.md`) 결
 | --- | --- | --- |
 | DDDrinkTypeBadge | 와인, 위스키, 맥주 표시 | 목록, 상세, 카드 |
 | DDCollectionStatusBadge | 일반 기록, 재구매 후보, 비선호 표시 | 목록, 상세, 카드 |
-| DDRatingStars | 별점 표시 전용 | 목록, 상세, Dashboard |
+| DDRatingStars | 별점 표시 전용, `★ 4.3` 단일 별+숫자 형식 | 목록, 상세, Dashboard |
 | DDPriceText | 가격 표시 포맷 통일 | 목록, 상세 |
 | DDRecordedDateText | 기록 일시 표시 포맷 통일 | 목록, 상세 |
 | DDTastingNoteBlock | 테이스팅 노트 표시 | 상세 |
@@ -182,6 +182,10 @@ Pinterest 레퍼런스 리서치(`app/docs/design/research-immersive-ui.md`) 결
 - `DDDrinkTypeBadge`는 와인, 위스키, 맥주 외 값을 표시하지 않는다.
 - `DDCollectionStatusBadge`는 재구매 후보와 비선호를 명확히 구분한다.
 - 별점 표시는 입력용 `DDRatingInput`과 조회용 `DDRatingStars`를 분리한다.
+- 별점은 **총점 하나만** 받는다. 항목별 세부 평점은 테이스팅 태그로 대체되었으므로 부활시키지 않는다.
+- 별 5개 글리프로 채도를 표현하지 않는다. 0.1 단위라 다섯 글리프로는 4.3과 4.5가 똑같이 보이고, 그 구분이 필요한 곳이 바로 목록이다. 표시는 `★ 4.3`처럼 **단일 별 + 숫자**로 통일한다(`DDTypeRatingComparisonCard`가 쓰던 형식).
+- `DDRatingInput`은 미평가(0.0)일 때 `★ -`를 보여준다. 슬라이더 썸은 최소값 위치에 있을 수밖에 없으므로, 숫자를 그대로 두면 손대지 않은 상태가 0.5를 고른 것처럼 읽힌다.
+- Compose `Slider`의 `steps`는 양 끝을 **제외한** 중간 눈금 수다. 0.5~5.0을 0.1 간격으로 두려면 45가 아니라 **44**를 넘긴다.
 - `DDDashboardCalendar`는 `DashboardPeriod`와 이번 달 기록 날짜(`Set<LocalDate>`)만 입력받는 순수 표시 컴포넌트다. 월 이동은 지원하지 않는다(항상 이번 달 고정 — `ObserveDashboardSummaryUseCase`의 "오늘 기준" 범위 계산과 동일한 전제). 요일 헤더는 월요일 시작(월화수목금토일)으로, 주간 하이라이트가 `ObserveDashboardSummaryUseCase`의 월~일 주간 정의와 한 행 안에서 정확히 일치하도록 한다(한국의 일반적인 일요일 시작 캘린더 관례와는 다름 — 의도적인 선택).
 - `DDDashboardCalendar`는 `expanded: Boolean`, `onToggleExpanded: () -> Unit`를 받는 상태 호이스팅 컴포넌트다(기본 접힘, 상태는 `DashboardRoute`의 `remember { mutableStateOf(false) }`로 보관 — 영속화하지 않음, 화면 재진입 시마다 접힌 채로 시작). 헤더 행(월 타이틀 + 토글)은 항상 보이고, 접힌 상태에서는 "이번 달 기록 N일" 한 줄 요약을 대신 보여준다. 토글 버튼 텍스트("펼치기 ▼"/"접기 ▲")와 `TextButton` + `secondary` 컨텐츠 컬러 스타일은 `RecordEditorScreen`의 "세부 평가" 토글 패턴을 그대로 재사용한 것 — 새 토글 인터랙션을 만들 때는 이 관례를 따른다. 그리드 컨텐츠는 `AnimatedVisibility(fadeIn() + expandVertically(), fadeOut() + shrinkVertically())`로 감싼다 — `research-component-motion-ux.md` 2절이 권장하는 패턴을 이 컴포넌트에서 처음 적용했다.
 - `DDDashboardCalendar`, `DDWeeklyTrendChart`는 둘 다 `DashboardViewModel.selectedPeriod`와 무관하게 항상 고정된 창(이번 달 / 최근 8주)을 보여준다 — 주간/월간/연간 탭 전환은 이 둘에 영향을 주지 않는다.
