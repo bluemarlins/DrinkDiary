@@ -29,6 +29,11 @@ agy agents           # (현재 비어 있음 — 사전 정의된 에이전트 �
 
 ## 태스크 유형별 템플릿
 
+아래 각 템플릿의 `--model` 값은 **그 태스크 유형에서 가장 흔한 경우의 기본값**이다. 실제 태스크의
+난이도/성격이 전형적인 경우와 다르면(예: "반복 코드"인데 로직이 복잡함) `harness.md` §6-2 매트릭스로
+다시 판단해 모델을 교체한다 — 템플릿 번호가 아니라 §6-2의 축이 최종 근거다. 게이트를 2회 연속
+통과하지 못하면 §6-2의 동적 승급 규칙을 따른다.
+
 ### 1. 벤치마킹/경쟁 앱 조사 (파일 수정 없음)
 
 ```bash
@@ -59,7 +64,14 @@ EOF
    --output-format json --dangerously-skip-permissions
 ```
 
-### 3. 반복적 코드 작성 (UseCase/Mapper/DAO 보일러플레이트)
+### 3. 반복적 코드 작성 (UseCase/Mapper/DAO)
+
+이 유형은 §6-2의 "반복/보일러플레이트" 축과 "추론 깊이" 축 중 **어느 쪽에 더 가까운지**를 먼저
+판단한다. 둘을 하나의 모델로 뭉뚱그리지 않는다(과거 P2-2는 계산 로직이 복잡해 pro-high를 썼고,
+P2-5는 단순 CRUD라 flash-medium으로 충분했다 — 겉보기엔 둘 다 "UseCase 구현"이었지만 실제 배정은
+갈렸다).
+
+#### 3-a. 기존 패턴을 그대로 복제하는 단순 CRUD/Mapper
 
 ```bash
 agy -p "$(cat <<'EOF'
@@ -67,12 +79,30 @@ agy -p "$(cat <<'EOF'
 을 반드시 따른다.
 [요청] <구체적 UseCase/Mapper/DAO 작업 내용 + 대응 단위 테스트 작성 요청>
 EOF
+)" --model gemini-3.5-flash-medium --mode accept-edits \
+   --add-dir app/src/main/java/com/bluemarlin/drinkdiary/domain \
+   --add-dir app/src/main/java/com/bluemarlin/drinkdiary/data \
+   --add-dir app/src/test/java/com/bluemarlin/drinkdiary \
+   --output-format json --dangerously-skip-permissions
+```
+
+#### 3-b. 다단계 도메인 규칙/계산 로직이 새로 들어가는 UseCase
+
+```bash
+agy -p "$(cat <<'EOF'
+[컨텍스트] app/docs/orchestration/harness.md의 아키텍처 규칙(UI->ViewModel->UseCase->Repository->DAO)
+을 반드시 따른다.
+[요청] <구체적 UseCase 작업 내용 — 계산식/분기 규칙을 프롬프트에 명시 + 대응 단위 테스트 작성 요청>
+EOF
 )" --model gemini-3.1-pro-high --mode accept-edits \
    --add-dir app/src/main/java/com/bluemarlin/drinkdiary/domain \
    --add-dir app/src/main/java/com/bluemarlin/drinkdiary/data \
    --add-dir app/src/test/java/com/bluemarlin/drinkdiary \
    --output-format json --dangerously-skip-permissions
 ```
+
+두 경우 모두 게이트(ktlint/lint/test)를 2회 연속 실패하면 §6-2 승급 규칙에 따라 3-a → 3-b 순서로,
+3-b도 실패하면 `claude-sonnet-4-6`으로 전환한다.
 
 ### 4. 이미지 생성 (아이콘/에셋 컨셉)
 
@@ -104,6 +134,30 @@ agy -p "<수정 지시>" -c --output-format json
 ```
 
 또는 `--conversation <id>`로 특정 세션을 명시 재개한다.
+
+### 6. 부서별 페르소나 호출 (Persona-specific Execution)
+
+`app/docs/orchestration/persona-registry.artifact.md`에 정의된 페르소나를 호출할 때 사용하는 템플릿이다.
+
+#### [Researcher] 시장 리서치 및 벤치마킹
+```bash
+agy -p "$(cat <<'EOF'
+[Persona] 너는 '테이스트 아카이브'의 Market Researcher다. persona-registry.artifact.md의 정의를 따른다.
+[요청] <구체적 리서치 요청>
+[출력 형식] markdown 보고서 형식으로 출력하고, 관련 데이터는 표로 정리해라.
+EOF
+)" --model gemini-3.6-flash-high --output-format json
+```
+
+#### [Planner] 제품 전략 및 기획
+```bash
+agy -p "$(cat <<'EOF'
+[Persona] 너는 '테이스트 아카이브'의 Product Planner다. persona-registry.artifact.md의 정의를 따른다.
+[요청] <구체적 기획/전략 요청>
+[참조] Researcher가 작성한 리서치 결과(app/docs/departments/researcher/market-analysis.md)
+EOF
+)" --model gemini-3.1-pro-high --mode accept-edits --add-dir app/docs/departments/planner --output-format json
+```
 
 ## Claude가 위임하지 않는 것
 
