@@ -18,8 +18,14 @@
 - 새 비즈니스 로직/검증 규칙은 `domain/usecase`에 둔다. ViewModel이나 Composable에 검증 로직을
   넣지 않는다.
 - `domain/model`은 Android/Room에 의존하지 않는 순수 Kotlin이어야 한다.
-- Room 스키마를 변경하는 모든 작업은 새 마이그레이션을 추가해야 한다(`DrinkDiaryDatabase`의
-  `MIGRATION_x_y` 패턴 참고). 마이그레이션 없는 스키마 변경은 금지.
+- Room 스키마 변경 규칙은 **출시 여부에 따라 다르다.**
+  - **게시 후(Play 스토어 배포 이력이 있는 경우)**: 새 마이그레이션을 반드시 추가한다
+    (`DrinkDiaryDatabase`의 `MIGRATION_x_y` 패턴 참고). 마이그레이션 없는 스키마 변경은 금지.
+  - **출시 전(현재 상태)**: 보호할 실사용자 데이터가 없으므로 스키마를 새로 정의할 수 있다.
+    호환을 위한 마이그레이션을 억지로 쌓지 않는다. 단, 스키마를 재정의하기로 한 **결정과 근거를
+    문서에 남긴 뒤**에만 수행한다(예:
+    `../departments/planner/problem-definition.md` 7-1절 — 맥주 주종 제거).
+  - 첫 게시 시점에 이 항목을 "게시 후" 규칙으로 전환하는 것은 Release/Compliance 부서의 책임이다.
 - Enum은 문자열로 저장한다(ordinal 저장 금지).
 - 로컬 우선(local-first) 설계를 유지한다. 백엔드/클라우드는 명시적으로 요구될 때만 도입한다.
 - 구조적 로컬 영속성은 Room, 키-값 설정은 SharedPreferences가 아니라 DataStore를 쓴다.
