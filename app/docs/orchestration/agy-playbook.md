@@ -54,14 +54,14 @@ EOF
 )" --model gemini-3.5-flash-medium --output-format json
 ```
 
-Claude는 반환된 텍스트를 파싱해 `app/docs/product-plan.md`의 "경쟁/벤치마킹 조사" 절에 정리
+Claude는 반환된 텍스트를 파싱해 `app/docs/specs/planner/product-plan.md`의 "경쟁/벤치마킹 조사" 절에 정리
 반영한다. 파일 수정이 없는 태스크이므로 리스크가 낮고, 파이프라인 검증용 첫 호출로 적합하다.
 
 ### 2. 디자인 시스템 범위 내 UI 고도화
 
 ```bash
 agy -p "$(cat <<'EOF'
-[컨텍스트] app/docs/orchestration/harness.md, app/docs/design-system.md 규칙을 반드시 따른다.
+[컨텍스트] app/docs/orchestration/harness.md, app/docs/specs/designer/design-system.md 규칙을 반드시 따른다.
 [작업 범위] <구체적 화면/컴포넌트 경로>
 [요청] <구체적 UI 개선 내용>. 기존 DD* 공용 컴포넌트를 재사용하고, 새 하드코딩 색상/치수를
 추가하지 마라. 이 태스크와 무관한 파일은 건드리지 마라.

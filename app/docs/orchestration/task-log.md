@@ -2,7 +2,7 @@
 
 Claude와 `agy`가 수행하는 태스크의 살아있는 백로그/로그. 상태는 `todo` / `in-progress` /
 `review` / `done` / `blocked` 중 하나. 완료 시 관련 커밋 해시를 기록한다. Phase 정의는
-`app/docs/product-plan.md` 참조.
+`app/docs/specs/planner/product-plan.md` 참조.
 
 ## 야간 자율 작업 중단 시점 요약 (사용자 요청으로 저장 후 정지)
 
@@ -40,13 +40,13 @@ Billing 연동은 Phase 3(가장 마지막)으로 이동. Phase 1은 순수 기�
 | ID | 태스크 | 담당 | 상태 | 커밋 | 비고 |
 | --- | --- | --- | --- | --- | --- |
 | P1-1 | 앱 이름 후보 브레인스토밍 (대량 생성) | agy | done | | 1차 conversation `fe5823a5`(감성적이라 반려) → 2차 conversation `c6d24b88`(기능 직관성 기준 재생성). **사용자 확정: 테이스트 아카이브 / Taste Archive** — `app_name` 리소스 반영 완료 |
-| P1-2 | 가치 제안(Value Proposition) 확정 | Claude | done | | branding.md 2절 |
-| P1-3 | 브랜딩 방향(톤앤매너, 컬러/키워드) 확정 | Claude | done | | branding.md 3절, 기존 `ui/theme` 팔레트 그대로 채택 |
-| P1-4 | Play 스토어 설명(짧은/긴 설명, 키워드) 초안 작성 | agy | done | | conversation `f2370ee9`. Claude 검토 완료, branding.md 4절 |
-| P1-5 | Free 기능 최종 스펙 확정 | Claude | done | | branding.md 5절, 기존 MVP 범위 그대로 확정 |
-| P1-6 | 프리미엄(Advance) 기능 최종 스펙 확정 | Claude | done | | branding.md 6절, 우선순위: 고급 인사이트 > 내보내기 > 테마/위젯 |
+| P1-2 | 가치 제안(Value Proposition) 확정 | Claude | done | | `../specs/designer/branding.md` 2절 |
+| P1-3 | 브랜딩 방향(톤앤매너, 컬러/키워드) 확정 | Claude | done | | `../specs/designer/branding.md` 3절, 기존 `ui/theme` 팔레트 그대로 채택 |
+| P1-4 | Play 스토어 설명(짧은/긴 설명, 키워드) 초안 작성 | agy | done | | conversation `f2370ee9`. Claude 검토 완료, `../specs/designer/branding.md` 4절 |
+| P1-5 | Free 기능 최종 스펙 확정 | Claude | done | | `../specs/designer/branding.md` 5절, 기존 MVP 범위 그대로 확정 |
+| P1-6 | 프리미엄(Advance) 기능 최종 스펙 확정 | Claude | done | | `../specs/designer/branding.md` 6절, 우선순위: 고급 인사이트 > 내보내기 > 테마/위젯 |
 | P1-7 | App Icon 컨셉 방향 제시 + 실제 이미지 생성 | agy | done | | 컨셉 conversation `e24a39f0` → **사용자 확정: 컨셉 2**. `generate_image`로 실제 PNG 생성(conversation `654b81c6`), Claude가 밀도별 리사이즈 후 앱 리소스 반영 완료 |
-| P1-8 | Phase 1 결과 통합 (`orchestration/branding.md` 작성) + 사용자 마일스톤 보고 | Claude | done | | 이름/아이콘 모두 확정 및 반영 완료 — Phase 2 착수 승인 대기 |
+| P1-8 | Phase 1 결과 통합 (`../specs/designer/branding.md` 작성) + 사용자 마일스톤 보고 | Claude | done | | 이름/아이콘 모두 확정 및 반영 완료 — Phase 2 착수 승인 대기 |
 
 ## Phase 2 — MVP 고도화 구현
 
@@ -55,7 +55,7 @@ Billing 연동은 Phase 3(가장 마지막)으로 이동. Phase 1은 순수 기�
   `styles`(Compose Styles API)는 현재 코드베이스가 쓰지 않는 별도 API 도입 결정이라 지금 범위에
   끌어오지 않음. `testing-setup`은 이미 확립된 유닛테스트 패턴(UseCase/ViewModel/Mapper)으로
   충분해 신규 테스트 하네스 구축은 불필요 — 즉, 이번 Phase의 Compose/테스트 작업에 skill이 주는
-  이점은 없고 기존 `design-system.md`/`harness.md` 컨벤션을 그대로 따르는 것으로 충분하다.
+  이점은 없고 기존 `../specs/designer/design-system.md`/`harness.md` 컨벤션을 그대로 따르는 것으로 충분하다.
 - **Android CLI/기기**: `adb devices`에 실기기(`R3CY50L9FCT`) 연결 확인됨 → UI 작업은 커밋 전
   루트 `installDebugApk` 태스크로 실기기에 설치해 시각 검증 가능(단순 컴파일/린트 통과에 그치지
   않음).

@@ -3,12 +3,12 @@
 ## 1. 문서 목적
 
 이 문서는 DrinkDiary를 Google Play Store에 낼 수 있는 상품으로 발전시키기 위한 비즈니스 모델과
-기능 로드맵을 정의한다. `usecase.md`/`ui-flow.md`가 현재 MVP의 기능 범위를 다루는 것과 달리, 이
+기능 로드맵을 정의한다. `usecase.md`/`../designer/ui-flow.md`가 현재 MVP의 기능 범위를 다루는 것과 달리, 이
 문서는 수익화 전략과 Phase별 확장 계획을 다룬다. 실행 태스크 단위 분해는
 `orchestration/task-log.md`에서 관리한다.
 
 > **참고**: "DrinkDiary"는 프로젝트/패키지 내부 코드명이다. 사용자 대면 확정 브랜드명은
-> **테이스트 아카이브 / Taste Archive**이며, 상세 근거는 `orchestration/branding.md` 1절 참고.
+> **테이스트 아카이브 / Taste Archive**이며, 상세 근거는 `../designer/branding.md` 1절 참고.
 
 ## 2. 타깃 사용자 및 가치 제안
 
@@ -56,7 +56,7 @@
 
 실제 기능 구현에 들어가기 전에 아래 항목을 먼저 확정한다. 담당 배분과 진행 상태는
 `orchestration/task-log.md`의 Phase 1 표에서 관리하고, 확정된 결과물은 이 문서와
-`orchestration/branding.md`(신규)에 반영한다.
+`../designer/branding.md`에 반영한다.
 
 1. **애플리케이션 이름/네이밍** — 브랜드 후보군 확보 후 최종 선정
 2. **가치 제안(Value Proposition)** — 한 문장 포지셔닝 + 3대 핵심 가치

@@ -2,7 +2,7 @@
 
 ## 1. 문서 목적
 
-이 문서는 `usecase.md`를 기준으로 DrinkDiary의 화면 구성, 사용자 흐름, UI 상태, 화면 제약을 정의한다.
+이 문서는 `../planner/usecase.md`를 기준으로 DrinkDiary의 화면 구성, 사용자 흐름, UI 상태, 화면 제약을 정의한다.
 UI는 Jetpack Compose와 Material 3를 기준으로 설계하며, 화면 상태는 ViewModel이 제공하는 단방향 상태 흐름을 렌더링한다.
 
 ## 2. UI 설계 원칙

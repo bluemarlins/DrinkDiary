@@ -1,6 +1,6 @@
 # Phase 1 결과물 — 상품화 준비 (브랜딩 / 기능 스펙)
 
-Phase 1(`product-plan.md` 4-1절, `task-log.md` Phase 1)의 산출물을 정리한 문서. `agy`가 생성한
+Phase 1(`../planner/product-plan.md` 4-1절, `task-log.md` Phase 1)의 산출물을 정리한 문서. `agy`가 생성한
 브레인스토밍/카피 초안(P1-1, P1-4, P1-7)을 Claude가 검토·선택·확정(P1-2, P1-3, P1-5, P1-6)한
 결과다. Phase 1의 모든 항목(이름·아이콘 포함)이 확정되었다.
 
@@ -93,9 +93,9 @@ Phase 2에서 구현하고, Phase 3에서 Billing으로 게이팅한다.
 확정되었다. 이후 `agy`의 `generate_image` 도구(실제 래스터 이미지 생성 가능, conversation_id
 `654b81c6-e95a-4526-81b1-833e88cb18da`)로 실제 PNG 에셋을 생성해 앱에 반영 완료했다:
 
-- `app/docs/orchestration/assets/icon-drafts/taste_archive_icon_512.png` — Play 스토어 등록용
+- `app/docs/specs/designer/assets/icon-drafts/taste_archive_icon_512.png` — Play 스토어 등록용
   512x512 불투명 아이콘 원본 보관
-- `app/docs/orchestration/assets/icon-drafts/taste_archive_icon_foreground.png` — adaptive icon
+- `app/docs/specs/designer/assets/icon-drafts/taste_archive_icon_foreground.png` — adaptive icon
   foreground 원본(투명 배경, RGBA 검증 완료) 보관
 - Android 리소스 반영: `res/drawable/ic_launcher_background.xml`을 브랜드 보틀그린(`#2F6F4E`)
   단색으로 교체, `res/mipmap-{m,h,x,xx,xxx}hdpi/ic_launcher_foreground.png`를 원본에서 밀도별로

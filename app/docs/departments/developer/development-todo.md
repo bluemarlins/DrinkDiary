@@ -1,8 +1,12 @@
 # DrinkDiary Application Development Todo
 
+> [!NOTE]
+> **보관 문서 — 살아있는 백로그가 아니다.** MVP 구현 당시의 개발 계획 이력이며, 새 작업은 여기에
+> 추가하지 않는다. 현재 진행 중인 백로그는 `app/docs/orchestration/task-log.md` 하나뿐이다.
+
 ## 1. 문서 목적
 
-이 문서는 `app/docs`의 유스케이스, UI 흐름, 소프트웨어 아키텍처, 데이터베이스 설계, 디자인 시스템 문서를 기준으로 DrinkDiary Android 앱 개발 Todo를 정의한다.
+이 문서는 `app/docs/specs/`의 유스케이스, UI 흐름, 소프트웨어 아키텍처, 데이터베이스 설계, 디자인 시스템 문서를 기준으로 DrinkDiary Android 앱 개발 Todo를 정의한다.
 
 각 Step은 AI Agent가 독립적으로 수행하기 쉬운 크기로 나누었다. 선행 Step의 산출물을 다음 Step이 사용할 수 있도록 도메인, 데이터, UI 기반, 화면 구현, 통합 검증 순서로 진행한다.
 
@@ -526,7 +530,7 @@ Dashboard, Collection, Detail, Editor 화면 간 이동 구조를 만든다.
 - Step NN을 구현한다.
 
 참고 문서:
-- app/docs/development-todo.md
+- app/docs/departments/developer/development-todo.md
 - 관련 세부 문서: app/docs/...
 
 작업 범위:

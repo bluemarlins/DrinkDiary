@@ -104,14 +104,14 @@ Important behavior to verify includes record CRUD, validation errors, collection
 
 ## Documentation
 
-Detailed planning documents are available under `app/docs`:
+Documents live under `app/docs`, filed by status and then by the department that owns them.
 
-- `usecase.md`
-- `ui-flow.md`
-- `software-architecture.md`
-- `database-design.md`
-- `design-system.md`
-- `development-todo.md`
+Confirmed specifications — `app/docs/specs/`:
+
+- `planner/usecase.md`, `planner/product-plan.md`
+- `designer/ui-flow.md`, `designer/design-system.md`
+- `developer/software-architecture.md`, `developer/database-design.md`
+- `qa/navigation-flow-usecases.md`
 
 Working documents from each department (research reports, strategy drafts, implementation plans) live
 under `app/docs/departments/`, and the agent operating rules under `app/docs/orchestration/`.

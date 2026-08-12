@@ -1,10 +1,15 @@
 # Agent Harness — 코드 일관성 규칙
 
-이 문서는 Claude와 `agy` CLI(Gemini/Claude/GPT-OSS 모델)를 포함해 이 저장소에서 코드를 작성하는
-**모든 에이전트가 공통으로 따라야 하는 규칙**이다. `agy`를 호출하는 모든 프롬프트에는 이 문서
-경로(`app/docs/orchestration/harness.md`)를 컨텍스트로 명시한다. 세부 배경은
-`app/docs/software-architecture.md`, `app/docs/design-system.md`, 루트 `CLAUDE.md`를 참조하되,
-이 문서는 그 요약이자 강제 규칙 목록이다.
+이 문서는 Claude와 `agy` CLI를 포함해 이 저장소에서 코드를 작성하는 **모든 에이전트가 공통으로
+따라야 하는 코드 규칙**이다. `agy`를 호출하는 모든 프롬프트에는 이 문서 경로
+(`app/docs/orchestration/harness.md`)를 컨텍스트로 명시한다.
+
+역할 분담·문서 경로·위임 조건 같은 **운영 규칙**은 루트 `AGENTS.md`에 있다(모든 AI 모델 공용
+원본이며 `CLAUDE.md`는 이 파일을 가리킨다). 이 문서는 그중 **코드에 적용되는 규칙**만 다룬다.
+
+세부 배경은 `../specs/developer/software-architecture.md`,
+`../specs/developer/build-and-test.md`, `../specs/designer/design-system.md`를 참조하되, 이 문서는
+그 요약이자 강제 규칙 목록이다.
 
 ## 1. 아키텍처 규칙
 
@@ -16,6 +21,11 @@
 - Room 스키마를 변경하는 모든 작업은 새 마이그레이션을 추가해야 한다(`DrinkDiaryDatabase`의
   `MIGRATION_x_y` 패턴 참고). 마이그레이션 없는 스키마 변경은 금지.
 - Enum은 문자열로 저장한다(ordinal 저장 금지).
+- 로컬 우선(local-first) 설계를 유지한다. 백엔드/클라우드는 명시적으로 요구될 때만 도입한다.
+- 구조적 로컬 영속성은 Room, 키-값 설정은 SharedPreferences가 아니라 DataStore를 쓴다.
+- DB/파일/네트워크 작업은 메인 스레드에서 실행하지 않는다. 비동기·반응형은 Coroutines와 Flow를
+  기본으로 한다.
+- 기술 스택 기본값: Kotlin, Jetpack Compose, Material 3, AndroidX/Jetpack 공식 컴포넌트.
 
 ## 2. UI 규칙
 
@@ -26,14 +36,22 @@
   `DDTextButton`을 사용한다. 한 화면의 Primary 액션은 1개로 제한한다.
 - 색상/타이포/간격은 `ui/theme`의 토큰(`DrinkDiaryTheme`, `DrinkDiaryThemeTokens` 등)을 통해서만
   사용한다. 화면에 하드코딩된 dp/Color 값을 새로 추가하지 않는다.
+- 상태 호이스팅과 단방향 데이터 흐름(UDF)을 따른다. 화면 수준 상태는 ViewModel이 관리한다.
+- 화면 수준 Composable과 재사용 컴포넌트를 분리한다. 재사용 컴포넌트는 `ui/component`에 둔다.
+- 불필요한 리컴포지션을 피한다. 안정적(stable) 모델과 `remember`/`derivedStateOf`를 적절히 쓴다.
+- 큰 목록은 `LazyColumn`/`LazyRow`/`LazyVerticalGrid`로 렌더링한다.
+- 이미지는 효율적으로 로드하고 대용량 비트맵을 메모리에 붙들지 않는다.
 
 ## 3. 코드 스타일 / 자동 게이트
 
 - 포맷팅은 사람이 아니라 도구가 강제한다: ktlint(`:app:ktlintCheck` / `:app:ktlintFormat`)를
   병합 전 필수로 통과시킨다. 어떤 모델이 코드를 작성했든 최종 포맷은 ktlint 규칙으로 수렴한다.
 - Android Lint(`:app:lint`)를 반드시 통과한다.
-- 새 파일에는 주석을 최소화한다. WHY가 비자명한 경우에만 한 줄 주석을 추가한다(기존 CLAUDE.md
-  컨벤션과 동일).
+- 새 파일에는 주석을 최소화한다. WHY가 비자명한 경우에만 한 줄 주석을 추가한다.
+- 관용적이고 읽기 쉬운 Kotlin을 쓴다. 가능한 곳에서는 불변 상태를 선호한다.
+- data class / sealed interface / enum 같은 타입 안전한 모델을 우선한다.
+- 함수와 Composable은 작고 한 가지 일에 집중하게 유지한다. 중복 로직을 만들지 않는다.
+- Deprecated API는 명확한 이유 없이 도입하지 않는다.
 
 ## 4. Definition of Done (모든 태스크 공통)
 
@@ -136,3 +154,34 @@
 **Claude 직접 처리로 되돌리는 경우**: `claude-sonnet-4-6`까지 갔는데도 게이트를 통과하지 못하면
 더 이상 agy에 위임하지 않고 Claude(오케스트레이터)가 직접 작성한다 — 태스크 자체가 6절 원칙표상
 "agy 위임" 범주로 잘못 분류됐을 가능성이 크다는 신호로 본다.
+
+## 7. 오류 처리
+
+- Loading / Empty / Success / Error 상태를 명시적으로 모델링한다. 조용한 실패(silent failure)를
+  만들지 않는다.
+- 저장소·UseCase·ViewModel을 관통하는 결과/오류 타입은 `AppResult<T>`(`Success`/`Failure`)와
+  `AppError`(`NotFound`, `Storage`, `Validation(SaveDrinkRecordError)`)를 쓴다.
+- 사용자에게 보이는 메시지는 이해 가능한 표현으로 쓰고, 기술적 상세(스택 트레이스, 예외 클래스명)는
+  디버깅 목적이 아니면 노출하지 않는다.
+
+## 8. 테스트
+
+- 비즈니스 로직은 테스트 가능하게 설계한다. 핵심 로직을 Android 프레임워크 클래스에 강하게
+  결합하지 않는다.
+- 검증·정렬·필터링·매핑·저장소 로직은 유닛 테스트를 우선한다.
+- 구현이 중요한 동작에 영향을 준다면 관련 테스트 케이스를 함께 제안한다.
+- 실행 명령과 Robolectric 전제는 `../specs/developer/build-and-test.md`를 따른다.
+
+## 9. 보안 / 프라이버시
+
+- 민감 정보를 안전하지 않은 방식으로 저장하지 않는다.
+- 불필요한 권한을 요구하지 않는다. 런타임 권한은 실제로 필요한 시점에만 요청한다.
+- 저장소·미디어 접근·인증은 플랫폼 권장 API를 우선한다.
+
+## 10. 의존성 관리
+
+- 안정적이고 유지보수가 활발한 라이브러리를 선호한다.
+- 공식 AndroidX/Kotlin 대안으로 충분하면 서드파티 의존성을 추가하지 않는다.
+- 의존성을 추가할 때는 왜 필요한지 근거를 남긴다.
+- Gradle 설정은 최신 AGP/Kotlin 버전과 호환되게 유지한다. 버전은 `gradle/libs.versions.toml`에서
+  관리한다.

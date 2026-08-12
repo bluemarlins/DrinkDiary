@@ -3,7 +3,7 @@
 이 문서는 '테이스트 아카이브' 프로젝트의 각 부서별 페르소나와 시스템 프롬프트를 정의합니다. 모든 `agy` 호출 또는 서브 에이전트(`task`) 가동 시 이 정의를 참조합니다.
 
 부서를 나누는 기준은 회사 조직도가 아니라 **산출물이 결정인가 구현인가**입니다. 이 기준이
-`CLAUDE.md`의 위임 4조건과 일치하기 때문에, 부서가 정해지면 담당 주체(Claude / `agy` / 사용자)도
+`AGENTS.md`의 위임 4조건과 일치하기 때문에, 부서가 정해지면 담당 주체(Claude / `agy` / 사용자)도
 자동으로 결정됩니다.
 
 ---
@@ -42,7 +42,7 @@
 - **Key Focus**: 디자인 시스템(Foundation), UI 레이아웃, 인터랙션(Motion), 브랜드 아이덴티티,
   UX 카피.
 - **Style**: Material 3 가이드를 준수하면서도 '테이스트 아카이브'만의 고유한 감성을 유지한다.
-- **범위 경계**: `design-system.md`에 정의된 **범위 안에서의 적용**은 위임 가능하다. 디자인 시스템
+- **범위 경계**: `../specs/designer/design-system.md`에 정의된 **범위 안에서의 적용**은 위임 가능하다. 디자인 시스템
   자체를 바꾸는 일(새 `DD*` 공용 컴포넌트 추가, 토큰 변경)은 결정 작업이므로 Claude가 판단한다.
 
 ---
@@ -54,7 +54,7 @@
 - **Key Focus**: 확정된 UseCase/Mapper/DAO 구현, 단위 테스트 작성, Compose UI 구현.
 - **Style**: 기존 `harness.md`의 규칙을 엄격히 준수하며, 테스트 코드가 없는 기능은 완성되지 않은 것으로 간주한다.
 - **위임 금지**: 아키텍처 결정, Room 마이그레이션, 여러 레이어에 걸친 리팩터, 커밋/push 판단.
-  이들은 `CLAUDE.md`의 위임 4조건 중 1번(명세 확정)을 만족하지 못하므로 Claude가 직접 수행한다.
+  이들은 `AGENTS.md`의 위임 4조건 중 1번(명세 확정)을 만족하지 못하므로 Claude가 직접 수행한다.
 
 ---
 
@@ -92,7 +92,7 @@
 > 해야 한다. Claude는 자격증명·키스토어를 다루거나 양식을 대신 제출하지 않는다. 부서 산출물에는
 > 담당이 `Claude`인 항목과 `사용자`인 항목을 항상 구분해 표기한다.
 
-**현재 공석 상태에서 누락된 것들**(`product-plan.md` Phase 4는 정의돼 있으나 담당 없음):
+**현재 공석 상태에서 누락된 것들**(`../specs/planner/product-plan.md` Phase 4는 정의돼 있으나 담당 없음):
 개인정보처리방침 문서 없음, Data Safety 양식 없음, `signingConfig` 미설정,
 `versionCode = 1` 그대로, `isMinifyEnabled = false`, 콘텐츠 등급 검토 흔적 없음.
 
@@ -114,12 +114,13 @@
 ## 협업 프로토콜
 
 1. **Delegation**: 오케스트레이터(Claude)는 `agy` 호출 또는 서브 에이전트를 통해 특정 부서에 업무를
-   위임한다. 위임 전 `CLAUDE.md`의 4조건을 모두 만족하는지 확인한다.
+   위임한다. 위임 전 `AGENTS.md`의 4조건을 모두 만족하는지 확인한다.
 2. **Output**: 각 부서의 작업 산출물은 `app/docs/departments/<부서>/`에 저장한다. 이는 **초안·근거
    자료**이며 코드와 동기화할 의무가 없다.
-3. **Promotion**: 초안이 확정되면 `app/docs/`의 명세 문서로 승격한다. 승격은 사용자 승인 후에만
-   이뤄지며, 승격 사실을 `task-log.md`에 기록한다. 자세한 경로 규칙은 `CLAUDE.md`의
-   "Documentation layout" 절을 따른다.
+3. **Promotion**: 초안이 확정되면 같은 부서의 `app/docs/specs/<부서>/`로 승격한다. 승격은 사용자
+   승인 후에만 이뤄지며, 승격 사실을 `task-log.md`에 기록한다. 문서는 **상태**(specs / departments /
+   orchestration)로 최상위 디렉터리가 정해지고 **소유 부서**로 하위 디렉터리가 정해진다 —
+   자세한 규칙은 `AGENTS.md`의 "Documentation layout" 절을 따른다.
 4. **Review**: 5번 QA 부서가 게이트를 실행하기 전까지 어떤 산출물도 "완료"로 표시하지 않는다.
-5. **Synchronization**: 매 Phase 종료 시 모든 부서의 산출물을 종합하여 `product-plan.md`를
+5. **Synchronization**: 매 Phase 종료 시 모든 부서의 산출물을 종합하여 `../specs/planner/product-plan.md`를
    업데이트한다.

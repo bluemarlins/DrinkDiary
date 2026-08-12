@@ -25,7 +25,10 @@ UI(Compose)
 - UI, 상태 관리, 비즈니스 규칙, 데이터 접근 책임을 분리할 수 있다.
 - 향후 기능이 커지면 feature 모듈 또는 core 모듈로 분리하기 쉽다.
 
-## 3. 권장 패키지 구조
+## 3. 패키지 구조 (현행)
+
+기본 정보: 패키지 `com.bluemarlin.drinkdiary`, `minSdk 35`, `compileSdk`/`targetSdk 36`.
+단일 모듈이며 의존 방향은 `UI -> ViewModel -> UseCase -> Repository -> DAO(Room) -> Database` 한 방향이다.
 
 ```text
 com.bluemarlin.drinkdiary
@@ -37,31 +40,65 @@ com.bluemarlin.drinkdiary
   │  ├─ mapper
   │  │  └─ DrinkRecordMapper
   │  └─ repository
-  │     └─ DrinkRecordRepositoryImpl
+  │     ├─ DrinkRecordRepositoryImpl
+  │     └─ UserPreferencesRepositoryImpl
   ├─ domain
   │  ├─ model
-  │  │  ├─ DrinkRecord
-  │  │  ├─ DrinkType
-  │  │  ├─ CollectionStatus
-  │  │  ├─ DashboardPeriod
-  │  │  └─ DashboardSummary
+  │  │  ├─ DrinkRecord / DrinkType / CollectionStatus
+  │  │  ├─ DashboardPeriod / DashboardSummary
+  │  │  ├─ DrinkRecordFilter / DrinkRecordInput
+  │  │  └─ InsightsSummary / DrinkRatingBreakdown
   │  ├─ repository
-  │  │  └─ DrinkRecordRepository
+  │  │  ├─ DrinkRecordRepository
+  │  │  └─ UserPreferencesRepository
   │  └─ usecase
-  │     ├─ ObserveDrinkRecordsUseCase
-  │     ├─ ObserveDrinkRecordUseCase
-  │     ├─ SaveDrinkRecordUseCase
-  │     ├─ DeleteDrinkRecordUseCase
-  │     └─ ObserveDashboardSummaryUseCase
+  │     ├─ ObserveDrinkRecordsUseCase / ObserveDrinkRecordUseCase
+  │     ├─ SaveDrinkRecordUseCase / DeleteDrinkRecordUseCase
+  │     ├─ ObserveDashboardSummaryUseCase / ObserveSearchResultsUseCase
+  │     ├─ ObserveInsightsUseCase
+  │     ├─ GenerateCsvExportUseCase
+  │     └─ CheckRecordLimitUseCase
   ├─ ui
-  │  ├─ dashboard
-  │  ├─ collection
-  │  ├─ detail
-  │  ├─ editor
+  │  ├─ dashboard / collection / search
+  │  ├─ detail / editor / insights / settings
+  │  ├─ component (Components.kt — DD* 공용 컴포넌트)
   │  ├─ navigation
   │  └─ theme
+  ├─ DrinkDiaryApplication (AppContainer)
   └─ MainActivity
 ```
+
+### 3-1. 패키지별 책임 상세
+
+- **`domain/model`** — 순수 Kotlin data class/enum. Android·Room 의존 금지.
+- **`domain/usecase`** — UseCase당 클래스 1개. 입력 검증과 비즈니스 규칙은 ViewModel/UI가 아니라
+  여기에 둔다. 예: 필수 입력·평점 범위 검증은 `SaveDrinkRecordUseCase`에, 무료 티어 기록 상한
+  (`CheckRecordLimitUseCase.LIMIT`, `DrinkRecordRepository.observeRecordsCount()`와
+  `UserPreferencesRepository.isProUser`를 결합)은 에디터 ViewModel이 아니라 UseCase에 둔다 —
+  어느 화면에서 호출하든 규칙이 동일하게 적용되게 하기 위함이다.
+- **`domain/repository`** — `DrinkRecordRepository`, `UserPreferencesRepository` 인터페이스.
+- **`data/local`** — Room `DrinkDiaryDatabase`, `DrinkRecordDao`, `DrinkRecordEntity`. Enum은 ordinal이
+  아니라 문자열로 저장해 스키마 가독성과 enum 재정렬 내성을 확보한다. 스키마 이력은 `app/schemas/`에
+  내보낸다(`room.schemaLocation`). 엔티티/스키마 변경 시 반드시 새 마이그레이션을 추가하고
+  (`DrinkDiaryDatabase.MIGRATION_1_2`, `MIGRATION_2_3` 참고) `AppContainer`에 등록한다.
+- **`data/mapper`** — `DrinkRecordMapper`가 Entity ↔ 도메인 `DrinkRecord` 변환을 담당.
+- **`data/repository`** — `DrinkRecordRepositoryImpl`은 DAO와 대화하는 유일한 지점이며 DB 실패를
+  `AppResult`/`AppError`로 번역한다. `UserPreferencesRepositoryImpl`은 Jetpack DataStore 기반으로
+  프리미엄 게이트에 쓰이는 `isProUser` 플래그를 보관한다.
+- **`ui/<feature>`** — 화면당 패키지 1개. `*Screen.kt`(stateless Composable) + `*ViewModel.kt`(UI 상태
+  노출, UseCase 호출). ViewModel은 DI 프레임워크(Hilt/Koin) 없이 손으로 쓴 `Factory`로 생성한다.
+- **`ui/component/Components.kt`** — `DD*` 접두사 공용 Material 3 컴포넌트. 화면 로컬 일회성 UI를
+  새로 만들기보다 이쪽을 재사용·확장한다. 전체 카탈로그와 사용 규칙은
+  `../designer/design-system.md` 참고.
+- **`ui/navigation/DrinkDiaryApp.kt`** — Navigation 3(`androidx.navigation3`) 기반. `NavController`
+  없이 private sealed `AppRoute : NavKey` 계층과 수동 관리 `mutableStateListOf<AppRoute>` 백스택을
+  쓴다. 최상위 라우트(Dashboard/Collection/Search)는 shared-axis, 드릴인 라우트
+  (Detail/Editor/Insights/Settings)는 `NavDisplay.transitionSpec` 메타데이터로 정의한 슬라이드 전환을
+  사용한다. 각 엔트리의 ViewModel은 라우트 인자로 스코프된 `key` 문자열(예: `"detail_${recordId}"`)로
+  생성해 서로 다른 기록/편집이 독립 인스턴스를 갖게 한다.
+- **의존성 배선** — `DrinkDiaryApplication`/`AppContainer`가 Room DB, DataStore 기반
+  `UserPreferencesRepository`, 모든 repository/usecase 싱글턴을 수동으로 조립한다. 화면에서는
+  `(LocalContext.current.applicationContext as DrinkDiaryApplication).appContainer`로 가져온다.
 
 ## 4. 계층별 책임
 
