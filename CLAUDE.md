@@ -95,10 +95,28 @@ UI (Compose Screen) -> ViewModel -> UseCase -> Repository -> DAO (Room) -> Datab
   through use cases into ViewModel UI state. Every major screen models Loading/Empty/Success/Error states
   explicitly instead of failing silently.
 
-Detailed design docs live under `app/docs/` (mostly in Korean): `software-architecture.md` (layer
-responsibilities, data flow diagrams), `database-design.md`, `design-system.md`, `usecase.md`,
-`ui-flow.md`, `navigation-flow-usecases.md`, `development-todo.md`, `product-plan.md` (business model
-and phase roadmap, including the freemium/Pro rationale).
+## Documentation layout
+
+Work is organized into six virtual departments — Planner, Researcher, Designer, Developer, QA, and
+Release/Compliance — defined in `app/docs/orchestration/persona-registry.artifact.md`. That file also
+records which departments may be delegated to `agy` and which are Claude-only.
+
+**Where a document goes is decided by its status, not by who wrote it:**
+
+- **`app/docs/*.md` — confirmed specs.** The single source of truth, and they must stay in sync with the
+  code. Mostly Korean: `software-architecture.md` (layer responsibilities, data flow diagrams),
+  `database-design.md`, `design-system.md`, `usecase.md`, `ui-flow.md`, `navigation-flow-usecases.md`,
+  `development-todo.md`, `product-plan.md` (business model and phase roadmap, including the
+  freemium/Pro rationale).
+- **`app/docs/departments/<dept>/` — that department's working output.** Research reports, strategy
+  drafts, implementation plans, review memos. Kept as a record of how a decision was reached; carries no
+  obligation to match the current code.
+- **`app/docs/orchestration/` — agent operating rules.** `harness.md`, `agy-playbook.md`,
+  `persona-registry.artifact.md`, and the live backlog `task-log.md`.
+
+A draft is promoted from `departments/` into a confirmed spec only after the user signs off, and the
+promotion is recorded in `task-log.md`. Never write a new planning or design document straight into
+`app/docs/` — start it in the owning department's directory.
 
 ## Multi-agent workflow
 

@@ -112,4 +112,6 @@ Detailed planning documents are available under `app/docs`:
 - `database-design.md`
 - `design-system.md`
 - `development-todo.md`
-- `scaffold-toolbar-plan.md`
+
+Working documents from each department (research reports, strategy drafts, implementation plans) live
+under `app/docs/departments/`, and the agent operating rules under `app/docs/orchestration/`.

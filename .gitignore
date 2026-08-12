@@ -16,3 +16,6 @@ AGENTS.md
 .externalNativeBuild
 .cxx
 local.properties
+
+# Agent scratch output (Antigravity/Claude working files, not project docs)
+/.artifacts/
