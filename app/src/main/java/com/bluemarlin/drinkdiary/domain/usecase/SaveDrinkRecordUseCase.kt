@@ -1,5 +1,6 @@
 package com.bluemarlin.drinkdiary.domain.usecase
 
+import com.bluemarlin.drinkdiary.R
 import com.bluemarlin.drinkdiary.domain.model.AppError
 import com.bluemarlin.drinkdiary.domain.model.AppResult
 import com.bluemarlin.drinkdiary.domain.model.DrinkRecord
@@ -20,25 +21,32 @@ class SaveDrinkRecordUseCase(
                 ?.toLongOrNull()
         val errors =
             SaveDrinkRecordError(
-                type = if (input.type == null) "주류 종류를 선택해 주세요." else null,
-                name = if (input.name.isBlank()) "이름을 입력해 주세요." else null,
+                type = if (input.type == null) R.string.error_select_drink_type else null,
+                name = if (input.name.isBlank()) R.string.error_enter_name else null,
                 price =
                     when {
                         input.priceText.isBlank() -> null
-                        price == null -> "가격은 숫자로 입력해 주세요."
-                        price < 0 -> "가격은 0 이상이어야 합니다."
+                        price == null -> R.string.error_price_numeric
+                        price < 0 -> R.string.error_price_non_negative
                         else -> null
                     },
                 rating =
                     if (!input.rating.isValidOverallRating() ||
                         input.ratingBreakdown.values.any { !it.isValidSensoryMetric() }
                     ) {
-                        "전체 평점은 0~5점, 테이스팅 프로필은 0.5 단위로 입력해 주세요."
+                        R.string.error_invalid_rating
                     } else {
                         null
                     },
-                collectionStatus = if (input.collectionStatus == null) "컬렉션 상태를 선택해 주세요." else null,
-                recordedAt = if (input.recordedAtMillis <= 0L) "기록 일시를 선택해 주세요." else null,
+                collectionStatus =
+                    if (input.collectionStatus ==
+                        null
+                    ) {
+                        R.string.error_select_collection_status
+                    } else {
+                        null
+                    },
+                recordedAt = if (input.recordedAtMillis <= 0L) R.string.error_select_recorded_at else null,
             )
 
         if (errors.hasError) {

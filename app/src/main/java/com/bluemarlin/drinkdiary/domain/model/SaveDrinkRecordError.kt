@@ -1,12 +1,12 @@
 package com.bluemarlin.drinkdiary.domain.model
 
 data class SaveDrinkRecordError(
-    val type: String? = null,
-    val name: String? = null,
-    val price: String? = null,
-    val rating: String? = null,
-    val collectionStatus: String? = null,
-    val recordedAt: String? = null,
+    val type: Int? = null,
+    val name: Int? = null,
+    val price: Int? = null,
+    val rating: Int? = null,
+    val collectionStatus: Int? = null,
+    val recordedAt: Int? = null,
 ) {
     val hasError: Boolean
         get() = listOf(type, name, price, rating, collectionStatus, recordedAt).any { it != null }

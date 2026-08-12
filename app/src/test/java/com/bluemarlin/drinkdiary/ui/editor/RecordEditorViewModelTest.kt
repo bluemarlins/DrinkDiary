@@ -4,10 +4,13 @@ import com.bluemarlin.drinkdiary.domain.model.AppResult
 import com.bluemarlin.drinkdiary.domain.model.DrinkRecord
 import com.bluemarlin.drinkdiary.domain.model.DrinkRecordFilter
 import com.bluemarlin.drinkdiary.domain.repository.DrinkRecordRepository
+import com.bluemarlin.drinkdiary.domain.repository.UserPreferencesRepository
+import com.bluemarlin.drinkdiary.domain.usecase.CheckRecordLimitUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveDrinkRecordUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.SaveDrinkRecordUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flowOf
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -44,7 +47,14 @@ class RecordEditorViewModelTest {
             recordId = null,
             observeDrinkRecordUseCase = ObserveDrinkRecordUseCase(repository),
             saveDrinkRecordUseCase = SaveDrinkRecordUseCase(repository),
+            checkRecordLimitUseCase = CheckRecordLimitUseCase(repository, FakeUserPreferencesRepository()),
         )
+    }
+
+    private class FakeUserPreferencesRepository : UserPreferencesRepository {
+        override val isProUser: Flow<Boolean> = flowOf(false)
+
+        override suspend fun setProUser(isPro: Boolean) = Unit
     }
 
     private class FakeRepository : DrinkRecordRepository {
@@ -58,6 +68,8 @@ class RecordEditorViewModelTest {
         ): Flow<List<DrinkRecord>> = emptyFlow()
 
         override fun observeSearchResults(query: String): Flow<List<DrinkRecord>> = emptyFlow()
+
+        override fun observeRecordsCount(): Flow<Int> = flowOf(0)
 
         override suspend fun save(record: DrinkRecord): AppResult<Long> = AppResult.Success(1L)
 

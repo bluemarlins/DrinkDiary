@@ -3,6 +3,7 @@ package com.bluemarlin.drinkdiary.ui.dashboard
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.bluemarlin.drinkdiary.R
 import com.bluemarlin.drinkdiary.domain.model.DashboardPeriod
 import com.bluemarlin.drinkdiary.domain.model.DashboardSummary
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveDashboardSummaryUseCase
@@ -25,7 +26,7 @@ sealed interface DashboardUiState {
     ) : DashboardUiState
 
     data class Error(
-        val message: String,
+        val messageRes: Int,
     ) : DashboardUiState
 }
 
@@ -41,7 +42,7 @@ class DashboardViewModel(
                 observeDashboardSummaryUseCase(period).map { summary ->
                     if (summary.totalCount == 0) DashboardUiState.Empty else DashboardUiState.Success(summary)
                 }
-            }.catch { emit(DashboardUiState.Error("대시보드를 불러오지 못했습니다.")) }
+            }.catch { emit(DashboardUiState.Error(R.string.error_load_failed)) }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DashboardUiState.Loading)
 
     fun selectPeriod(period: DashboardPeriod) {

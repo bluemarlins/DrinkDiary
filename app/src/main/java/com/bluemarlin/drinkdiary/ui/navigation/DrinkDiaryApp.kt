@@ -35,6 +35,8 @@ import com.bluemarlin.drinkdiary.ui.insights.InsightsRoute
 import com.bluemarlin.drinkdiary.ui.insights.InsightsViewModel
 import com.bluemarlin.drinkdiary.ui.search.SearchRoute
 import com.bluemarlin.drinkdiary.ui.search.SearchViewModel
+import com.bluemarlin.drinkdiary.ui.settings.SettingsRoute
+import com.bluemarlin.drinkdiary.ui.settings.SettingsViewModel
 import kotlin.math.roundToInt
 
 private sealed interface AppRoute : NavKey {
@@ -55,6 +57,8 @@ private sealed interface AppRoute : NavKey {
     ) : AppRoute
 
     data object Insights : AppRoute
+
+    data object Settings : AppRoute
 }
 
 private const val NavigationSlideDurationMillis = 260
@@ -106,6 +110,7 @@ fun DrinkDiaryApp() {
                         onCollectionClick = { navigateTopLevel(AppRoute.Collection()) },
                         onSearchClick = { navigateTopLevel(AppRoute.Search) },
                         onOpenInsights = { navigate(AppRoute.Insights) },
+                        onSettingsClick = { navigate(AppRoute.Settings) },
                     )
                 }
                 entry<AppRoute.Collection> { route ->
@@ -153,14 +158,34 @@ fun DrinkDiaryApp() {
                         recordId = route.recordId,
                         onBack = ::goBack,
                         onSaved = { navigateTopLevel(AppRoute.Collection()) },
+                        onUpgradeClick = { navigate(AppRoute.Settings) },
                     )
                 }
                 entry<AppRoute.Insights>(metadata = detailTransitionMetadata()) {
                     val viewModel: InsightsViewModel =
                         viewModel(
-                            factory = InsightsViewModel.Factory(appContainer.observeInsightsUseCase),
+                            factory =
+                                InsightsViewModel.Factory(
+                                    appContainer.observeInsightsUseCase,
+                                    appContainer.userPreferencesRepository,
+                                ),
                         )
-                    InsightsRoute(viewModel = viewModel, onBack = ::goBack)
+                    InsightsRoute(
+                        viewModel = viewModel,
+                        onBack = ::goBack,
+                        onUpgradeClick = { navigate(AppRoute.Settings) },
+                    )
+                }
+                entry<AppRoute.Settings>(metadata = detailTransitionMetadata()) {
+                    val viewModel: SettingsViewModel =
+                        viewModel(
+                            factory =
+                                SettingsViewModel.Factory(
+                                    appContainer.userPreferencesRepository,
+                                    appContainer.generateCsvExportUseCase,
+                                ),
+                        )
+                    SettingsRoute(viewModel = viewModel, onBack = ::goBack)
                 }
             },
     )
@@ -246,6 +271,7 @@ private fun topLevelRouteIndex(route: AppRoute): Int =
         is AppRoute.Detail,
         is AppRoute.Editor,
         AppRoute.Insights,
+        AppRoute.Settings,
         -> 1
     }
 
@@ -309,6 +335,7 @@ private fun EditorEntry(
     recordId: Long?,
     onBack: () -> Unit,
     onSaved: (Long) -> Unit,
+    onUpgradeClick: () -> Unit,
 ) {
     val appContainer = (LocalContext.current.applicationContext as DrinkDiaryApplication).appContainer
     val viewModel: RecordEditorViewModel =
@@ -319,7 +346,13 @@ private fun EditorEntry(
                     recordId,
                     appContainer.observeDrinkRecordUseCase,
                     appContainer.saveDrinkRecordUseCase,
+                    appContainer.checkRecordLimitUseCase,
                 ),
         )
-    RecordEditorRoute(viewModel = viewModel, onBack = onBack, onSaved = onSaved)
+    RecordEditorRoute(
+        viewModel = viewModel,
+        onBack = onBack,
+        onSaved = onSaved,
+        onUpgradeClick = onUpgradeClick,
+    )
 }

@@ -17,6 +17,8 @@ interface DrinkRecordRepository {
 
     fun observeSearchResults(query: String): Flow<List<DrinkRecord>>
 
+    fun observeRecordsCount(): Flow<Int>
+
     suspend fun save(record: DrinkRecord): AppResult<Long>
 
     suspend fun deleteById(id: Long): AppResult<Unit>

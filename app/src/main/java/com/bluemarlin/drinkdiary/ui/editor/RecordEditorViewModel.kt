@@ -10,6 +10,7 @@ import com.bluemarlin.drinkdiary.domain.model.DrinkRecordInput
 import com.bluemarlin.drinkdiary.domain.model.DrinkType
 import com.bluemarlin.drinkdiary.domain.model.SaveDrinkRecordError
 import com.bluemarlin.drinkdiary.domain.model.update
+import com.bluemarlin.drinkdiary.domain.usecase.CheckRecordLimitUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveDrinkRecordUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.SaveDrinkRecordUseCase
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -27,6 +28,7 @@ data class RecordEditorUiState(
     val loading: Boolean = false,
     val saving: Boolean = false,
     val errorMessage: String? = null,
+    val showLimitReachedDialog: Boolean = false,
 ) {
     val hasUnsavedChanges: Boolean
         get() = !loading && !saving && input.contentForChangeDetection() != initialInput.contentForChangeDetection()
@@ -44,6 +46,7 @@ class RecordEditorViewModel(
     private val recordId: Long?,
     private val observeDrinkRecordUseCase: ObserveDrinkRecordUseCase,
     private val saveDrinkRecordUseCase: SaveDrinkRecordUseCase,
+    private val checkRecordLimitUseCase: CheckRecordLimitUseCase,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(RecordEditorUiState(loading = recordId != null))
     val uiState: StateFlow<RecordEditorUiState> = _uiState
@@ -113,8 +116,17 @@ class RecordEditorViewModel(
 
     fun updateRecordedAtMillis(value: Long) = updateInput { it.copy(recordedAtMillis = value) }
 
+    fun dismissLimitDialog() = _uiState.update { it.copy(showLimitReachedDialog = false) }
+
     fun save() {
         viewModelScope.launch {
+            if (recordId == null) {
+                val canSave = checkRecordLimitUseCase().first()
+                if (!canSave) {
+                    _uiState.update { it.copy(showLimitReachedDialog = true) }
+                    return@launch
+                }
+            }
             _uiState.update { it.copy(saving = true, validationError = SaveDrinkRecordError(), errorMessage = null) }
             when (val result = saveDrinkRecordUseCase(_uiState.value.input)) {
                 is AppResult.Success -> {
@@ -143,9 +155,15 @@ class RecordEditorViewModel(
         private val recordId: Long?,
         private val observeDrinkRecordUseCase: ObserveDrinkRecordUseCase,
         private val saveDrinkRecordUseCase: SaveDrinkRecordUseCase,
+        private val checkRecordLimitUseCase: CheckRecordLimitUseCase,
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            RecordEditorViewModel(recordId, observeDrinkRecordUseCase, saveDrinkRecordUseCase) as T
+            RecordEditorViewModel(
+                recordId,
+                observeDrinkRecordUseCase,
+                saveDrinkRecordUseCase,
+                checkRecordLimitUseCase,
+            ) as T
     }
 }

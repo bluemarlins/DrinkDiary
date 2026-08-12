@@ -24,7 +24,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.bluemarlin.drinkdiary.R
 import com.bluemarlin.drinkdiary.domain.model.ratingCriteria
 import com.bluemarlin.drinkdiary.ui.component.DDCollectionStatusBadge
 import com.bluemarlin.drinkdiary.ui.component.DDConfirmDialog
@@ -59,12 +61,16 @@ fun RecordDetailRoute(
     }
 
     DDScreenScaffold(
-        title = "기록 상세",
+        title = stringResource(R.string.detail_title),
         screenType = DDScreenType.Detail,
     ) { padding ->
         when (val uiState = state) {
             RecordDetailUiState.Loading -> DDLoadingContent(Modifier.padding(padding))
-            RecordDetailUiState.NotFound -> DDErrorContent("기록을 찾을 수 없습니다.", modifier = Modifier.padding(padding))
+            RecordDetailUiState.NotFound ->
+                DDErrorContent(
+                    stringResource(R.string.detail_not_found),
+                    modifier = Modifier.padding(padding),
+                )
             is RecordDetailUiState.Error -> DDErrorContent(uiState.message, modifier = Modifier.padding(padding))
             is RecordDetailUiState.Success -> {
                 val record = uiState.record
@@ -145,8 +151,8 @@ fun RecordDetailRoute(
                 }
                 if (showDeleteDialog) {
                     DDConfirmDialog(
-                        title = "기록 삭제",
-                        message = "이 기록을 삭제할까요?",
+                        title = stringResource(R.string.detail_delete_confirm_title),
+                        message = stringResource(R.string.detail_delete_confirm_message),
                         onConfirm = {
                             showDeleteDialog = false
                             viewModel.delete(recordId)
@@ -183,19 +189,19 @@ private fun RecordDetailInfo(
     ) {
         Text(name, style = MaterialTheme.typography.headlineSmall)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), content = typeContent)
-        Text("전체 평점", style = MaterialTheme.typography.titleMedium)
+        Text(stringResource(R.string.detail_overall_rating), style = MaterialTheme.typography.titleMedium)
         rating()
         ratingDetails()
-        DDInfoRow("가격", price)
-        DDInfoRow("장소", place)
-        DDInfoRow("기록 일시", recordedAt)
+        DDInfoRow(stringResource(R.string.detail_price), price)
+        DDInfoRow(stringResource(R.string.detail_place), place)
+        DDInfoRow(stringResource(R.string.detail_recorded_at), recordedAt)
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text("테이스팅 노트", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.detail_tasting_note), style = MaterialTheme.typography.titleMedium)
             Text(tastingNote, style = MaterialTheme.typography.bodyMedium)
         }
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            DDPrimaryButton("수정", onClick = onEdit, modifier = Modifier.weight(1f))
-            DDDestructiveButton("삭제", onClick = onDelete, modifier = Modifier.weight(1f))
+            DDPrimaryButton(stringResource(R.string.detail_edit), onClick = onEdit, modifier = Modifier.weight(1f))
+            DDDestructiveButton(stringResource(R.string.delete), onClick = onDelete, modifier = Modifier.weight(1f))
         }
     }
 }

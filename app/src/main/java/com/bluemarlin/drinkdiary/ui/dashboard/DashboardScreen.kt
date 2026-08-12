@@ -13,13 +13,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.bluemarlin.drinkdiary.R
 import com.bluemarlin.drinkdiary.domain.model.CollectionStatus
 import com.bluemarlin.drinkdiary.domain.model.DashboardSummary
 import com.bluemarlin.drinkdiary.ui.component.DDAddRecordFab
@@ -47,17 +53,23 @@ fun DashboardRoute(
     onCollectionClick: () -> Unit,
     onSearchClick: () -> Unit,
     onOpenInsights: () -> Unit,
+    onSettingsClick: () -> Unit,
 ) {
     val state by viewModel.uiState.collectAsState()
     val period by viewModel.selectedPeriod.collectAsState()
 
     DDScreenScaffold(
-        title = "대시보드",
+        title = stringResource(R.string.dashboard_title),
         screenType = DDScreenType.TopLevel,
         selectedTab = DDTopLevelTab.Dashboard,
         onDashboardClick = {},
         onCollectionClick = onCollectionClick,
         onSearchClick = onSearchClick,
+        toolbarActions = {
+            IconButton(onClick = onSettingsClick) {
+                Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.settings_title))
+            }
+        },
         floatingActionButton = { DDAddRecordFab(onClick = onAddRecord) },
     ) { padding ->
         BoxWithConstraints(
@@ -77,8 +89,13 @@ fun DashboardRoute(
                 DDPeriodSegmentedControl(selected = period, onSelected = viewModel::selectPeriod)
                 when (val uiState = state) {
                     DashboardUiState.Loading -> DDLoadingContent()
-                    DashboardUiState.Empty -> DDEmptyContent("선택한 기간에 기록이 없습니다.", "기록 추가", onAddRecord)
-                    is DashboardUiState.Error -> DDErrorContent(uiState.message)
+                    DashboardUiState.Empty ->
+                        DDEmptyContent(
+                            stringResource(R.string.dashboard_empty_message),
+                            stringResource(R.string.dashboard_add_record),
+                            onAddRecord,
+                        )
+                    is DashboardUiState.Error -> DDErrorContent(stringResource(uiState.messageRes))
                     is DashboardUiState.Success ->
                         DashboardSuccessContent(
                             summary = uiState.summary,
@@ -122,25 +139,35 @@ private fun DashboardSuccessContent(
         }
         item {
             DDContainedButton(
-                text = "고급 인사이트 보기",
+                text = stringResource(R.string.dashboard_view_insights),
                 onClick = onOpenInsights,
                 modifier = Modifier.fillMaxWidth(),
             )
         }
         if (summary.normalRecords.isNotEmpty()) {
-            item { Text("일반 기록", style = MaterialTheme.typography.titleMedium) }
+            item {
+                Text(
+                    stringResource(R.string.dashboard_normal_records),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+            }
             items(summary.normalRecords.take(5), key = { it.id }) { record ->
                 DDDrinkRecordCard(record = record, onClick = { onOpenRecord(record.id) })
             }
         }
         if (summary.repurchaseRecords.isNotEmpty()) {
-            item { Text("재구매 후보", style = MaterialTheme.typography.titleMedium) }
+            item {
+                Text(
+                    stringResource(R.string.dashboard_repurchase_candidates),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+            }
             items(summary.repurchaseRecords.take(5), key = { it.id }) { record ->
                 DDDrinkRecordCard(record = record, onClick = { onOpenRecord(record.id) })
             }
         }
         if (summary.notForMeRecords.isNotEmpty()) {
-            item { Text("비선호", style = MaterialTheme.typography.titleMedium) }
+            item { Text(stringResource(R.string.dashboard_not_for_me), style = MaterialTheme.typography.titleMedium) }
             items(summary.notForMeRecords.take(5), key = { it.id }) { record ->
                 DDDrinkRecordCard(record = record, onClick = { onOpenRecord(record.id) })
             }
@@ -155,7 +182,9 @@ private fun DashboardMetricGrid(
     onOpenStatus: (CollectionStatus) -> Unit,
 ) {
     val averageRatingText = summary.averageRating?.let { "%.1f".format(it) } ?: "-"
-    val averageSpentText = summary.averageSpent?.let { "평균 ${formatPrice(it)}" } ?: "가격 입력 기록 없음"
+    val averageSpentText =
+        summary.averageSpent?.let { stringResource(R.string.dashboard_average_price_format, formatPrice(it)) }
+            ?: stringResource(R.string.dashboard_no_price_entered)
     if (expanded) {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
             DashboardMetricTiles(summary, averageRatingText, averageSpentText, onOpenStatus)
@@ -164,29 +193,34 @@ private fun DashboardMetricGrid(
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
                 DDDashboardMetricTile(
-                    title = "기록 수",
-                    value = "${summary.totalCount}개",
-                    supportingText = "선택 기간 전체 기록",
+                    title = stringResource(R.string.dashboard_metric_record_count),
+                    value = stringResource(R.string.dashboard_metric_record_unit, summary.totalCount),
+                    supportingText = stringResource(R.string.dashboard_metric_total_supporting),
                     modifier = Modifier.weight(1f),
                 )
                 DDDashboardMetricTile(
-                    title = "총 지출",
+                    title = stringResource(R.string.dashboard_metric_total_spent),
                     value = formatPrice(summary.totalSpent),
-                    supportingText = "$averageSpentText · ${summary.pricedRecordCount}건",
+                    supportingText =
+                        stringResource(
+                            R.string.dashboard_metric_supporting_format,
+                            averageSpentText,
+                            summary.pricedRecordCount,
+                        ),
                     modifier = Modifier.weight(1f),
                 )
             }
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
                 DDDashboardMetricTile(
-                    title = "평균 별점",
+                    title = stringResource(R.string.dashboard_metric_average_rating),
                     value = averageRatingText,
-                    supportingText = "5점 만점",
+                    supportingText = stringResource(R.string.dashboard_metric_rating_unit),
                     modifier = Modifier.weight(1f),
                 )
                 DDDashboardMetricTile(
-                    title = "재구매 후보",
-                    value = "${summary.repurchaseCount}개",
-                    supportingText = "다시 마시고 싶은 기록",
+                    title = stringResource(R.string.dashboard_repurchase_candidates),
+                    value = stringResource(R.string.dashboard_metric_record_unit, summary.repurchaseCount),
+                    supportingText = stringResource(R.string.dashboard_metric_repurchase_supporting),
                     modifier = Modifier.weight(1f),
                     onClick = { onOpenStatus(CollectionStatus.Repurchase) },
                 )
@@ -203,27 +237,32 @@ private fun RowScope.DashboardMetricTiles(
     onOpenStatus: (CollectionStatus) -> Unit,
 ) {
     DDDashboardMetricTile(
-        title = "기록 수",
-        value = "${summary.totalCount}개",
-        supportingText = "선택 기간 전체 기록",
+        title = stringResource(R.string.dashboard_metric_record_count),
+        value = stringResource(R.string.dashboard_metric_record_unit, summary.totalCount),
+        supportingText = stringResource(R.string.dashboard_metric_total_supporting),
         modifier = Modifier.weight(1f),
     )
     DDDashboardMetricTile(
-        title = "총 지출",
+        title = stringResource(R.string.dashboard_metric_total_spent),
         value = formatPrice(summary.totalSpent),
-        supportingText = "$averageSpentText · ${summary.pricedRecordCount}건",
+        supportingText =
+            stringResource(
+                R.string.dashboard_metric_supporting_format,
+                averageSpentText,
+                summary.pricedRecordCount,
+            ),
         modifier = Modifier.weight(1f),
     )
     DDDashboardMetricTile(
-        title = "평균 별점",
+        title = stringResource(R.string.dashboard_metric_average_rating),
         value = averageRatingText,
-        supportingText = "5점 만점",
+        supportingText = stringResource(R.string.dashboard_metric_rating_unit),
         modifier = Modifier.weight(1f),
     )
     DDDashboardMetricTile(
-        title = "재구매 후보",
-        value = "${summary.repurchaseCount}개",
-        supportingText = "다시 마시고 싶은 기록",
+        title = stringResource(R.string.dashboard_repurchase_candidates),
+        value = stringResource(R.string.dashboard_metric_record_unit, summary.repurchaseCount),
+        supportingText = stringResource(R.string.dashboard_metric_repurchase_supporting),
         modifier = Modifier.weight(1f),
         onClick = { onOpenStatus(CollectionStatus.Repurchase) },
     )

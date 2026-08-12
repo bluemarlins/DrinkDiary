@@ -137,6 +137,8 @@ class SaveDrinkRecordUseCaseTest {
 
         override fun observeSearchResults(query: String): Flow<List<DrinkRecord>> = emptyFlow()
 
+        override fun observeRecordsCount(): Flow<Int> = emptyFlow()
+
         override suspend fun save(record: DrinkRecord): AppResult<Long> {
             savedRecord = record
             return AppResult.Success(1L)

@@ -3,6 +3,7 @@ package com.bluemarlin.drinkdiary.ui.collection
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.bluemarlin.drinkdiary.R
 import com.bluemarlin.drinkdiary.domain.model.CollectionStatus
 import com.bluemarlin.drinkdiary.domain.model.DrinkRecord
 import com.bluemarlin.drinkdiary.domain.model.DrinkRecordFilter
@@ -30,7 +31,7 @@ sealed interface CollectionUiState {
     ) : CollectionUiState
 
     data class Error(
-        val message: String,
+        val messageRes: Int,
     ) : CollectionUiState
 }
 
@@ -59,7 +60,7 @@ class CollectionViewModel(
                         CollectionUiState.Success(records)
                     }
                 }
-            }.catch { emit(CollectionUiState.Error("컬렉션을 불러오지 못했습니다.")) }
+            }.catch { emit(CollectionUiState.Error(R.string.error_load_failed)) }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), CollectionUiState.Loading)
 
     fun selectType(type: DrinkType?) {

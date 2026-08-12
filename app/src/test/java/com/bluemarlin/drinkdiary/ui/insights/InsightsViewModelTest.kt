@@ -7,6 +7,7 @@ import com.bluemarlin.drinkdiary.domain.model.DrinkRecord
 import com.bluemarlin.drinkdiary.domain.model.DrinkRecordFilter
 import com.bluemarlin.drinkdiary.domain.model.DrinkType
 import com.bluemarlin.drinkdiary.domain.repository.DrinkRecordRepository
+import com.bluemarlin.drinkdiary.domain.repository.UserPreferencesRepository
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveInsightsUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -23,7 +24,7 @@ class InsightsViewModelTest {
     fun uiStateEmitsEmptyWhenNoRecordsExist() =
         runBlocking {
             val repository = FakeRepository(emptyList())
-            val viewModel = InsightsViewModel(ObserveInsightsUseCase(repository))
+            val viewModel = InsightsViewModel(ObserveInsightsUseCase(repository), FakeUserPreferencesRepository())
 
             val state = viewModel.uiState.first { it !is InsightsUiState.Loading }
 
@@ -55,7 +56,7 @@ class InsightsViewModelTest {
                     recordedAtMillis = now,
                 )
             val repository = FakeRepository(listOf(record))
-            val viewModel = InsightsViewModel(ObserveInsightsUseCase(repository))
+            val viewModel = InsightsViewModel(ObserveInsightsUseCase(repository), FakeUserPreferencesRepository())
 
             val state = viewModel.uiState.first { it !is InsightsUiState.Loading }
 
@@ -64,6 +65,12 @@ class InsightsViewModelTest {
             assertTrue(summary.monthlyTrend.isNotEmpty())
             assertTrue(summary.priceBrackets.isNotEmpty())
         }
+
+    private class FakeUserPreferencesRepository : UserPreferencesRepository {
+        override val isProUser: Flow<Boolean> = flowOf(false)
+
+        override suspend fun setProUser(isPro: Boolean) = Unit
+    }
 
     private class FakeRepository(
         private val records: List<DrinkRecord>,
@@ -78,6 +85,8 @@ class InsightsViewModelTest {
         ): Flow<List<DrinkRecord>> = flowOf(records)
 
         override fun observeSearchResults(query: String): Flow<List<DrinkRecord>> = flowOf(emptyList())
+
+        override fun observeRecordsCount(): Flow<Int> = flowOf(0)
 
         override suspend fun save(record: DrinkRecord): AppResult<Long> = AppResult.Success(record.id)
 

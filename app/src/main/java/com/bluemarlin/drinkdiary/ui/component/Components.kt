@@ -71,9 +71,11 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.bluemarlin.drinkdiary.R
 import com.bluemarlin.drinkdiary.domain.model.CollectionStatus
 import com.bluemarlin.drinkdiary.domain.model.DashboardPeriod
 import com.bluemarlin.drinkdiary.domain.model.DrinkRatingBreakdown
@@ -82,7 +84,6 @@ import com.bluemarlin.drinkdiary.domain.model.DrinkRecord
 import com.bluemarlin.drinkdiary.domain.model.DrinkType
 import com.bluemarlin.drinkdiary.domain.model.MonthlyInsight
 import com.bluemarlin.drinkdiary.domain.model.PriceBracketInsight
-import com.bluemarlin.drinkdiary.domain.model.currentLabel
 import com.bluemarlin.drinkdiary.domain.model.roundToHalf
 import com.bluemarlin.drinkdiary.domain.model.roundToTenth
 import com.bluemarlin.drinkdiary.ui.theme.DrinkDiaryThemeTokens
@@ -191,7 +192,7 @@ fun DDErrorContent(
     ) {
         Text(message, color = MaterialTheme.colorScheme.error)
         if (onRetry != null) {
-            DDSecondaryButton(text = "다시 시도", onClick = onRetry)
+            DDSecondaryButton(text = stringResource(R.string.retry), onClick = onRetry)
         }
     }
 }
@@ -207,9 +208,65 @@ fun DDConfirmDialog(
         onDismissRequest = onDismiss,
         title = { Text(title) },
         text = { Text(message) },
-        confirmButton = { DDDestructiveButton(text = "삭제", onClick = onConfirm) },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("취소") } },
+        confirmButton = { DDDestructiveButton(text = stringResource(R.string.delete), onClick = onConfirm) },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
     )
+}
+
+@Composable
+fun DDProUpgradeDialog(
+    onUpgradeClick: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.pro_upgrade_title)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(stringResource(R.string.pro_limit_message))
+                Text(stringResource(R.string.pro_upgrade_description))
+            }
+        },
+        confirmButton = {
+            DDPrimaryButton(text = stringResource(R.string.pro_upgrade_button), onClick = onUpgradeClick)
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.later)) }
+        },
+    )
+}
+
+@Composable
+fun DDProLockOverlay(
+    message: String,
+    onUpgradeClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier =
+            modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))
+                .clickable(enabled = false) {},
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.padding(24.dp),
+        ) {
+            Text(
+                text = "🔒",
+                style = MaterialTheme.typography.displaySmall,
+            )
+            Text(
+                text = message,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            DDPrimaryButton(text = stringResource(R.string.pro_benefits_button), onClick = onUpgradeClick)
+        }
+    }
 }
 
 @Composable
@@ -367,7 +424,7 @@ fun DDImagePicker(
                 val imageHeight = (imageWidth * 4f / 3f).coerceAtMost(420.dp)
                 DDUriImage(
                     imageUri = imageUri,
-                    contentDescription = "선택한 사진",
+                    contentDescription = stringResource(R.string.editor_select_photo),
                     modifier =
                         Modifier
                             .width(imageWidth)
@@ -383,14 +440,21 @@ fun DDImagePicker(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             DDSecondaryButton(
-                text = if (imageUri == null) "사진 선택" else "사진 변경",
+                text =
+                    if (imageUri ==
+                        null
+                    ) {
+                        stringResource(R.string.editor_select_photo)
+                    } else {
+                        stringResource(R.string.editor_change_photo)
+                    },
                 onClick = {
                     launcher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                 },
             )
             if (imageUri != null) {
                 DDDestructiveButton(
-                    text = "사진 제거",
+                    text = stringResource(R.string.editor_remove_photo),
                     onClick = { onImageSelected(null) },
                     modifier = Modifier.padding(start = 8.dp),
                 )
@@ -426,7 +490,7 @@ fun DDRatingInput(
     val sliderValue = rating.coerceIn(MinOverallRating, MaxRating)
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Text(
-            text = "내가 이 술을 얼마나 좋게 느꼈는지 기록해요.",
+            text = stringResource(R.string.component_rating_description),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -453,12 +517,12 @@ fun DDRatingInput(
         }
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(
-                "별로예요",
+                stringResource(R.string.component_rating_bad),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Text(
-                "아주 좋아요",
+                stringResource(R.string.component_rating_good),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -479,17 +543,33 @@ fun DDSensoryMetricSlider(
     modifier: Modifier = Modifier,
 ) {
     val roundedValue = roundToHalf(value).coerceIn(MinOverallRating, MaxRating)
+    val currentLabel =
+        when {
+            roundedValue <= 1.0 -> stringResource(criterion.minLabelRes)
+            roundedValue < 2.5 ->
+                stringResource(
+                    R.string.criterion_label_direction_format,
+                    stringResource(criterion.minLabelRes),
+                )
+            roundedValue <= 3.0 -> stringResource(R.string.criterion_label_middle)
+            roundedValue < 4.5 ->
+                stringResource(
+                    R.string.criterion_label_direction_format,
+                    stringResource(criterion.maxLabelRes),
+                )
+            else -> stringResource(criterion.maxLabelRes)
+        }
     Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(criterion.label, style = MaterialTheme.typography.titleSmall)
+            Text(stringResource(criterion.labelRes), style = MaterialTheme.typography.titleSmall)
             Text(
-                text = "${criterion.currentLabel(roundedValue)} · %.1f".format(roundedValue),
+                text = "$currentLabel · %.1f".format(roundedValue),
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.primary,
             )
         }
         Text(
-            text = criterion.description,
+            text = stringResource(criterion.descriptionRes),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -501,12 +581,12 @@ fun DDSensoryMetricSlider(
         )
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(
-                criterion.minLabel,
+                stringResource(criterion.minLabelRes),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Text(
-                criterion.maxLabel,
+                stringResource(criterion.maxLabelRes),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -525,9 +605,10 @@ fun DDDrinkTypeSelector(
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         if (useDropdown) {
             DDOptionDropdown(
-                label = "주류 종류",
-                selectedLabel = selected?.label ?: "선택",
-                options = DrinkType.entries.map { it to it.label },
+                label = stringResource(R.string.component_drink_type),
+                selectedLabel =
+                    selected?.let { stringResource(it.labelRes) } ?: stringResource(R.string.component_select),
+                options = DrinkType.entries.map { it to stringResource(it.labelRes) },
                 onSelected = onSelected,
             )
         } else {
@@ -538,7 +619,7 @@ fun DDDrinkTypeSelector(
                         onClick = { onSelected(type) },
                         modifier = Modifier.weight(1f),
                         shape = SegmentedButtonDefaults.itemShape(index = index, count = DrinkType.entries.size),
-                    ) { Text(type.label, maxLines = 1, overflow = TextOverflow.Clip) }
+                    ) { Text(stringResource(type.labelRes), maxLines = 1, overflow = TextOverflow.Clip) }
                 }
             }
         }
@@ -561,9 +642,10 @@ fun DDCollectionStatusSelector(
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         if (useDropdown) {
             DDOptionDropdown(
-                label = "컬렉션 상태",
-                selectedLabel = selected?.label ?: "선택",
-                options = CollectionStatus.entries.map { it to it.label },
+                label = stringResource(R.string.component_collection_status),
+                selectedLabel =
+                    selected?.let { stringResource(it.labelRes) } ?: stringResource(R.string.component_select),
+                options = CollectionStatus.entries.map { it to stringResource(it.labelRes) },
                 onSelected = onSelected,
             )
         } else {
@@ -574,7 +656,7 @@ fun DDCollectionStatusSelector(
                         onClick = { onSelected(status) },
                         modifier = Modifier.weight(1f),
                         shape = SegmentedButtonDefaults.itemShape(index = index, count = CollectionStatus.entries.size),
-                    ) { Text(status.label, maxLines = 1, overflow = TextOverflow.Clip) }
+                    ) { Text(stringResource(status.labelRes), maxLines = 1, overflow = TextOverflow.Clip) }
                 }
             }
         }
@@ -599,7 +681,7 @@ fun DDPeriodSegmentedControl(
                 onClick = { onSelected(period) },
                 modifier = Modifier.weight(1f),
                 shape = SegmentedButtonDefaults.itemShape(index = index, count = DashboardPeriod.entries.size),
-            ) { Text(period.label, maxLines = 1, overflow = TextOverflow.Clip) }
+            ) { Text(stringResource(period.labelRes), maxLines = 1, overflow = TextOverflow.Clip) }
         }
     }
 }
@@ -612,20 +694,26 @@ fun DDDrinkTypeFilter(
     val useDropdown = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     if (useDropdown) {
         DDOptionDropdown(
-            label = "주류 종류",
-            selectedLabel = selected?.label ?: "전체",
-            options = listOf<DrinkType?>(null).map { it to "전체" } + DrinkType.entries.map { it to it.label },
+            label = stringResource(R.string.component_drink_type),
+            selectedLabel = selected?.let { stringResource(it.labelRes) } ?: stringResource(R.string.component_all),
+            options =
+                listOf<DrinkType?>(null).map { it to stringResource(R.string.component_all) } +
+                    DrinkType.entries.map { it to stringResource(it.labelRes) },
             onSelected = onSelected,
         )
     } else {
         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            item { FilterChip(selected = selected == null, onClick = { onSelected(null) }, label = { Text("전체") }) }
+            item {
+                FilterChip(selected = selected == null, onClick = {
+                    onSelected(null)
+                }, label = { Text(stringResource(R.string.component_all)) })
+            }
             DrinkType.entries.forEach { type ->
                 item {
                     FilterChip(
                         selected = selected == type,
                         onClick = { onSelected(type) },
-                        label = { Text(type.label) },
+                        label = { Text(stringResource(type.labelRes)) },
                     )
                 }
             }
@@ -641,21 +729,26 @@ fun DDCollectionStatusFilter(
     val useDropdown = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     if (useDropdown) {
         DDOptionDropdown(
-            label = "컬렉션 상태",
-            selectedLabel = selected?.label ?: "전체",
+            label = stringResource(R.string.component_collection_status),
+            selectedLabel = selected?.let { stringResource(it.labelRes) } ?: stringResource(R.string.component_all),
             options =
-                listOf<CollectionStatus?>(null).map { it to "전체" } + CollectionStatus.entries.map { it to it.label },
+                listOf<CollectionStatus?>(null).map { it to stringResource(R.string.component_all) } +
+                    CollectionStatus.entries.map { it to stringResource(it.labelRes) },
             onSelected = onSelected,
         )
     } else {
         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            item { FilterChip(selected = selected == null, onClick = { onSelected(null) }, label = { Text("전체") }) }
+            item {
+                FilterChip(selected = selected == null, onClick = {
+                    onSelected(null)
+                }, label = { Text(stringResource(R.string.component_all)) })
+            }
             CollectionStatus.entries.forEach { status ->
                 item {
                     FilterChip(
                         selected = selected == status,
                         onClick = { onSelected(status) },
-                        label = { Text(status.label) },
+                        label = { Text(stringResource(status.labelRes)) },
                     )
                 }
             }
@@ -698,12 +791,12 @@ private fun <T> DDOptionDropdown(
 
 @Composable
 fun DDDrinkTypeBadge(type: DrinkType) {
-    AssistChip(onClick = {}, label = { Text(type.label) })
+    AssistChip(onClick = {}, label = { Text(stringResource(type.labelRes)) })
 }
 
 @Composable
 fun DDCollectionStatusBadge(status: CollectionStatus) {
-    AssistChip(onClick = {}, label = { Text(status.label) })
+    AssistChip(onClick = {}, label = { Text(stringResource(status.labelRes)) })
 }
 
 @Composable
@@ -746,9 +839,9 @@ fun DDRatingBreakdownRadarChart(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            Text("테이스팅 프로필", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.component_tasting_profile), style = MaterialTheme.typography.titleMedium)
             Text(
-                text = "점수가 아니라 맛과 향의 특성을 나타내는 지표예요.",
+                text = stringResource(R.string.component_profile_supporting),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -805,7 +898,7 @@ fun DDRatingBreakdownRadarChart(
                     val xOffset = (kotlin.math.cos(angle).toFloat() * 112f).dp
                     val yOffset = (kotlin.math.sin(angle).toFloat() * 112f).dp
                     RadarAxisBadge(
-                        text = criterion.label,
+                        text = stringResource(criterion.labelRes),
                         value = values[criterion.index],
                         modifier = Modifier.align(Alignment.Center).offset(x = xOffset, y = yOffset),
                     )
@@ -898,11 +991,13 @@ fun DDDrinkRecordListItem(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(record.type.label, style = MaterialTheme.typography.bodySmall)
+                    Text(stringResource(record.type.labelRes), style = MaterialTheme.typography.bodySmall)
                     DDRatingValueText(record.rating)
                 }
                 Text(
-                    "${record.collectionStatus.label} · ${formatRecordedDate(record.recordedAtMillis)}",
+                    "${stringResource(
+                        record.collectionStatus.labelRes,
+                    )} · ${formatRecordedDate(record.recordedAtMillis)}",
                     style = MaterialTheme.typography.bodySmall,
                 )
             }
@@ -922,7 +1017,10 @@ fun DDDrinkRecordCard(
     ) {
         Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(record.name, style = MaterialTheme.typography.titleSmall)
-            Text("${record.type.label} · ${record.collectionStatus.label}", style = MaterialTheme.typography.bodySmall)
+            Text(
+                "${stringResource(record.type.labelRes)} · ${stringResource(record.collectionStatus.labelRes)}",
+                style = MaterialTheme.typography.bodySmall,
+            )
             DDRatingValueText(record.rating)
         }
     }
@@ -985,9 +1083,9 @@ fun DDDrinkTypeDonutCard(
     val chartColors = DrinkDiaryThemeTokens.chartColors
     val entries =
         listOf(
-            Triple("와인", wineCount, chartColors.wine),
-            Triple("위스키", whiskeyCount, chartColors.whiskey),
-            Triple("맥주", beerCount, chartColors.beer),
+            Triple(stringResource(R.string.drink_type_wine), wineCount, chartColors.wine),
+            Triple(stringResource(R.string.drink_type_whiskey), whiskeyCount, chartColors.whiskey),
+            Triple(stringResource(R.string.drink_type_beer), beerCount, chartColors.beer),
         )
 
     Card(
@@ -1028,9 +1126,12 @@ fun DDDrinkTypeDonutCard(
                     }
                 }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("${totalCount}개", style = MaterialTheme.typography.titleLarge)
                     Text(
-                        "전체",
+                        stringResource(R.string.dashboard_metric_record_unit, totalCount),
+                        style = MaterialTheme.typography.titleLarge,
+                    )
+                    Text(
+                        stringResource(R.string.component_all),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -1040,7 +1141,7 @@ fun DDDrinkTypeDonutCard(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                Text("종류별 비중", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.component_type_proportion), style = MaterialTheme.typography.titleMedium)
                 entries.forEach { (label, count, color) ->
                     val ratio = if (totalCount == 0) 0 else (count * 100) / totalCount
                     Row(
@@ -1055,7 +1156,10 @@ fun DDDrinkTypeDonutCard(
                             Box(modifier = Modifier.size(10.dp).clip(CircleShape).background(color))
                             Text(label, style = MaterialTheme.typography.bodyMedium)
                         }
-                        Text("$ratio% · ${count}개", style = MaterialTheme.typography.bodyMedium)
+                        Text(
+                            "$ratio% · ${stringResource(R.string.dashboard_metric_record_unit, count)}",
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
                     }
                 }
             }
@@ -1075,12 +1179,12 @@ fun DDImageThumbnail(imageUri: String?) {
                     .background(MaterialTheme.colorScheme.surfaceVariant),
             contentAlignment = Alignment.Center,
         ) {
-            Text("사진", style = MaterialTheme.typography.labelSmall)
+            Text(stringResource(R.string.component_photo_thumbnail), style = MaterialTheme.typography.labelSmall)
         }
     } else {
         DDUriImage(
             imageUri = imageUri,
-            contentDescription = "기록 사진",
+            contentDescription = stringResource(R.string.component_photo_thumbnail),
             modifier = Modifier.size(56.dp).clip(RoundedCornerShape(8.dp)),
             contentScale = ContentScale.Crop,
         )
@@ -1116,12 +1220,12 @@ fun DDRecordHeroImage(
                         .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center,
             ) {
-                Text("등록된 사진 없음")
+                Text(stringResource(R.string.component_no_photo))
             }
         } else {
             DDUriImage(
                 imageUri = imageUri,
-                contentDescription = "기록 대표 사진",
+                contentDescription = stringResource(R.string.component_main_photo),
                 modifier =
                     Modifier
                         .width(imageWidth)
@@ -1158,7 +1262,7 @@ private fun DDUriImage(
             modifier = modifier.background(MaterialTheme.colorScheme.surfaceVariant),
             contentAlignment = Alignment.Center,
         ) {
-            Text("사진", style = MaterialTheme.typography.labelSmall)
+            Text(stringResource(R.string.component_photo_thumbnail), style = MaterialTheme.typography.labelSmall)
         }
     } else {
         Image(
@@ -1204,8 +1308,8 @@ fun DDStatusSummaryCard(
     onClick: (() -> Unit)? = null,
 ) {
     DDDashboardSummaryCard(
-        title = status.label,
-        value = "${count}개",
+        title = stringResource(status.labelRes),
+        value = stringResource(R.string.dashboard_metric_record_unit, count),
         modifier = modifier,
         onClick = onClick,
     )
@@ -1221,13 +1325,21 @@ fun DDDrinkTypeRatioCard(
 ) {
     val value =
         if (totalCount == 0) {
-            "와인 0% · 위스키 0% · 맥주 0%"
+            stringResource(
+                R.string.drink_type_wine,
+            ) + " 0% · " + stringResource(R.string.drink_type_whiskey) + " 0% · " +
+                stringResource(R.string.drink_type_beer) +
+                " 0%"
         } else {
             fun ratio(count: Int): Int = (count * 100) / totalCount
-            "와인 ${ratio(wineCount)}% · 위스키 ${ratio(whiskeyCount)}% · 맥주 ${ratio(beerCount)}%"
+            stringResource(R.string.drink_type_wine) + " ${ratio(wineCount)}% · " +
+                stringResource(R.string.drink_type_whiskey) +
+                " ${ratio(whiskeyCount)}% · " +
+                stringResource(R.string.drink_type_beer) +
+                " ${ratio(beerCount)}%"
         }
     DDDashboardSummaryCard(
-        title = "종류별 비중",
+        title = stringResource(R.string.component_type_proportion),
         value = value,
         modifier = modifier,
     )
@@ -1239,8 +1351,13 @@ fun formatRecordedDate(millis: Long): String =
         .atZone(ZoneId.systemDefault())
         .format(DateTimeFormatter.ofPattern("yyyy.MM.dd"))
 
+@Composable
 fun formatPrice(price: Long?): String =
-    price?.let { NumberFormat.getNumberInstance(Locale.KOREA).format(it) + "원" } ?: "-"
+    price?.let {
+        NumberFormat.getNumberInstance(Locale.getDefault()).format(it) +
+            stringResource(R.string.component_currency_unit)
+    }
+        ?: "-"
 
 @Composable
 fun DDMonthlyTrendCard(
@@ -1256,10 +1373,10 @@ fun DDMonthlyTrendCard(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text("취향 트렌드", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.insights_taste_trend), style = MaterialTheme.typography.titleMedium)
             if (isEmpty) {
                 Text(
-                    text = "표시할 데이터가 없습니다",
+                    text = stringResource(R.string.insights_no_data),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -1267,7 +1384,16 @@ fun DDMonthlyTrendCard(
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     monthlyTrend.forEach { insight ->
                         val ratingText = insight.averageRating?.let { "%.1f".format(it) } ?: "-"
-                        val repurchaseText = insight.repurchaseRate?.let { "%.0f%%".format(it * 100) } ?: "-"
+                        val repurchaseText =
+                            insight.repurchaseRate?.let {
+                                stringResource(
+                                    R.string.insights_repurchase_rate_format,
+                                    "%.0f%%".format(
+                                        it * 100,
+                                    ),
+                                )
+                            }
+                                ?: "-"
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -1340,10 +1466,10 @@ fun DDPriceBracketCard(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text("가격대별 만족도", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.insights_price_bracket), style = MaterialTheme.typography.titleMedium)
             if (isEmpty) {
                 Text(
-                    text = "표시할 데이터가 없습니다",
+                    text = stringResource(R.string.insights_no_data),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -1366,7 +1492,7 @@ fun DDPriceBracketCard(
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 Text(
-                                    text = "${insight.count}건",
+                                    text = stringResource(R.string.component_price_count_format, insight.count),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )

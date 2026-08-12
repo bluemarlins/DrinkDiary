@@ -20,8 +20,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.bluemarlin.drinkdiary.R
 import com.bluemarlin.drinkdiary.domain.model.DrinkRecord
 import com.bluemarlin.drinkdiary.ui.component.DDDrinkRecordListItem
 import com.bluemarlin.drinkdiary.ui.component.DDErrorContent
@@ -42,7 +44,7 @@ fun SearchRoute(
     val state by viewModel.uiState.collectAsState()
 
     DDScreenScaffold(
-        title = "검색",
+        title = stringResource(R.string.search_title),
         screenType = DDScreenType.TopLevel,
         selectedTab = DDTopLevelTab.Search,
         onDashboardClick = onDashboardClick,
@@ -83,8 +85,8 @@ private fun SearchTextField(
         value = query,
         onValueChange = onQueryChange,
         modifier = Modifier.fillMaxWidth(),
-        label = { Text("검색어") },
-        placeholder = { Text("이름, 장소, 테이스팅 노트 검색") },
+        label = { Text(stringResource(R.string.search_label)) },
+        placeholder = { Text(stringResource(R.string.search_placeholder)) },
         singleLine = true,
         trailingIcon = {
             if (query.isNotEmpty()) {
@@ -103,8 +105,8 @@ private fun SearchStateContent(
     modifier: Modifier = Modifier,
 ) {
     when (state) {
-        SearchUiState.Idle -> SearchGuideContent("검색어를 입력해 주세요.", modifier)
-        is SearchUiState.InvalidQuery -> SearchGuideContent("검색어는 2글자 이상 입력해 주세요.", modifier)
+        SearchUiState.Idle -> SearchGuideContent(stringResource(R.string.search_guide_idle), modifier)
+        is SearchUiState.InvalidQuery -> SearchGuideContent(stringResource(R.string.search_guide_invalid), modifier)
         SearchUiState.Loading ->
             Column(
                 modifier = modifier.fillMaxWidth().padding(24.dp),
@@ -112,7 +114,7 @@ private fun SearchStateContent(
             ) {
                 CircularProgressIndicator()
             }
-        is SearchUiState.Empty -> SearchGuideContent("검색 결과가 없습니다.", modifier)
+        is SearchUiState.Empty -> SearchGuideContent(stringResource(R.string.search_empty), modifier)
         is SearchUiState.Success ->
             SearchResultList(
                 records = state.records,

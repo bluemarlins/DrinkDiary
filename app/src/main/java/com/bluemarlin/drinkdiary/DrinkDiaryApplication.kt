@@ -4,8 +4,12 @@ import android.app.Application
 import androidx.room.Room
 import com.bluemarlin.drinkdiary.data.local.DrinkDiaryDatabase
 import com.bluemarlin.drinkdiary.data.repository.DrinkRecordRepositoryImpl
+import com.bluemarlin.drinkdiary.data.repository.UserPreferencesRepositoryImpl
 import com.bluemarlin.drinkdiary.domain.repository.DrinkRecordRepository
+import com.bluemarlin.drinkdiary.domain.repository.UserPreferencesRepository
+import com.bluemarlin.drinkdiary.domain.usecase.CheckRecordLimitUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.DeleteDrinkRecordUseCase
+import com.bluemarlin.drinkdiary.domain.usecase.GenerateCsvExportUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveDashboardSummaryUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveDrinkRecordUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveDrinkRecordsUseCase
@@ -40,6 +44,9 @@ class AppContainer(
     private val repository: DrinkRecordRepository =
         DrinkRecordRepositoryImpl(database.drinkRecordDao())
 
+    val userPreferencesRepository: UserPreferencesRepository =
+        UserPreferencesRepositoryImpl(application)
+
     val observeDrinkRecordsUseCase = ObserveDrinkRecordsUseCase(repository)
     val observeDrinkRecordUseCase = ObserveDrinkRecordUseCase(repository)
     val saveDrinkRecordUseCase = SaveDrinkRecordUseCase(repository)
@@ -47,4 +54,7 @@ class AppContainer(
     val observeDashboardSummaryUseCase = ObserveDashboardSummaryUseCase(repository)
     val observeSearchResultsUseCase = ObserveSearchResultsUseCase(repository)
     val observeInsightsUseCase = ObserveInsightsUseCase(repository)
+    val generateCsvExportUseCase = GenerateCsvExportUseCase(repository)
+    val checkRecordLimitUseCase =
+        CheckRecordLimitUseCase(repository, userPreferencesRepository)
 }

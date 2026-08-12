@@ -36,6 +36,8 @@ class DrinkRecordRepositoryImpl(
             records.mapNotNull { it.toDomain() }
         }
 
+    override fun observeRecordsCount(): Flow<Int> = dao.observeRecordsCount()
+
     override suspend fun save(record: DrinkRecord): AppResult<Long> =
         runCatching {
             val now = System.currentTimeMillis()

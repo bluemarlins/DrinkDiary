@@ -34,8 +34,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.bluemarlin.drinkdiary.R
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.haze
@@ -197,7 +199,7 @@ fun DDTopAppBar(
         title = { Text(title) },
         navigationIcon = {
             if (onBackClick != null) {
-                TextButton(onClick = onBackClick) { Text("뒤로") }
+                TextButton(onClick = onBackClick) { Text(stringResource(R.string.back)) }
             }
         },
         actions = actions,
@@ -274,20 +276,20 @@ private fun AppNavigationRail(
         NavigationRailItem(
             selected = selectedTab == DDTopLevelTab.Dashboard,
             onClick = { onDashboardClick?.invoke() },
-            icon = { Text("홈") },
-            label = { Text("대시보드") },
+            icon = { Text(stringResource(R.string.nav_home)) },
+            label = { Text(stringResource(R.string.nav_dashboard)) },
         )
         NavigationRailItem(
             selected = selectedTab == DDTopLevelTab.Collection,
             onClick = { onCollectionClick?.invoke() },
-            icon = { Text("목록") },
-            label = { Text("컬렉션") },
+            icon = { Text(stringResource(R.string.nav_list)) },
+            label = { Text(stringResource(R.string.nav_collection)) },
         )
         NavigationRailItem(
             selected = selectedTab == DDTopLevelTab.Search,
             onClick = { onSearchClick?.invoke() },
-            icon = { Text("검색") },
-            label = { Text("검색") },
+            icon = { Text(stringResource(R.string.nav_search)) },
+            label = { Text(stringResource(R.string.nav_search)) },
         )
     }
 }
@@ -302,19 +304,19 @@ private fun RowScope.AppNavigationItems(
     NavigationBarItem(
         selected = selectedTab == DDTopLevelTab.Dashboard,
         onClick = { onDashboardClick?.invoke() },
-        icon = { Text("홈") },
-        label = { Text("대시보드") },
+        icon = { Text(stringResource(R.string.nav_home)) },
+        label = { Text(stringResource(R.string.nav_dashboard)) },
     )
     NavigationBarItem(
         selected = selectedTab == DDTopLevelTab.Collection,
         onClick = { onCollectionClick?.invoke() },
-        icon = { Text("목록") },
-        label = { Text("컬렉션") },
+        icon = { Text(stringResource(R.string.nav_list)) },
+        label = { Text(stringResource(R.string.nav_collection)) },
     )
     NavigationBarItem(
         selected = selectedTab == DDTopLevelTab.Search,
         onClick = { onSearchClick?.invoke() },
-        icon = { Text("검색") },
-        label = { Text("검색") },
+        icon = { Text(stringResource(R.string.nav_search)) },
+        label = { Text(stringResource(R.string.nav_search)) },
     )
 }

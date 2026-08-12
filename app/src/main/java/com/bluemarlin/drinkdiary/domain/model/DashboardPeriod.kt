@@ -1,9 +1,11 @@
 package com.bluemarlin.drinkdiary.domain.model
 
+import com.bluemarlin.drinkdiary.R
+
 enum class DashboardPeriod(
-    val label: String,
+    val labelRes: Int,
 ) {
-    Weekly("주간"),
-    Monthly("월간"),
-    Yearly("연간"),
+    Weekly(R.string.dashboard_period_weekly),
+    Monthly(R.string.dashboard_period_monthly),
+    Yearly(R.string.dashboard_period_yearly),
 }

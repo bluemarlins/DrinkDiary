@@ -1,11 +1,13 @@
 package com.bluemarlin.drinkdiary.domain.model
 
+import com.bluemarlin.drinkdiary.R
+
 enum class DrinkType(
-    val label: String,
+    val labelRes: Int,
 ) {
-    Wine("와인"),
-    Whiskey("위스키"),
-    Beer("맥주"),
+    Wine(R.string.drink_type_wine),
+    Whiskey(R.string.drink_type_whiskey),
+    Beer(R.string.drink_type_beer),
     ;
 
     companion object {

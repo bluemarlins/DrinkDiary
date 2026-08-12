@@ -24,6 +24,9 @@ interface DrinkRecordDao {
     @Query("SELECT * FROM drink_records WHERE id = :id")
     fun observeRecord(id: Long): Flow<DrinkRecordEntity?>
 
+    @Query("SELECT COUNT(*) FROM drink_records")
+    fun observeRecordsCount(): Flow<Int>
+
     @Query(
         """
         SELECT * FROM drink_records

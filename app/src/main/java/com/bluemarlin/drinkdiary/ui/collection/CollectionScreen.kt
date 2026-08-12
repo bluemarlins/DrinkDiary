@@ -15,7 +15,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.bluemarlin.drinkdiary.R
 import com.bluemarlin.drinkdiary.domain.model.CollectionStatus
 import com.bluemarlin.drinkdiary.domain.model.DrinkRecord
 import com.bluemarlin.drinkdiary.domain.model.DrinkType
@@ -45,7 +47,7 @@ fun CollectionRoute(
     val selectedStatus by viewModel.selectedStatus.collectAsState()
 
     DDScreenScaffold(
-        title = "컬렉션",
+        title = stringResource(R.string.collection_title),
         screenType = DDScreenType.TopLevel,
         selectedTab = DDTopLevelTab.Collection,
         onDashboardClick = onDashboardClick,
@@ -129,12 +131,19 @@ private fun CollectionStateContent(
         CollectionUiState.Loading -> DDLoadingContent(modifier)
         is CollectionUiState.Empty ->
             DDEmptyContent(
-                message = if (state.filtered) "필터 조건에 맞는 기록이 없습니다." else "아직 기록이 없습니다.",
-                actionText = "기록 추가",
+                message =
+                    if (state.filtered) {
+                        stringResource(
+                            R.string.collection_empty_filtered,
+                        )
+                    } else {
+                        stringResource(R.string.collection_empty_all)
+                    },
+                actionText = stringResource(R.string.dashboard_add_record),
                 onAction = onAddRecord,
                 modifier = modifier,
             )
-        is CollectionUiState.Error -> DDErrorContent(state.message, modifier = modifier)
+        is CollectionUiState.Error -> DDErrorContent(stringResource(state.messageRes), modifier = modifier)
         is CollectionUiState.Success ->
             DrinkRecordList(
                 records = state.records,

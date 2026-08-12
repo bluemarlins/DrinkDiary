@@ -1,11 +1,13 @@
 package com.bluemarlin.drinkdiary.domain.model
 
+import com.bluemarlin.drinkdiary.R
+
 enum class CollectionStatus(
-    val label: String,
+    val labelRes: Int,
 ) {
-    Normal("일반 기록"),
-    Repurchase("재구매 후보"),
-    NotForMe("비선호"),
+    Normal(R.string.collection_status_normal),
+    Repurchase(R.string.collection_status_repurchase),
+    NotForMe(R.string.collection_status_not_for_me),
     ;
 
     companion object {
