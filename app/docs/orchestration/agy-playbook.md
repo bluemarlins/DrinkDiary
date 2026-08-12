@@ -15,6 +15,9 @@ agy models           # gemini-3.6-flash-{high,medium,low}, gemini-3.5-flash-{hig
 agy agents           # (현재 비어 있음 — 사전 정의된 에이전트 프로필 없음)
 ```
 
+위 `agy models` 목록은 **CLI가 노출하는 전체 목록일 뿐 사용 허가 목록이 아니다.** 이 저장소가
+실제로 쓰는 것은 `harness.md` §6-2의 4개 로스터뿐이다.
+
 `agy agents`가 비어 있으므로 별도 에이전트 프로필에 의존하지 않고, 태스크 유형별로 아래 프롬프트
 템플릿 + 모델 + 플래그 조합을 그때그때 구성한다.
 
@@ -29,10 +32,14 @@ agy agents           # (현재 비어 있음 — 사전 정의된 에이전트 �
 
 ## 태스크 유형별 템플릿
 
+**로스터 제약**: `--model`에는 `harness.md` §6-2의 4개 모델만 쓴다 —
+`gemini-3.5-flash-medium`, `gemini-3.6-flash-high`, `gemini-3.1-pro-high`, `claude-sonnet-4-6`.
+`agy models`가 보여주는 나머지 모델은 이 저장소에서 사용하지 않는다.
+
 아래 각 템플릿의 `--model` 값은 **그 태스크 유형에서 가장 흔한 경우의 기본값**이다. 실제 태스크의
-난이도/성격이 전형적인 경우와 다르면(예: "반복 코드"인데 로직이 복잡함) `harness.md` §6-2 매트릭스로
-다시 판단해 모델을 교체한다 — 템플릿 번호가 아니라 §6-2의 축이 최종 근거다. 게이트를 2회 연속
-통과하지 못하면 §6-2의 동적 승급 규칙을 따른다.
+난이도/성격이 전형적인 경우와 다르면(예: "반복 코드"인데 로직이 복잡함) §6-2 로스터 표의 역할
+기준으로 다시 판단해 모델을 교체한다 — 템플릿 번호가 아니라 §6-2가 최종 근거다. 게이트를 2회 연속
+통과하지 못하면 §6-2의 승급 경로를 따른다.
 
 ### 1. 벤치마킹/경쟁 앱 조사 (파일 수정 없음)
 
@@ -101,8 +108,25 @@ EOF
    --output-format json --dangerously-skip-permissions
 ```
 
-두 경우 모두 게이트(ktlint/lint/test)를 2회 연속 실패하면 §6-2 승급 규칙에 따라 3-a → 3-b 순서로,
-3-b도 실패하면 `claude-sonnet-4-6`으로 전환한다.
+두 경우 모두 게이트(ktlint/lint/test)를 2회 연속 실패하면 §6-2 승급 경로에 따라 3-a → 3-b 순서로,
+3-b도 실패하면 `claude-sonnet-4-6`으로 전환한다. sonnet에서도 실패하면 위임을 중단하고 Claude가
+직접 작성한다.
+
+#### 3-c. 최종 승급 (Gemini 계열이 반복 실패한 경우)
+
+```bash
+agy -p "$(cat <<'EOF'
+[컨텍스트] app/docs/orchestration/harness.md의 아키텍처 규칙을 반드시 따른다.
+[이전 시도] <어떤 모델로 무엇이 실패했는지 — 게이트 오류 메시지 포함>
+[요청] <구체적 작업 내용 + 대응 단위 테스트 작성 요청>
+EOF
+)" --model claude-sonnet-4-6 --mode accept-edits \
+   --add-dir <최소 서브트리> \
+   --output-format json --dangerously-skip-permissions
+```
+
+이 템플릿을 쓴 결과는 성공/실패와 무관하게 `harness.md` §6-2 로스터 표의 `claude-sonnet-4-6` 행
+"실사용 이력"에 기록한다(현재 비어 있음).
 
 ### 4. 이미지 생성 (아이콘/에셋 컨셉)
 

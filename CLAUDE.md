@@ -102,11 +102,38 @@ and phase roadmap, including the freemium/Pro rationale).
 
 ## Multi-agent workflow
 
-Feature work can be split between Claude (planning, architecture, review, tests) and the `agy` CLI
-(Google Antigravity, invoked non-interactively as a coding sub-agent for benchmarking research, UI
-polish, and boilerplate code generation). The shared rules every agent must follow, the Definition of
-Done, and the exact `agy` invocation templates live in `app/docs/orchestration/harness.md` and
-`app/docs/orchestration/agy-playbook.md`. The live backlog is `app/docs/orchestration/task-log.md`.
+Feature work can be split between Claude and the `agy` CLI (Google Antigravity, invoked
+non-interactively as a coding sub-agent). The division is deliberate: **agy is hands, Claude is head.**
+agy fills in work whose shape is already decided; anything that decides something stays with Claude.
+
+Delegate to `agy` only when all four hold:
+
+1. The spec is already fixed — agy implements a decision, it never makes one.
+2. Correctness is machine-checkable (`ktlintCheck` / `lint` / unit tests).
+3. The edit scope narrows to a subtree that `--add-dir` can fence off.
+4. Throwing the result away and redoing it costs little.
+
+Keep with Claude: architecture and business decisions, Room migrations, multi-layer refactors, test
+design, code review, and every commit/push judgement.
+
+**Model roster — only these four may be used with `agy`:**
+
+| Model | Role |
+| --- | --- |
+| `gemini-3.5-flash-medium` | Structured, repetitive work (pattern-copy CRUD use cases, mappers, formatted reports) |
+| `gemini-3.6-flash-high` | Visual, subjective, generative work (UI polish, copy, naming, `generate_image` assets) |
+| `gemini-3.1-pro-high` | Heavy implementation of an already-specified multi-step algorithm |
+| `claude-sonnet-4-6` | Final escalation tier when the Gemini models repeatedly fail |
+
+Every other model `agy models` lists is out of roster — see `harness.md` §6-2 for why, and change that
+table first if the roster needs to change. Two consecutive Definition-of-Done failures escalate to the
+next tier rather than retrying the same model; failing at `claude-sonnet-4-6` means the task should
+never have been delegated, so Claude writes it directly.
+
+The shared code rules and Definition of Done live in `app/docs/orchestration/harness.md`; the exact
+invocation templates and flags in `app/docs/orchestration/agy-playbook.md`; the department personas in
+`app/docs/orchestration/persona-registry.artifact.md`. The live backlog is
+`app/docs/orchestration/task-log.md`.
 
 **Safety rule from a prior incident** (`harness.md` §5): a background `agy` call once reverted the entire
 uncommitted working tree to the last commit while other uncommitted work was in progress, destroying it

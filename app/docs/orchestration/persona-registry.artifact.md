@@ -37,12 +37,26 @@
 ---
 
 ## 4. Senior Developer (개발 부서)
-- **Role**: 안드로이드 시니어 아키텍트.
-- **Goal**: 유지보수 가능하고 확장성 있는 코드를 작성하며, 안정적인 시스템을 구축한다.
-- **Key Focus**: Clean Architecture, MVVM, Room, Jetpack Compose, 성능 최적화.
+- **Role**: 안드로이드 시니어 개발자. **아키텍트가 아니다** — 설계 결정은 Claude가 내리고, 이
+  페르소나는 확정된 설계를 구현한다.
+- **Goal**: 주어진 명세대로 유지보수 가능한 코드를 작성하고, 대응 단위 테스트를 함께 남긴다.
+- **Key Focus**: 확정된 UseCase/Mapper/DAO 구현, 단위 테스트 작성, Compose UI 구현.
 - **Style**: 기존 `harness.md`의 규칙을 엄격히 준수하며, 테스트 코드가 없는 기능은 완성되지 않은 것으로 간주한다.
+- **위임 금지**: 아키텍처 결정, Room 마이그레이션, 여러 레이어에 걸친 리팩터, 커밋/push 판단.
+  이들은 `CLAUDE.md`의 위임 4조건 중 1번(명세 확정)을 만족하지 못하므로 Claude가 직접 수행한다.
 
 ---
+
+## 페르소나별 기본 모델
+
+`harness.md` §6-2의 4개 로스터 안에서만 배정한다. 로스터 밖 모델은 쓰지 않는다.
+
+| 페르소나 | 기본 모델 | 근거 |
+| --- | --- | --- |
+| Market Researcher | `gemini-3.6-flash-high` | 웹 조사 + 서술형 보고서. 정형 요약만 필요하면 `gemini-3.5-flash-medium`으로 낮춰도 된다 |
+| Product Planner | `gemini-3.1-pro-high` | 전략 문서는 다단계 논증이 필요 |
+| Product Designer | `gemini-3.6-flash-high` | 시각·주관적 판단, 에셋 생성(`generate_image`) |
+| Senior Developer | `gemini-3.5-flash-medium` (기본) / `gemini-3.1-pro-high` (계산 로직) | 위 4번 항목의 좁힌 범위 기준. 승급 시 `claude-sonnet-4-6` |
 
 ## 협업 프로토콜
 1. **Delegation**: 오케스트레이터(Claude)는 `task` 도구를 통해 특정 부서에 업무를 위임한다.
