@@ -1,9 +1,10 @@
 # PRD — 테이스트 아카이브 (재정의판)
 
 > [!NOTE]
-> **상태: 초안 — 사용자 확정 전.** 근거: `problem-definition.md`(문제),
-> `../researcher/market-research-2026-08.md`(리서치), `mvp-scope.md`(기능 범위).
-> 확정 시 `specs/planner/`로 승격하며 기존 `specs/planner/product-plan.md`를 대체한다.
+> **확정 명세 (2026-08-13 승격).** 폐기된 `product-plan.md`를 대체한다.
+> 근거: `problem-definition.md`(문제),
+> `../../departments/researcher/market-research-2026-08.md`(리서치), `mvp-scope.md`(기능 범위).
+> 미결은 7절.
 
 ## 1. 한 문장 정의
 

@@ -2,7 +2,7 @@
 
 Claude와 `agy`가 수행하는 태스크의 살아있는 백로그/로그. 상태는 `todo` / `in-progress` /
 `review` / `done` / `blocked` 중 하나. 완료 시 관련 커밋 해시를 기록한다. Phase 정의는
-`app/docs/specs/planner/product-plan.md` 참조.
+`app/docs/specs/planner/prd.md` 참조.
 
 ## 야간 자율 작업 중단 시점 요약 (사용자 요청으로 저장 후 정지)
 
@@ -23,6 +23,30 @@ Claude와 `agy`가 수행하는 태스크의 살아있는 백로그/로그. 상�
   복구 완료). 상세: `orchestration/harness.md` 5절 사고 이력. 이후로는 agy 호출을 한 번에 하나씩만
   실행하고 검증 즉시 커밋하는 방식으로 전환함.
 - **push 안 함**: 이 세션에서 만든 모든 커밋은 로컬에만 있다. 사용자 확인 후 push 필요.
+
+## 제품 재정의 (2026-08-13)
+
+기존 MVP 정의를 문제 정의부터 다시 세웠다. 순서: 문제 정의 → 리서치 → MVP 범위 → PRD → 원칙 → 아키텍처.
+
+| 산출물 | 위치 | 담당 |
+| --- | --- | --- |
+| 문제 정의 | `../specs/planner/problem-definition.md` | Claude |
+| 시장 리서치 | `../departments/researcher/market-research-2026-08.md` | agy(`gemini-3.6-flash-high`) 조사 + Claude 검수. conversation `2440f94f` 계열 |
+| MVP 범위 / PRD | `../specs/planner/mvp-scope.md`, `prd.md` | Claude |
+| 설계 원칙(토론) | `../specs/planner/design-principles.md` | Claude 입장 + agy(`gemini-3.1-pro-high`) 반론. conversation `027b83f4` |
+| 아키텍처 | `../specs/developer/software-architecture.md` | Claude |
+
+**문서 승격 (2026-08-13)**: 위 5건을 `departments/` → `specs/`로 승격. 동시에 충돌 문서를 정리했다.
+
+- **폐기**: `specs/planner/product-plan.md`(구 비즈니스 모델), 구 `specs/developer/software-architecture.md`
+- **보관 이관**: `usecase.md`, `ui-flow.md`, `database-design.md`, `navigation-flow-usecases.md`
+  → 각 `departments/<부서>/*-legacy.md`. 구 MVP를 기술하며 현재 코드와는 일치하나 재정의 방향과 충돌
+- **부분 개정**: `specs/designer/branding.md` — 이름·컬러·아이콘만 유효, 가치제안·스토어카피·기능스펙 폐기
+
+**미결(사용자 결정 대기)**: 타깃 연령 하한, 과금 축(개수 vs 출력). 둘 다 브랜딩 개정 전 확정 필요.
+
+**리서치에서 확인된 검증 실패**: agy가 댄 출처 "Atomin User Engagement Analysis, 2024"는 실재하지 않음.
+이 사고로 `delegate-research` 스킬을 만들었다.
 
 ## Phase 0 — 하네스/스캐폴딩 구축
 

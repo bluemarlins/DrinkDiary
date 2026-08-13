@@ -1,9 +1,9 @@
 # MVP 기능 범위 — 경쟁력 근거 기반 도출
 
 > [!NOTE]
-> **상태: 초안 — 사용자 확정 전.** 근거 문서: `problem-definition.md`(문제),
-> `../researcher/market-research-2026-08.md`(리서치). 이 문서는 **무엇을 만들지**를 정하고,
-> 구현 방법은 정하지 않는다.
+> **확정 명세 (2026-08-13 승격).** 근거: `problem-definition.md`(문제),
+> `../../departments/researcher/market-research-2026-08.md`(리서치). **무엇을 만들지**를 정하고
+> 구현 방법은 정하지 않는다. 미결은 7절.
 
 ## 1. 도출 원칙
 

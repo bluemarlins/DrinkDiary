@@ -24,6 +24,6 @@ repository has already been bitten by exactly that — see the spec conflicts re
 | Build / test / lint commands, Robolectric setup | `app/docs/specs/developer/build-and-test.md` |
 | Package structure, layer responsibilities, data flow | `app/docs/specs/developer/software-architecture.md` |
 | `DD*` component catalog and usage rules | `app/docs/specs/designer/design-system.md` |
-| Product scope, business model, roadmap | `app/docs/specs/planner/product-plan.md` |
+| Product scope, business model, roadmap | `app/docs/specs/planner/prd.md` |
 | `agy` invocation templates and flags | `app/docs/orchestration/agy-playbook.md` |
 | Live backlog | `app/docs/orchestration/task-log.md` |

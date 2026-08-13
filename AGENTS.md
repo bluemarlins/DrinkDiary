@@ -20,7 +20,8 @@ the owning department's documents:
 | Build / test / lint commands, Robolectric setup | `app/docs/specs/developer/build-and-test.md` |
 | Package structure, layer responsibilities, data flow | `app/docs/specs/developer/software-architecture.md` |
 | `DD*` component catalog and usage rules | `app/docs/specs/designer/design-system.md` |
-| Product scope, business model, roadmap | `app/docs/specs/planner/product-plan.md` |
+| Product scope, business model, roadmap | `app/docs/specs/planner/prd.md` |
+| Why the product exists, and the principles that settle debates | `app/docs/specs/planner/problem-definition.md`, `app/docs/specs/planner/design-principles.md` |
 | `agy` invocation templates and flags | `app/docs/orchestration/agy-playbook.md` |
 | Department personas and who may be delegated to | `app/docs/orchestration/persona-registry.artifact.md` |
 | Live backlog | `app/docs/orchestration/task-log.md` |
@@ -28,10 +29,15 @@ the owning department's documents:
 ## Project
 
 DrinkDiary (user-facing brand: **테이스트 아카이브 / Taste Archive**) is a local-first, single-module
-Android app for logging personal drink records (wine, whiskey, beer) with ratings, tasting notes, and a
-"would buy again / not for me" collection status. No backend or sync — everything persists locally. A
-freemium tier caps free users at a fixed number of records and gates some features behind "Archive Pro"
-(state tracked locally; no real payment integration yet).
+Android app for **wine and whisky** (beer was dropped — see `problem-definition.md` 7-1). It exists to
+fix one thing: drinks you have tried do not accumulate in a form you can use for the next purchase.
+Beginners record in a few taps, get their taste described back to them, and can check at the shelf
+whether they liked something. No backend, no accounts — everything persists locally, and backup goes to
+storage the user already owns.
+
+The product spec is `app/docs/specs/planner/prd.md`. Before proposing a feature, run it through the
+decision filter in `app/docs/specs/planner/design-principles.md` — it rejects whole categories
+(servers, accounts, crowd ratings, extra taps on the input path) without reopening the debate.
 
 Do not invent product behavior, domain models, or feature requirements that are not in the specs under
 `app/docs/specs/`. If a requirement is missing, say so rather than filling the gap silently.
@@ -58,10 +64,9 @@ the subdirectory.
 
 - **`app/docs/specs/<dept>/` — confirmed specs.** The single source of truth; these must stay in sync
   with the code. Mostly Korean.
-  - `specs/planner/` — `usecase.md`, `product-plan.md`
-  - `specs/designer/` — `ui-flow.md`, `design-system.md`, `branding.md`, icon assets under `assets/`
-  - `specs/developer/` — `software-architecture.md`, `database-design.md`, `build-and-test.md`
-  - `specs/qa/` — `navigation-flow-usecases.md`
+  - `specs/planner/` — `problem-definition.md`, `prd.md`, `mvp-scope.md`, `design-principles.md`
+  - `specs/designer/` — `design-system.md`, `branding.md`, icon assets under `assets/`
+  - `specs/developer/` — `software-architecture.md`, `build-and-test.md`
 - **`app/docs/departments/<dept>/` — that department's working output.** Research reports, strategy
   drafts, implementation plans, review memos. Kept as a record of how a decision was reached; carries no
   obligation to match the current code.

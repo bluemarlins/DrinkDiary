@@ -1,262 +1,228 @@
-# DrinkDiary S/W Architecture
+# S/W 아키텍처 설계 — 재정의 MVP
 
-## 1. 문서 목적
+> [!NOTE]
+> **확정 명세 (2026-08-13 승격).** 구 아키텍처 문서를 대체한다.
+> 근거: `../planner/prd.md`(요구사항), `../planner/mvp-scope.md`(F1~F6).
+> 스키마 재정의는 `../planner/problem-definition.md` 7-1절에서 승인됨(출시 전이므로 마이그레이션 불필요).
+> 구현 전 설계이며 코드는 아직 이 문서를 따르지 않는다 — 7절 참고.
 
-이 문서는 DrinkDiary의 전체 소프트웨어 구조를 MVVM + Repository 기준으로 정의한다.
-현재 앱은 로컬 우선 Android 앱이며, 서버 동기화와 계정 기능은 포함하지 않는다.
+## 1. 설계 원칙
 
-## 2. 아키텍처 결정
+기존 계층 구조(`UI → ViewModel → UseCase → Repository → DAO → Room`)는 **유지한다.** 이 구조가
+문제였던 적이 없다. 바뀌어야 하는 것은 **도메인 모델**이다.
 
-DrinkDiary는 단일 모듈 MVVM + Repository 구조를 사용한다.
+재설계의 핵심 질문은 하나다:
+
+> **와인과 위스키는 감각 축이 다른데, 어떻게 하나의 취향 언어로 묶어 가로지르는 요약을 만들 것인가?**
+
+이 질문에 대한 답이 아키텍처 전체를 결정한다.
+
+## 2. 핵심 설계 — 2층 취향 모델
+
+### 2-1. 문제
+
+- 와인의 축: 당도, 산미, 탄닌, 바디, 향
+- 위스키의 축: 향, 피트, 바디, 피니시, 도수감
+
+축을 그대로 두면 주종을 가로지르는 요약(F3)이 불가능하다. 반대로 억지로 하나로 합치면 각 주종의
+고유한 감각이 사라진다.
+
+### 2-2. 해법 — 공통 축(Trait) + 주종별 질문(Probe) 분리
 
 ```text
-UI(Compose)
-  -> ViewModel
-  -> UseCase
-  -> Repository
-  -> DAO(Room)
-  -> Database
+[입력 계층]  주종별 Probe (사용자가 보는 질문·선택지)
+                    │  각 Probe는 하나의 공통 Trait에 매핑된다
+                    ▼
+[취향 계층]  공통 Trait (내부 취향 언어, 주종 무관)
+                    │
+                    ▼
+[요약 계층]  TasteProfile (Trait별 선호 방향과 확신도)
 ```
 
-이 구조를 선택하는 이유:
+> [!IMPORTANT]
+> **2026-08-13 개정**: 초판은 모든 축을 공통으로 묶고 와인 '떫음'과 위스키 '조임'을 하나의
+> `Astringency`로 매핑하려 했다. `design-principles.md` 쟁점 3 토론에서 **폐기**됐다 — 입력 모델을
+> 공통 축에 맞추느라 주종별 정확도를 희생하면 "와인용으로도 불편하고 위스키용으로도 엉성한" 결과가
+> 된다. 아래는 개정된 **하이브리드 모델**이다.
 
-- 현재 요구사항은 로컬 CRUD, 필터링, 기간별 집계가 중심이다.
-- 단일 모듈로 시작하면 초기 구현 비용이 낮다.
-- UI, 상태 관리, 비즈니스 규칙, 데이터 접근 책임을 분리할 수 있다.
-- 향후 기능이 커지면 feature 모듈 또는 core 모듈로 분리하기 쉽다.
+**공통 축** — 와인·위스키에서 물리적으로 같은 것을 가리키는 것만. 크로스 요약에 쓴다.
 
-## 3. 패키지 구조 (현행)
+| Trait | 와인 Probe 예 | 위스키 Probe 예 |
+| --- | --- | --- |
+| `Sweetness` | "달았나요?" | "달큰했나요?" |
+| `Intensity` | "향이 진했나요?" | "향이 강했나요?" |
+| `Body` | "묵직했나요?" | "묵직했나요?" |
+| `Aftertaste` | "여운이 길었나요?" | "여운이 길었나요?" |
 
-기본 정보: 패키지 `com.bluemarlin.drinkdiary`, `minSdk 35`, `compileSdk`/`targetSdk 36`.
-단일 모듈이며 의존 방향은 `UI -> ViewModel -> UseCase -> Repository -> DAO(Room) -> Database` 한 방향이다.
+**주종 고유 축** — 억지로 매핑하지 않는다. **주종 내부 요약에만 쓰고 크로스 요약에 넣지 않는다.**
 
-```text
-com.bluemarlin.drinkdiary
-  ├─ data
-  │  ├─ local
-  │  │  ├─ DrinkDiaryDatabase
-  │  │  ├─ DrinkRecordDao
-  │  │  └─ DrinkRecordEntity
-  │  ├─ mapper
-  │  │  └─ DrinkRecordMapper
-  │  └─ repository
-  │     ├─ DrinkRecordRepositoryImpl
-  │     └─ UserPreferencesRepositoryImpl
-  ├─ domain
-  │  ├─ model
-  │  │  ├─ DrinkRecord / DrinkType / CollectionStatus
-  │  │  ├─ DashboardPeriod / DashboardSummary
-  │  │  ├─ DrinkRecordFilter / DrinkRecordInput
-  │  │  └─ InsightsSummary / DrinkRatingBreakdown
-  │  ├─ repository
-  │  │  ├─ DrinkRecordRepository
-  │  │  └─ UserPreferencesRepository
-  │  └─ usecase
-  │     ├─ ObserveDrinkRecordsUseCase / ObserveDrinkRecordUseCase
-  │     ├─ SaveDrinkRecordUseCase / DeleteDrinkRecordUseCase
-  │     ├─ ObserveDashboardSummaryUseCase / ObserveSearchResultsUseCase
-  │     ├─ ObserveInsightsUseCase
-  │     ├─ GenerateCsvExportUseCase
-  │     └─ CheckRecordLimitUseCase
-  ├─ ui
-  │  ├─ dashboard / collection / search
-  │  ├─ detail / editor / insights / settings
-  │  ├─ component (Components.kt — DD* 공용 컴포넌트)
-  │  ├─ navigation
-  │  └─ theme
-  ├─ DrinkDiaryApplication (AppContainer)
-  └─ MainActivity
-```
-
-### 3-1. 패키지별 책임 상세
-
-- **`domain/model`** — 순수 Kotlin data class/enum. Android·Room 의존 금지.
-- **`domain/usecase`** — UseCase당 클래스 1개. 입력 검증과 비즈니스 규칙은 ViewModel/UI가 아니라
-  여기에 둔다. 예: 필수 입력·평점 범위 검증은 `SaveDrinkRecordUseCase`에, 무료 티어 기록 상한
-  (`CheckRecordLimitUseCase.LIMIT`, `DrinkRecordRepository.observeRecordsCount()`와
-  `UserPreferencesRepository.isProUser`를 결합)은 에디터 ViewModel이 아니라 UseCase에 둔다 —
-  어느 화면에서 호출하든 규칙이 동일하게 적용되게 하기 위함이다.
-- **`domain/repository`** — `DrinkRecordRepository`, `UserPreferencesRepository` 인터페이스.
-- **`data/local`** — Room `DrinkDiaryDatabase`, `DrinkRecordDao`, `DrinkRecordEntity`. Enum은 ordinal이
-  아니라 문자열로 저장해 스키마 가독성과 enum 재정렬 내성을 확보한다. 스키마 이력은 `app/schemas/`에
-  내보낸다(`room.schemaLocation`). 엔티티/스키마 변경 시 반드시 새 마이그레이션을 추가하고
-  (`DrinkDiaryDatabase.MIGRATION_1_2`, `MIGRATION_2_3` 참고) `AppContainer`에 등록한다.
-- **`data/mapper`** — `DrinkRecordMapper`가 Entity ↔ 도메인 `DrinkRecord` 변환을 담당.
-- **`data/repository`** — `DrinkRecordRepositoryImpl`은 DAO와 대화하는 유일한 지점이며 DB 실패를
-  `AppResult`/`AppError`로 번역한다. `UserPreferencesRepositoryImpl`은 Jetpack DataStore 기반으로
-  프리미엄 게이트에 쓰이는 `isProUser` 플래그를 보관한다.
-- **`ui/<feature>`** — 화면당 패키지 1개. `*Screen.kt`(stateless Composable) + `*ViewModel.kt`(UI 상태
-  노출, UseCase 호출). ViewModel은 DI 프레임워크(Hilt/Koin) 없이 손으로 쓴 `Factory`로 생성한다.
-- **`ui/component/Components.kt`** — `DD*` 접두사 공용 Material 3 컴포넌트. 화면 로컬 일회성 UI를
-  새로 만들기보다 이쪽을 재사용·확장한다. 전체 카탈로그와 사용 규칙은
-  `../designer/design-system.md` 참고.
-- **`ui/navigation/DrinkDiaryApp.kt`** — Navigation 3(`androidx.navigation3`) 기반. `NavController`
-  없이 private sealed `AppRoute : NavKey` 계층과 수동 관리 `mutableStateListOf<AppRoute>` 백스택을
-  쓴다. 최상위 라우트(Dashboard/Collection/Search)는 shared-axis, 드릴인 라우트
-  (Detail/Editor/Insights/Settings)는 `NavDisplay.transitionSpec` 메타데이터로 정의한 슬라이드 전환을
-  사용한다. 각 엔트리의 ViewModel은 라우트 인자로 스코프된 `key` 문자열(예: `"detail_${recordId}"`)로
-  생성해 서로 다른 기록/편집이 독립 인스턴스를 갖게 한다.
-- **의존성 배선** — `DrinkDiaryApplication`/`AppContainer`가 Room DB, DataStore 기반
-  `UserPreferencesRepository`, 모든 repository/usecase 싱글턴을 수동으로 조립한다. 화면에서는
-  `(LocalContext.current.applicationContext as DrinkDiaryApplication).appContainer`로 가져온다.
-
-## 4. 계층별 책임
-
-| 계층 | 책임 |
+| 주종 | 고유 Trait |
 | --- | --- |
-| UI | Compose 화면 렌더링, 사용자 이벤트 전달, 내비게이션 요청 |
-| ViewModel | UI 상태 생성, 이벤트 처리, UseCase 호출 |
-| UseCase | 앱 규칙 처리, 입력 검증, 필터 조건 생성, 대시보드 요약 계산 |
-| Repository | 데이터 소스 접근 추상화, Entity와 Domain Model 변환 |
-| DAO | Room 쿼리 실행 |
-| Database | 로컬 영속성 제공 |
+| 와인 | `Acidity`(산미), `Tannin`(떫음) |
+| 위스키 | `Peat`(스모키), `AlcoholBurn`(알코올 자극) |
 
-## 5. Domain Model
+**이 분리가 핵심인 이유**: 사용자는 주종에 맞는 자연스러운 말로 답하는데(F2의 "일상어" 요구),
+공통 축에는 주종 무관한 값이 쌓인다. 그래서 **"당신은 주종을 가리지 않고 여운이 긴 술을
+좋아한다"** 같은 요약이 가능하다.
+
+**단, 크로스 요약은 주력이 아니라 부산물이다.** 주력 출력은 주종별 요약이며, 크로스 요약은 아하
+모먼트와 공유 카드 소재로 쓴다. 크로스 요약을 주력으로 삼으면 "여운이 긴 와인 주세요"라고 고를 수
+없다는 실용성 문제에 부딪힌다(쟁점 3 반론 2).
+
+Probe 문구는 데이터이지 코드가 아니다 — **Trait에 매핑된 Probe 목록을 교체 가능하게** 둔다.
+F2의 축 개수·단계가 아직 가설이므로(PRD 7절 열린 질문 2), 문구와 개수를 바꿔도 저장 구조가
+흔들리지 않아야 한다.
+
+### 2-3. 3단계 척도
+
+PRD F2는 "탭 5회 이내, 슬라이더 없음"을 요구한다. 따라서 Trait 값은 연속값이 아니라 **3단계**로
+받는다.
 
 ```kotlin
-enum class DrinkType {
-    Wine,
-    Whiskey,
-    Beer
-}
-
-enum class CollectionStatus {
-    Normal,
-    Repurchase,
-    NotForMe
-}
-
-enum class DashboardPeriod {
-    Weekly,
-    Monthly,
-    Yearly
-}
-
-data class DrinkRecord(
-    val id: Long,
-    val type: DrinkType,
-    val name: String,
-    val imageUri: String?,
-    val price: Long?,
-    val place: String?,
-    val tastingNote: String?,
-    val rating: Int,
-    val collectionStatus: CollectionStatus,
-    val recordedAtMillis: Long
-)
-
-data class DrinkRecordFilter(
-    val drinkType: DrinkType?,
-    val collectionStatus: CollectionStatus?
-)
-
-data class DashboardSummary(
-    val totalCount: Int,
-    val averageRating: Double?,
-    val wineCount: Int,
-    val whiskeyCount: Int,
-    val beerCount: Int,
-    val repurchaseCount: Int,
-    val notForMeCount: Int,
-    val repurchaseRecords: List<DrinkRecord>,
-    val notForMeRecords: List<DrinkRecord>
-)
+enum class TraitLevel { Low, Mid, High }   // 예: 안 떫음 / 보통 / 떫음
 ```
 
-## 6. UseCase 설계
+기존 `Double` 기반 5축 슬라이더(`DrinkRatingBreakdown`)는 폐기한다. 이것이 PRD S5 실패
+시나리오의 원인이다.
 
-| UseCase | 역할 | 관련 기능 |
+## 3. 도메인 모델
+
+```text
+domain/model
+  DrinkType            Wine, Whiskey                  (Beer 삭제)
+  DrinkRecord          기록 1건
+  ServingStyle         Neat, OnTheRocks, Highball, ... (위스키 P4)
+  Vintage              연도 (와인 P4, nullable)
+  Trait                공통: Sweetness, Intensity, Body, Aftertaste
+                       와인 고유: Acidity, Tannin / 위스키 고유: Peat, AlcoholBurn
+  TraitLevel           Low, Mid, High
+  TasteInput           Map<Trait, TraitLevel>          사용자 입력 결과
+  Probe                Trait에 매핑된 질문·선택지 (주종별)
+  TasteProfile         Trait별 선호 방향 + 확신도 + 요약 문장
+  ProfileReadiness     NotReady(남은 개수) | Partial | Ready
+  CollectionStatus     Repurchase, NotForMe, Normal    (유지)
+  ShareCard            공유 카드 생성 입력값
+```
+
+**`domain/model`은 Android/Room에 의존하지 않는다**(`harness.md` §1). 현재 코드가 이 규칙을 어기고
+`R`을 import하는 문제는 이번 재설계에서 함께 해소한다 — **Probe 문구는 도메인이 아니라 UI 계층에서
+문자열 리소스로 해석**한다. 도메인은 `Trait`와 `TraitLevel`만 안다.
+
+## 4. UseCase
+
+| UseCase | 대응 기능 | 책임 |
 | --- | --- | --- |
-| ObserveDrinkRecordsUseCase | 필터 조건에 맞는 컬렉션 목록을 Flow로 제공 | UC-02, UC-06, UC-07, UC-08 |
-| ObserveDrinkRecordUseCase | 단일 기록 상세를 Flow로 제공 | UC-02, UC-03, UC-04 |
-| SaveDrinkRecordUseCase | 신규 등록 및 수정 처리, 필수값 검증 | UC-01, UC-03 |
-| DeleteDrinkRecordUseCase | 기록 삭제 처리 | UC-04 |
-| ObserveDashboardSummaryUseCase | 기간별 컬렉션 요약 계산 | UC-05, UC-07, UC-08 |
+| `SaveDrinkRecordUseCase` | F1 | 검증 + 저장. 빈티지·음용방법 포함 |
+| `ObserveProbesUseCase` | F2 | 주종에 맞는 Probe 목록 제공 |
+| `ObserveTasteProfileUseCase` | F3 | 기록 → `TasteProfile` 계산. **핵심 알고리즘** |
+| `CheckProfileReadinessUseCase` | F3 | 임계치 도달 여부 + 남은 개수 |
+| `SearchRecordsUseCase` | F5 | 이름 부분 일치 + 재구매 후보 우선 정렬 |
+| `GenerateShareCardUseCase` | F4 | 카드에 들어갈 데이터 조립(렌더링은 UI) |
+| `CheckRecordLimitUseCase` | F6 | **주종별** 카운트 대조 |
 
-필수값 검증은 `SaveDrinkRecordUseCase`에서 수행한다.
-이유: UI가 바뀌어도 저장 규칙을 한곳에서 유지하기 위함이다.
+### 4-1. `ObserveTasteProfileUseCase` — 가장 중요한 알고리즘
 
-## 7. ViewModel 설계
+이 UseCase가 F3의 전부이며, 제품 가치의 대부분이 여기 있다.
 
-### DashboardViewModel
+**입력**: 사용자의 모든 기록(각 기록은 `TasteInput` + 전체 만족도 + `CollectionStatus`)
+**출력**: Trait별 선호 방향 + 확신도 + 자연어 요약 문장
 
-- 기간 선택 상태를 관리한다.
-- 선택 기간 기준으로 `DashboardSummary`를 구독한다.
-- 재구매 후보 카드와 비선호 카드 선택 이벤트를 내비게이션 이벤트로 전달한다.
-
-### CollectionViewModel
-
-- 주류 종류 필터와 컬렉션 상태 필터를 관리한다.
-- 필터 변경 시 목록 Flow를 갱신한다.
-- Empty 상태는 전체 Empty와 필터 결과 Empty를 구분할 수 있어야 한다.
-
-### RecordDetailViewModel
-
-- `recordId` 기준 상세 기록을 구독한다.
-- 삭제 확인 이후 삭제 UseCase를 호출한다.
-- 삭제 성공 시 이전 화면으로 돌아가기 위한 이벤트를 발생시킨다.
-
-### RecordEditorViewModel
-
-- 신규 등록과 수정 모드를 모두 처리한다.
-- 수정 모드에서는 기존 기록을 불러와 입력 상태로 변환한다.
-- 저장 시 필수값 검증 결과를 UI 상태로 노출한다.
-
-## 8. 데이터 흐름
-
-### 컬렉션 목록 조회
+핵심은 **"많이 마신 것"이 아니라 "높게 평가한 것"의 경향을 찾는 것**이다. 떫은 와인을 20번 마셨어도
+전부 낮게 평가했다면 그건 선호가 아니다.
 
 ```text
-CollectionScreen
-  -> CollectionViewModel
-  -> ObserveDrinkRecordsUseCase(filter)
-  -> DrinkRecordRepository.observeRecords(filter)
-  -> DrinkRecordDao.observeRecords(...)
-  -> Flow<List<DrinkRecordEntity>>
-  -> Mapper
-  -> Flow<List<DrinkRecord>>
-  -> CollectionUiState
+각 Trait에 대해:
+  High로 답한 기록들의 평균 만족도  vs  Low로 답한 기록들의 평균 만족도
+  차이가 유의미하면 → 그 방향을 선호로 판정
+  양쪽 표본이 모두 최소 개수 이상일 때만 판정 (아니면 "판단 유보")
 ```
 
-### 기록 저장
+**확신도는 표본 수와 차이 크기로 정한다.** 이것이 `ProfileReadiness`의 근거가 되고, "3개만 더
+기록하면 위스키 취향도 보인다"(PRD S2)를 계산 가능하게 만든다.
+
+> [!IMPORTANT]
+> **다양성 문제**(`problem-definition.md` 8-1절): 30개를 마셔도 전부 같은 스타일이면 패턴이 나오지
+> 않는다. 위 설계는 이를 자연스럽게 처리한다 — 한쪽 방향 표본만 있으면 비교가 불가능해 "판단 유보"가
+> 되고, 사용자에게 **"다른 스타일도 마셔보라"**고 안내할 근거가 된다. 개수가 아니라 대비가 임계치를
+> 정한다는 분석이 여기서 구현으로 이어진다.
+
+## 5. 데이터 계층
 
 ```text
-RecordEditorScreen
-  -> RecordEditorViewModel
-  -> SaveDrinkRecordUseCase(input)
-  -> 입력 검증
-  -> DrinkRecordRepository.save(record)
-  -> DrinkRecordDao.insertOrUpdate(entity)
-  -> 저장 결과
+data/local
+  DrinkDiaryDatabase   version = 1  (재정의, 기존 마이그레이션 폐기)
+  DrinkRecordEntity    주종/이름/빈티지/음용방법/사진/가격/장소/메모/만족도/컬렉션상태/기록일시
+  TraitAnswerEntity    기록 1건에 대한 Trait별 답 (기록 : 답 = 1 : N)
+  DrinkRecordDao
 ```
 
-### 대시보드 요약 조회
+**`TraitAnswerEntity`를 별도 테이블로 두는 이유**: Trait 개수가 아직 가설이므로(PRD 7절), 컬럼으로
+고정하면 축을 바꿀 때마다 스키마가 흔들린다. 행으로 두면 Trait 추가·삭제가 스키마 변경 없이 가능하다.
+enum은 문자열로 저장한다(`harness.md` §1).
+
+`UserPreferencesRepository`(DataStore, `isProUser`)는 현행 유지.
+
+## 6. UI 구조
 
 ```text
-DashboardScreen
-  -> DashboardViewModel
-  -> ObserveDashboardSummaryUseCase(period)
-  -> DrinkRecordRepository.observeRecordsByPeriod(startMillis, endMillis)
-  -> 기록 수 / 평균 별점 / 종류별 수 / 재구매 후보 수 / 비선호 수 계산
-  -> DashboardUiState
+ui/
+  record/       F1·F2  기록 작성 — Probe 기반 3탭 입력
+  profile/      F3     취향 요약 (문장 우선, 차트 보조)
+  collection/   F1     기록 목록
+  lookup/       F5     매장용 빠른 조회 — 진입 즉시 검색 포커스
+  share/        F4     공유 카드 생성·미리보기
+  settings/     F6     Pro 안내, 내보내기
+  component/           DD* 공용 컴포넌트
 ```
 
-대시보드 요약은 초기에는 UseCase에서 계산한다.
-이유: MVP 단계에서는 구현과 테스트가 단순하고, 기록이 많아질 때 DAO 집계 쿼리로 최적화할 수 있다.
+**F5는 별도 화면으로 둔다.** 기존 `search`를 재사용하지 않는 이유는 목적이 다르기 때문이다 —
+검색은 "찾기", 조회는 **"살지 말지 판단"**이다. 결과에 만족도와 재구매 여부가 즉시 보여야 하고,
+진입에서 판단까지 15초(PRD S3) 안에 끝나야 한다.
 
-## 9. 오류 처리 원칙
+**공유 카드 렌더링**: Compose 화면을 비트맵으로 캡처해 9:16으로 생성한다. 별도 이미지 라이브러리를
+추가하지 않는다(`harness.md` §10 — 공식 대안으로 충분하면 서드파티를 넣지 않는다).
 
-- Repository는 DB 예외를 앱 내부 오류 타입으로 변환한다.
-- ViewModel은 오류를 사용자에게 보여줄 수 있는 UI 상태로 변환한다.
-- UI는 기술 상세 대신 재시도 또는 입력 수정이 가능한 메시지를 표시한다.
-- 삭제, 저장 실패 시 기존 데이터를 임의로 지우거나 화면 상태를 성공처럼 처리하지 않는다.
+## 7. 기존 코드 처리
 
-## 10. 테스트 범위
-
-| 대상 | 테스트 내용 |
+| 대상 | 처리 |
 | --- | --- |
-| SaveDrinkRecordUseCase | 필수값 검증, 별점 범위 검증, 컬렉션 상태 저장 |
-| ObserveDrinkRecordsUseCase | 주류 종류 필터, 컬렉션 상태 필터, 복합 필터 |
-| ObserveDashboardSummaryUseCase | 기간 필터링, 평균 별점, 재구매 후보 수, 비선호 수 |
-| Mapper | Entity와 Domain Model 간 변환 |
-| ViewModel | Loading, Empty, Success, Error 상태 전환 |
+| `DrinkRatingBreakdown` (5축 Double) | **폐기** — PRD S5 실패 원인 |
+| `DrinkType.Beer` | **삭제** |
+| Room 마이그레이션 v1→v2→v3 | **폐기**, version 1로 재시작 |
+| `domain/model`의 `R` import | **제거** — Probe 문구를 UI로 이동해 자연 해소 |
+| `InsightsSummary`(월별 추이·가격대 만족도) | **보류** — F3와 목적이 다르다. 재도입은 MVP 이후 |
+| 로컬라이제이션(ko/en strings) | **재사용** — Probe 문구는 새로 필요 |
+| `Components.kt`의 DD* | **선별 재사용** |
+| Navigation 3 구조 | **유지** — 화면 목록만 교체 |
+
+> [!WARNING]
+> 미검증 코드(커밋 `6086080`)는 이 재설계로 상당 부분 대체된다. 다만 **재설계가 중단되면 컴파일
+> 여부가 확인되지 않은 코드가 원격에 남는다**(`problem-definition.md` 11절). 재설계 착수 시점에
+> 기존 코드를 어디까지 걷어낼지 먼저 정한다.
+
+## 8. 구현 순서
+
+`mvp-scope.md` 5절 우선순위(리스크 큰 것부터)를 따른다.
+
+1. **도메인 모델 + `ObserveTasteProfileUseCase`** — 알고리즘을 UI 없이 단위 테스트로 먼저 검증.
+   여기가 무너지면 나머지는 의미가 없다.
+2. **Room 스키마 재정의 + Repository/DAO**
+3. **F2 기록 입력 UI** — Probe 문구를 바꿔가며 실기기에서 검증
+4. **F3 취향 요약 화면**
+5. **F1 컬렉션 / F5 조회**
+6. **F4 공유 카드**
+7. **F6 한도·업그레이드**
+
+1번은 순수 Kotlin이라 Android 없이 테스트 가능하다. **`agy` 위임 가능**(명세 확정 + 기계 검증
+가능 + 서브트리 격리 가능): `gemini-3.1-pro-high`(다단계 계산 로직). 3번은 시각 판단이 필요하므로
+`gemini-3.6-flash-high` 또는 Claude 직접.
+
+## 9. 열린 질문
+
+1. **Trait 목록 확정** — 5개 안은 가설. F2 프로토타입으로 검증 후 확정.
+2. **선호 판정 임계치** — 표본 최소 개수와 유의미한 차이의 기준. 더미 데이터로 시뮬레이션 필요.
+3. **공통 축 4개가 실제로 같은 감각인지** — `Sweetness`/`Body`/`Intensity`/`Aftertaste`가
+   와인·위스키에서 사용자에게 같은 것으로 읽히는지. 하이브리드 모델로 위험은 줄었으나
+   (`../planner/design-principles.md` 쟁점 3) 이 넷마저 어긋나면 크로스 요약을 포기해야 한다.
+4. **백업 방식** — `design-principles.md` 쟁점 2에서 **MVP 포함**으로 확정됐다. 파일 내보내기(SAF)와
+   Android 자동 백업 중 무엇을 쓸지, 복원 UX를 어떻게 둘지 미정.

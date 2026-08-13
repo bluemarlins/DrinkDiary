@@ -1,5 +1,13 @@
 # Navigation Flow Use Cases
 
+> [!WARNING]
+> **보관 문서 — 살아있는 명세가 아니다.** 구 MVP의 네비게이션 동작·테스트 케이스이며, 현재 저장소의 코드를 설명하지만
+> 재정의된 제품 방향과 충돌한다(맥주 포함, 5축 슬라이더 입력 등).
+> 현행 명세는 `../../specs/`를 따른다 — 제품은 `specs/planner/prd.md`,
+> 구조는 `specs/developer/software-architecture.md`.
+> 재작성 시 참고용으로만 남긴다. **여기에 새 내용을 추가하지 않는다.**
+
+
 ## Purpose
 
 This document defines the expected navigation behavior for DrinkDiary and lists the test cases that should protect it.

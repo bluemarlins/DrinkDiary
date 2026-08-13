@@ -54,8 +54,8 @@ EOF
 )" --model gemini-3.5-flash-medium --output-format json
 ```
 
-Claude는 반환된 텍스트를 파싱해 `app/docs/specs/planner/product-plan.md`의 "경쟁/벤치마킹 조사" 절에 정리
-반영한다. 파일 수정이 없는 태스크이므로 리스크가 낮고, 파이프라인 검증용 첫 호출로 적합하다.
+Claude는 반환된 텍스트를 검수해 `app/docs/departments/researcher/`에 리포트로 남긴다. 검증 절차는
+`delegate-research` 스킬을 따른다. 파일 수정이 없는 태스크이므로 리스크가 낮고, 파이프라인 검증용 첫 호출로 적합하다.
 
 ### 2. 디자인 시스템 범위 내 UI 고도화
 

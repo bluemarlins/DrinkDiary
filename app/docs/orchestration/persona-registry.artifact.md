@@ -92,7 +92,7 @@
 > 해야 한다. Claude는 자격증명·키스토어를 다루거나 양식을 대신 제출하지 않는다. 부서 산출물에는
 > 담당이 `Claude`인 항목과 `사용자`인 항목을 항상 구분해 표기한다.
 
-**현재 공석 상태에서 누락된 것들**(`../specs/planner/product-plan.md` Phase 4는 정의돼 있으나 담당 없음):
+**현재 공석 상태에서 누락된 것들**(출시 준비 단계는 정의돼 있으나 담당 없음):
 개인정보처리방침 문서 없음, Data Safety 양식 없음, `signingConfig` 미설정,
 `versionCode = 1` 그대로, `isMinifyEnabled = false`, 콘텐츠 등급 검토 흔적 없음.
 
@@ -122,5 +122,5 @@
    orchestration)로 최상위 디렉터리가 정해지고 **소유 부서**로 하위 디렉터리가 정해진다 —
    자세한 규칙은 `AGENTS.md`의 "Documentation layout" 절을 따른다.
 4. **Review**: 5번 QA 부서가 게이트를 실행하기 전까지 어떤 산출물도 "완료"로 표시하지 않는다.
-5. **Synchronization**: 매 Phase 종료 시 모든 부서의 산출물을 종합하여 `../specs/planner/product-plan.md`를
+5. **Synchronization**: 매 Phase 종료 시 모든 부서의 산출물을 종합하여 `../specs/planner/prd.md`를
    업데이트한다.

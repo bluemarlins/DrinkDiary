@@ -9,7 +9,8 @@
 
 세부 배경은 `../specs/developer/software-architecture.md`,
 `../specs/developer/build-and-test.md`, `../specs/designer/design-system.md`를 참조하되, 이 문서는
-그 요약이자 강제 규칙 목록이다.
+그 요약이자 강제 규칙 목록이다. 제품 판단 기준은 `../specs/planner/design-principles.md`의
+의사결정 필터를 따른다.
 
 ## 1. 아키텍처 규칙
 

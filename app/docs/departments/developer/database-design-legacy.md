@@ -1,5 +1,13 @@
 # DrinkDiary Database Design
 
+> [!WARNING]
+> **보관 문서 — 살아있는 명세가 아니다.** 구 MVP의 DB 스키마이며, 현재 저장소의 코드를 설명하지만
+> 재정의된 제품 방향과 충돌한다(맥주 포함, 5축 슬라이더 입력 등).
+> 현행 명세는 `../../specs/`를 따른다 — 제품은 `specs/planner/prd.md`,
+> 구조는 `specs/developer/software-architecture.md`.
+> 재작성 시 참고용으로만 남긴다. **여기에 새 내용을 추가하지 않는다.**
+
+
 ## 1. 문서 목적
 
 이 문서는 `../planner/usecase.md`를 기준으로 DrinkDiary의 로컬 데이터베이스 구조와 조회 제약을 정의한다.
