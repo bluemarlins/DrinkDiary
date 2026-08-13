@@ -85,6 +85,45 @@ enum class TraitLevel { Low, Mid, High }   // 예: 안 떫음 / 보통 / 떫음
 기존 `Double` 기반 5축 슬라이더(`DrinkRatingBreakdown`)는 폐기한다. 이것이 PRD S5 실패
 시나리오의 원인이다.
 
+### 2-4. 취향 유형(TasteType) — 4축 선호 방향의 조합
+
+`../designer/branding.md` 4-5절에서 채택. 공통 축 4개의 **선호 방향**을 조합해 16유형을 만든다.
+
+```text
+Sweetness   달다(S) | 드라이(D)
+Body        묵직(B) | 가볍다(L)
+Intensity   진하다(I) | 은은하다(M)
+Aftertaste  길다(A) | 짧다(Q)
+                    ↓
+        4축 × 2극 = 16유형 (예: D-B-I-A)
+```
+
+> [!IMPORTANT]
+> **유형은 입력이 아니라 출력이다. 입력은 3단계를 유지한다.**
+>
+> 사용자는 계속 낮음/중간/높음으로 답한다. 유형은 그 답들을 재료로 4-1절 알고리즘이 계산한
+> **축별 선호 방향**의 조합이다. 즉 "중간이라고 답한 기록"도 선호 판정의 데이터로 쓰이며,
+> 어느 쪽으로도 접히지 않는다.
+>
+> 입력을 2극으로 바꾸면 안 되는 이유: 3단계는 변별력을 위한 것이고(PRD F2), 2극 강제는 사용자가
+> 실제로 "중간이었다"고 느낀 경험을 왜곡해 선호 판정의 입력 품질을 떨어뜨린다.
+
+**유형이 나오지 않는 상태를 1급으로 다룬다.** 어느 한 축이라도 선호 방향을 판정할 수 없으면
+(한쪽 표본만 있거나 차이가 유의미하지 않으면) **유형을 내지 않는다.** `ProfileReadiness`가 이
+상태를 관장하고, UI는 "아직 유형이 나오기 이르다 + 남은 거리"를 보여준다. 근거 없이 단정하면
+신뢰가 무너진다.
+
+**주종별 유형과 통합 유형**:
+
+| 범위 | 계산 대상 | 티어 |
+| --- | --- | --- |
+| 와인 유형 | 와인 기록만 | 무료 |
+| 위스키 유형 | 위스키 기록만 | 무료 |
+| **통합 유형** | 두 주종 전체 | **Pro** |
+
+통합 유형이 Pro의 핵심 상품이다. 무료 사용자도 각 주종의 유형은 온전히 받으므로 핵심 루프는
+무료로 완결된다(`../planner/design-principles.md` 쟁점 5).
+
 ## 3. 도메인 모델
 
 ```text
@@ -99,6 +138,8 @@ domain/model
   TasteInput           Map<Trait, TraitLevel>          사용자 입력 결과
   Probe                Trait에 매핑된 질문·선택지 (주종별)
   TasteProfile         Trait별 선호 방향 + 확신도 + 요약 문장
+  TasteType            4축 선호 방향의 조합 (16유형). TasteProfile에서 파생
+  TypeScope            Wine | Whiskey | Combined(Pro)
   ProfileReadiness     NotReady(남은 개수) | Partial | Ready
   CollectionStatus     Repurchase, NotForMe, Normal    (유지)
   ShareCard            공유 카드 생성 입력값
@@ -117,6 +158,7 @@ domain/model
 | `ObserveProbesUseCase` | F2 | 주종에 맞는 Probe 목록 제공 |
 | `ObserveTasteProfileUseCase` | F3 | 기록 → `TasteProfile` 계산. **핵심 알고리즘** |
 | `CheckProfileReadinessUseCase` | F3 | 임계치 도달 여부 + 남은 개수 |
+| `ResolveTasteTypeUseCase` | F3·F4 | `TasteProfile` → `TasteType`. 축 하나라도 미판정이면 유형 없음 |
 | `SearchRecordsUseCase` | F5 | 이름 부분 일치 + 재구매 후보 우선 정렬 |
 | `GenerateShareCardUseCase` | F4 | 카드에 들어갈 데이터 조립(렌더링은 UI) |
 | `ObserveProEntitlementUseCase` | F6 | Pro 여부 관측. **기록을 막지 않는다** — 출력 게이팅에만 쓴다 |
