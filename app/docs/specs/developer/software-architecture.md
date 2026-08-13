@@ -102,6 +102,7 @@ domain/model
   ProfileReadiness     NotReady(남은 개수) | Partial | Ready
   CollectionStatus     Repurchase, NotForMe, Normal    (유지)
   ShareCard            공유 카드 생성 입력값
+  ProFeature           CrossProfile, TrendOverTime, PremiumCardTemplate (Pro 게이팅 대상)
 ```
 
 **`domain/model`은 Android/Room에 의존하지 않는다**(`harness.md` §1). 현재 코드가 이 규칙을 어기고
@@ -118,7 +119,7 @@ domain/model
 | `CheckProfileReadinessUseCase` | F3 | 임계치 도달 여부 + 남은 개수 |
 | `SearchRecordsUseCase` | F5 | 이름 부분 일치 + 재구매 후보 우선 정렬 |
 | `GenerateShareCardUseCase` | F4 | 카드에 들어갈 데이터 조립(렌더링은 UI) |
-| `CheckRecordLimitUseCase` | F6 | **주종별** 카운트 대조 |
+| `ObserveProEntitlementUseCase` | F6 | Pro 여부 관측. **기록을 막지 않는다** — 출력 게이팅에만 쓴다 |
 
 ### 4-1. `ObserveTasteProfileUseCase` — 가장 중요한 알고리즘
 
@@ -161,6 +162,9 @@ data/local
 enum은 문자열로 저장한다(`harness.md` §1).
 
 `UserPreferencesRepository`(DataStore, `isProUser`)는 현행 유지.
+
+**기록 개수를 세는 구조는 만들지 않는다.** 과금 축이 개수에서 출력으로 바뀌었으므로
+(`../planner/design-principles.md` 쟁점 5) `observeRecordsCount()`류의 카운트 API는 필요 없다.
 
 ## 6. UI 구조
 
@@ -211,7 +215,7 @@ ui/
 4. **F3 취향 요약 화면**
 5. **F1 컬렉션 / F5 조회**
 6. **F4 공유 카드**
-7. **F6 한도·업그레이드**
+7. **F6 Pro 게이팅** — 출력 쪽 잠금 UI. 기록 경로는 건드리지 않는다
 
 1번은 순수 Kotlin이라 Android 없이 테스트 가능하다. **`agy` 위임 가능**(명세 확정 + 기계 검증
 가능 + 서브트리 격리 가능): `gemini-3.1-pro-high`(다단계 계산 로직). 3번은 시각 판단이 필요하므로
