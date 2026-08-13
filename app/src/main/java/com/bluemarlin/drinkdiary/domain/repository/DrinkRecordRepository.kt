@@ -2,22 +2,15 @@ package com.bluemarlin.drinkdiary.domain.repository
 
 import com.bluemarlin.drinkdiary.domain.model.AppResult
 import com.bluemarlin.drinkdiary.domain.model.DrinkRecord
-import com.bluemarlin.drinkdiary.domain.model.DrinkRecordFilter
+import com.bluemarlin.drinkdiary.domain.model.DrinkType
 import kotlinx.coroutines.flow.Flow
 
 interface DrinkRecordRepository {
-    fun observeRecords(filter: DrinkRecordFilter): Flow<List<DrinkRecord>>
+    fun observeRecords(type: DrinkType? = null): Flow<List<DrinkRecord>>
 
     fun observeRecord(id: Long): Flow<DrinkRecord?>
 
-    fun observeRecordsByPeriod(
-        startMillis: Long,
-        endMillis: Long,
-    ): Flow<List<DrinkRecord>>
-
     fun observeSearchResults(query: String): Flow<List<DrinkRecord>>
-
-    fun observeRecordsCount(): Flow<Int>
 
     suspend fun save(record: DrinkRecord): AppResult<Long>
 

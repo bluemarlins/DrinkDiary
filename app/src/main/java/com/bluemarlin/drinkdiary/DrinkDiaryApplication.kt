@@ -1,21 +1,8 @@
 package com.bluemarlin.drinkdiary
 
 import android.app.Application
-import androidx.room.Room
-import com.bluemarlin.drinkdiary.data.local.DrinkDiaryDatabase
-import com.bluemarlin.drinkdiary.data.repository.DrinkRecordRepositoryImpl
 import com.bluemarlin.drinkdiary.data.repository.UserPreferencesRepositoryImpl
-import com.bluemarlin.drinkdiary.domain.repository.DrinkRecordRepository
 import com.bluemarlin.drinkdiary.domain.repository.UserPreferencesRepository
-import com.bluemarlin.drinkdiary.domain.usecase.CheckRecordLimitUseCase
-import com.bluemarlin.drinkdiary.domain.usecase.DeleteDrinkRecordUseCase
-import com.bluemarlin.drinkdiary.domain.usecase.GenerateCsvExportUseCase
-import com.bluemarlin.drinkdiary.domain.usecase.ObserveDashboardSummaryUseCase
-import com.bluemarlin.drinkdiary.domain.usecase.ObserveDrinkRecordUseCase
-import com.bluemarlin.drinkdiary.domain.usecase.ObserveDrinkRecordsUseCase
-import com.bluemarlin.drinkdiary.domain.usecase.ObserveInsightsUseCase
-import com.bluemarlin.drinkdiary.domain.usecase.ObserveSearchResultsUseCase
-import com.bluemarlin.drinkdiary.domain.usecase.SaveDrinkRecordUseCase
 
 class DrinkDiaryApplication : Application() {
     lateinit var appContainer: AppContainer
@@ -27,34 +14,11 @@ class DrinkDiaryApplication : Application() {
     }
 }
 
+// 재정의 진행 중 — Room 스키마와 UseCase는 새 도메인 모델 위에서 다시 조립한다.
+// 현재는 주종과 무관한 Pro 상태만 살아 있다.
 class AppContainer(
     application: Application,
 ) {
-    private val database: DrinkDiaryDatabase =
-        Room
-            .databaseBuilder(
-                application,
-                DrinkDiaryDatabase::class.java,
-                "drink_diary.db",
-            ).addMigrations(
-                DrinkDiaryDatabase.MIGRATION_1_2,
-                DrinkDiaryDatabase.MIGRATION_2_3,
-            ).build()
-
-    private val repository: DrinkRecordRepository =
-        DrinkRecordRepositoryImpl(database.drinkRecordDao())
-
     val userPreferencesRepository: UserPreferencesRepository =
         UserPreferencesRepositoryImpl(application)
-
-    val observeDrinkRecordsUseCase = ObserveDrinkRecordsUseCase(repository)
-    val observeDrinkRecordUseCase = ObserveDrinkRecordUseCase(repository)
-    val saveDrinkRecordUseCase = SaveDrinkRecordUseCase(repository)
-    val deleteDrinkRecordUseCase = DeleteDrinkRecordUseCase(repository)
-    val observeDashboardSummaryUseCase = ObserveDashboardSummaryUseCase(repository)
-    val observeSearchResultsUseCase = ObserveSearchResultsUseCase(repository)
-    val observeInsightsUseCase = ObserveInsightsUseCase(repository)
-    val generateCsvExportUseCase = GenerateCsvExportUseCase(repository)
-    val checkRecordLimitUseCase =
-        CheckRecordLimitUseCase(repository, userPreferencesRepository)
 }

@@ -34,7 +34,5 @@ val CorkErrorDark = Color(0xFFFFB4AB)
 
 val ChartWineLight = Color(0xFFFF8FB3)
 val ChartWhiskeyLight = Color(0xFFFFC66E)
-val ChartBeerLight = Color(0xFF70D6FF)
 val ChartWineDark = Color(0xFFFFB1C9)
 val ChartWhiskeyDark = Color(0xFFFFD99A)
-val ChartBeerDark = Color(0xFF9FE5FF)

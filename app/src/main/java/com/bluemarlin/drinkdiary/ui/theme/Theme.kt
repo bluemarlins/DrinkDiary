@@ -18,7 +18,6 @@ import androidx.compose.ui.platform.LocalContext
 data class DrinkDiaryChartColors(
     val wine: Color,
     val whiskey: Color,
-    val beer: Color,
 )
 
 private val DarkColorScheme =
@@ -75,14 +74,12 @@ private val LightChartColors =
     DrinkDiaryChartColors(
         wine = ChartWineLight,
         whiskey = ChartWhiskeyLight,
-        beer = ChartBeerLight,
     )
 
 private val DarkChartColors =
     DrinkDiaryChartColors(
         wine = ChartWineDark,
         whiskey = ChartWhiskeyDark,
-        beer = ChartBeerDark,
     )
 
 val LocalDrinkDiaryChartColors = staticCompositionLocalOf { LightChartColors }
