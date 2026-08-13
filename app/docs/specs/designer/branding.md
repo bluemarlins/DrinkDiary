@@ -142,20 +142,32 @@
 구 아이콘(컨셉 2 "Archival Ledger & Triple Tab")은 3색 인덱스 탭이 와인·위스키·**맥주**를
 가리켜, 맥주 제외 후 의미가 하나 비어 폐기했다.
 
-**채택 후 필요한 작업**(미완료):
+**에셋 제작 완료 (2026-08-13)**:
 
-1. **투명 배경 PNG 재생성** — 현재 산출물은 JPG라 adaptive icon foreground로 쓸 수 없다
-2. 위스키 잔의 시각적 무게 보강 — 와인잔에 비해 약해 "두 주종 동등" 메시지가 흐리다
-3. 밀도별 리사이즈 후 `res/mipmap-*` 반영 (Claude 직접 수행)
-4. `ic_launcher_background.xml` 보틀그린 단색 유지 확인
-5. Play 스토어용 512×512 불투명 아이콘 별도 보관
+| 항목 | 상태 |
+| --- | --- |
+| 투명 배경 PNG 재생성 | ✅ 1024×1024 RGBA, alpha 0~255 확인 |
+| 위스키 잔 무게 보강 | ✅ 로우볼을 넓고 두툼하게 재생성해 와인잔과 균형 |
+| 밀도별 리사이즈 → `res/mipmap-*` | ✅ 108/162/216/324/432px, 전 밀도 투명도 유지 |
+| `ic_launcher_background.xml` | ✅ 보틀그린 `#2F6F4E` 단색 유지 |
+| Play 스토어용 1024×1024 불투명본 | ✅ `assets/icon/taste_archive_icon_512.png` |
+| 리소스 병합 검증 | ✅ `:app:assembleDebug` BUILD SUCCESSFUL |
+
+**원본 보관**: `assets/icon/taste_archive_icon_foreground.png`(투명),
+`assets/icon/taste_archive_icon_512.png`(스토어용).
+`_fg-on-checker.png`는 투명도 확인용 체커보드 합성본이다.
+
+**측정 기록**: 모티프 bbox 618×568px, 캔버스 중심과 정확히 일치(dx=0, dy=0),
+adaptive icon 안전 영역 676px 안에 들어간다.
+
+**남은 것**: 실기기 런처에서 마스크(원형/스퀘어클) 적용 결과 육안 확인. 기기 연결 시 수행.
 
 후보 3안의 상세 평가: `../../departments/designer/icon-candidates-2026-08.md`
 
 ## 6. 남은 확인 사항
 
 - [x] 앱 이름 — **테이스트 아카이브 / Taste Archive**
-- [x] 아이콘 방향 — **컨셉 A (두 잔의 실루엣)** 선정. **에셋 제작 미완료**(5절)
+- [x] 아이콘 — **컨셉 A (두 잔의 실루엣)** 선정 및 **에셋 제작·반영 완료**(5절)
 - [x] 톤앤매너 재정의 — 2-1절
 - [x] **가치 제안 확정** — "한 잔의 기록이, 당신의 취향을 만듭니다" (4-1절)
 - [x] **취향 유형 개념 채택** — 4-5절
