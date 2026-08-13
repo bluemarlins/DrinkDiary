@@ -140,6 +140,16 @@
 | `gemini-3.1-pro-high` | 무거운 구현 | 명세가 확정된 다단계 계산/알고리즘 로직 | P2-2(고급 인사이트 UseCase) 게이트 통과 |
 | `claude-sonnet-4-6` | 최종 승급 티어 | Gemini 계열이 반복 실패한 작업 | 없음 — 첫 사용 시 결과를 이 표에 기록할 것 |
 
+**`gemini-3.1-pro-high` 실사용 기록 (2026-08-14, `ObserveTasteProfileUseCase`)**: 명세를 상세히 준 결과
+**메인 알고리즘은 정확했다** — 평균 기준 판정, 양쪽 최소 표본, Unsure 제외, Combined의 shared 축 한정까지
+모두 지시대로였다. 반면 **테스트는 폐기했다**: 프로젝트에 없는 MockK를 임의로 도입했고, `value class`를
+목킹하는 접근이었다("가짜 구현을 만들어라"고 명시했는데 무시). 또 `--add-dir`를 줬는데도 저장소가 아닌
+agy 자신의 스크래치(`~/.gemini/antigravity-cli/scratch/DrinkDiary/`)에 파일을 썼다 — 이미지 생성 때와
+같은 현상이며, **호출 후 저장소가 아니라 스크래치를 확인해야 한다.**
+
+→ 교훈: **구현은 위임 가능, 검증은 아니다.** 이는 persona-registry의 "QA는 Claude 전담" 규정과 일치한다.
+위임 프롬프트에 "프로젝트에 없는 라이브러리를 도입하지 마라"를 넣을 것.
+
 로스터 밖 모델(`*-low` 변형, `gemini-3.6-flash-medium`, `gemini-3.5-flash-high`,
 `gemini-3.1-pro-low`, `claude-opus-4-6-thinking`, `gpt-oss-120b-medium`)은 사용하지 않는다.
 `-low` 변형은 품질 저하 대비 이득이 불분명하고 재시도 비용이 절감분보다 크며, 나머지는 위 4개와
