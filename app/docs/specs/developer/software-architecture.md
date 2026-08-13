@@ -174,7 +174,7 @@ domain/model
 | UseCase | 대응 기능 | 책임 |
 | --- | --- | --- |
 | `SaveDrinkRecordUseCase` | F1 | 검증 + 저장. 빈티지·음용방법 포함 |
-| `ObserveProbesUseCase` | F2 | 주종에 맞는 Probe 목록 제공 |
+| `ObserveProbesUseCase` | F2 | 기본 경로는 `Trait.shared`만. 고유 축(`Trait.of(type)`의 나머지)은 확장 경로 전용 |
 | `ObserveTasteProfileUseCase` | F3 | 기록 → `TasteProfile` 계산. **핵심 알고리즘** |
 | `CheckProfileReadinessUseCase` | F3 | 임계치 도달 여부 + 남은 개수 |
 | `ResolveTasteTypeUseCase` | F3·F4 | `TasteProfile` → `TasteType`. 축 하나라도 미판정이면 유형 없음 |
