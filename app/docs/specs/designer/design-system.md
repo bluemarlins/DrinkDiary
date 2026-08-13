@@ -1,5 +1,45 @@
 # DrinkDiary Design System
 
+> [!IMPORTANT]
+> **2026-08-13 점검 — 부분적으로 낡았다.** 제품 재정의 전에 작성된 문서이며, 코드와 양방향으로
+> 어긋나 있다. Foundation·Action·Input·Display 컴포넌트의 **사용 규칙은 여전히 유효**하므로
+> 폐기하지 않되, 아래 격차를 감안해서 읽는다. 전면 개정은 **F2 취향 입력 프로토타입이 확정된 뒤**
+> 한다 — 입력 패턴이 정해지기 전에 컴포넌트 목록을 다시 쓰면 두 번 쓰게 된다.
+>
+> **(1) 문서에만 있고 구현되지 않은 것 7개** — 카탈로그에 있으나 코드에 없다. 신규 작성 시
+> "이미 있는 컴포넌트"로 오인하지 말 것:
+> `DDFilterChipRow`, `DDIconButton`, `DDInlineValidationMessage`, `DDOutlinedButton`,
+> `DDSnackbarMessage`, `DDTastingNoteBlock`, `DDTextButton`
+>
+> **(2) 코드에 있으나 문서화되지 않은 것 10개**:
+> `DDSensoryMetricSlider`, `DDRatingBreakdownRadarChart`, `DDRatingValueText`, `DDUriImage`,
+> `DDDashboardMetricTile`, `DDDrinkTypeDonutCard`, `DDMonthlyTrendCard`, `DDPriceBracketCard`,
+> `DDProUpgradeDialog`, `DDProLockOverlay`
+>
+> **(3) 11절 화면별 매핑은 구 4화면 기준**이다(Dashboard/Collection/Detail/Editor).
+> 재정의된 화면 구성은 `../developer/software-architecture.md` 6절을 따른다 —
+> `record`/`profile`/`collection`/`lookup`/`share`/`settings`.
+>
+> ### F2와의 관계 — 충돌이 아니라 공백이다
+>
+> 이 문서는 취향 입력에 대해 **아무 말도 하지 않는다.** `DDRatingInput`(5점 별점)만 있고,
+> 실제 코드의 `DDSensoryMetricSlider`(5축 슬라이더)는 문서에 없다. 그 슬라이더가 PRD S5
+> 실패 시나리오의 원인이고 F2에서 폐기 대상이다.
+>
+> **F2가 필요로 하는 신규 컴포넌트**(아직 존재하지 않음):
+>
+> | 필요 | 용도 |
+> | --- | --- |
+> | `DDProbeQuestion` | Probe 1문항 — 질문 + 3단계 선택지. 탭 1회로 응답 |
+> | `DDProbeSequence` | Probe 3~5개를 순차 제시. 진행도 표시 |
+> | `DDTasteSentence` | 취향 요약 문장 표시(F3). 차트가 아니라 문장이 주인공 |
+> | `DDProfileProgress` | 임계치까지 남은 개수 안내 |
+> | `DDShareCard` | 9:16 공유 카드 레이아웃(F4) |
+> | `DDLookupResult` | 매장 조회 결과 — 좋아했는지를 한눈에(F5) |
+>
+> 위 목록은 **설계 입력**이지 확정 스펙이 아니다. F2 프로토타입에서 실제 형태가 정해진다.
+
+
 ## 1. 문서 목적
 
 이 문서는 DrinkDiary 앱의 화면별 UI 일관성을 유지하기 위한 Basic UI Component 목록과 사용 기준을 정의한다.
