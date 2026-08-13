@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "cd40d2594983893979210b7ce4072b78",
+    "identityHash": "a7c062eae8e89bbdb431acb46c1eb697",
     "entities": [
       {
         "tableName": "drink_records",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `type` TEXT NOT NULL, `name` TEXT NOT NULL, `imageUri` TEXT, `price` INTEGER, `place` TEXT, `tastingNote` TEXT, `rating` INTEGER NOT NULL, `collectionStatus` TEXT NOT NULL, `recordedAtMillis` INTEGER NOT NULL, `createdAtMillis` INTEGER NOT NULL, `updatedAtMillis` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `type` TEXT NOT NULL, `name` TEXT NOT NULL, `vintage` INTEGER, `servingStyle` TEXT, `rating` REAL NOT NULL, `collectionStatus` TEXT NOT NULL, `imageUri` TEXT, `price` INTEGER, `place` TEXT, `memo` TEXT, `recordedAtMillis` INTEGER NOT NULL)",
         "fields": [
           {
             "fieldPath": "id",
@@ -27,6 +27,28 @@
             "notNull": true
           },
           {
+            "fieldPath": "vintage",
+            "columnName": "vintage",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "servingStyle",
+            "columnName": "servingStyle",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "rating",
+            "columnName": "rating",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "collectionStatus",
+            "columnName": "collectionStatus",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
             "fieldPath": "imageUri",
             "columnName": "imageUri",
             "affinity": "TEXT"
@@ -42,38 +64,50 @@
             "affinity": "TEXT"
           },
           {
-            "fieldPath": "tastingNote",
-            "columnName": "tastingNote",
+            "fieldPath": "memo",
+            "columnName": "memo",
             "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "rating",
-            "columnName": "rating",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "collectionStatus",
-            "columnName": "collectionStatus",
-            "affinity": "TEXT",
-            "notNull": true
           },
           {
             "fieldPath": "recordedAtMillis",
             "columnName": "recordedAtMillis",
             "affinity": "INTEGER",
             "notNull": true
-          },
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "trait_answers",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `recordId` INTEGER NOT NULL, `trait` TEXT NOT NULL, `answer` TEXT NOT NULL, FOREIGN KEY(`recordId`) REFERENCES `drink_records`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
           {
-            "fieldPath": "createdAtMillis",
-            "columnName": "createdAtMillis",
+            "fieldPath": "id",
+            "columnName": "id",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "updatedAtMillis",
-            "columnName": "updatedAtMillis",
+            "fieldPath": "recordId",
+            "columnName": "recordId",
             "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "trait",
+            "columnName": "trait",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "answer",
+            "columnName": "answer",
+            "affinity": "TEXT",
             "notNull": true
           }
         ],
@@ -85,58 +119,33 @@
         },
         "indices": [
           {
-            "name": "index_drink_records_recordedAtMillis",
+            "name": "index_trait_answers_recordId",
             "unique": false,
             "columnNames": [
-              "recordedAtMillis"
+              "recordId"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_drink_records_recordedAtMillis` ON `${TABLE_NAME}` (`recordedAtMillis`)"
-          },
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_trait_answers_recordId` ON `${TABLE_NAME}` (`recordId`)"
+          }
+        ],
+        "foreignKeys": [
           {
-            "name": "index_drink_records_type",
-            "unique": false,
-            "columnNames": [
-              "type"
+            "table": "drink_records",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "recordId"
             ],
-            "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_drink_records_type` ON `${TABLE_NAME}` (`type`)"
-          },
-          {
-            "name": "index_drink_records_collectionStatus",
-            "unique": false,
-            "columnNames": [
-              "collectionStatus"
-            ],
-            "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_drink_records_collectionStatus` ON `${TABLE_NAME}` (`collectionStatus`)"
-          },
-          {
-            "name": "index_drink_records_type_collectionStatus",
-            "unique": false,
-            "columnNames": [
-              "type",
-              "collectionStatus"
-            ],
-            "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_drink_records_type_collectionStatus` ON `${TABLE_NAME}` (`type`, `collectionStatus`)"
-          },
-          {
-            "name": "index_drink_records_recordedAtMillis_collectionStatus",
-            "unique": false,
-            "columnNames": [
-              "recordedAtMillis",
-              "collectionStatus"
-            ],
-            "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_drink_records_recordedAtMillis_collectionStatus` ON `${TABLE_NAME}` (`recordedAtMillis`, `collectionStatus`)"
+            "referencedColumns": [
+              "id"
+            ]
           }
         ]
       }
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'cd40d2594983893979210b7ce4072b78')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'a7c062eae8e89bbdb431acb46c1eb697')"
     ]
   }
 }
