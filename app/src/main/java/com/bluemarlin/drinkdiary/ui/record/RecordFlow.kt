@@ -10,74 +10,77 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.bluemarlin.drinkdiary.DrinkDiaryApplication
 import com.bluemarlin.drinkdiary.domain.model.DrinkType
-import com.bluemarlin.drinkdiary.domain.model.TasteInput
-import com.bluemarlin.drinkdiary.ui.theme.DrinkDiaryTheme
 
-private sealed interface RecordStep {
-    data object PickDrink : RecordStep
+private enum class Step { PickDrink, Probes, Detail, Saved }
 
-    data class Probes(
-        val type: DrinkType,
-    ) : RecordStep
-
-    data class Done(
-        val type: DrinkType,
-        val taps: Int,
-    ) : RecordStep
-}
-
-// F2 검증용 흐름. 저장·이름 입력은 아직 붙이지 않았고, 탭 수가 PRD 상한(5회)을
-// 실제로 지키는지 실기기에서 확인하는 것이 목적이다.
 @Composable
 fun RecordFlow(modifier: Modifier = Modifier) {
-    var step: RecordStep by remember { mutableStateOf(RecordStep.PickDrink) }
-    var taste by remember { mutableStateOf(TasteInput()) }
-    var taps by remember { mutableStateOf(0) }
+    val appContainer = (LocalContext.current.applicationContext as DrinkDiaryApplication).appContainer
+    val viewModel: RecordViewModel =
+        viewModel(factory = RecordViewModel.Factory(appContainer.drinkRecordRepository))
+    val state by viewModel.uiState.collectAsState()
+    var step by remember { mutableStateOf(Step.PickDrink) }
+
+    if (state.savedId != null && step != Step.Saved) step = Step.Saved
 
     Crossfade(targetState = step, label = "record-step") { current ->
         when (current) {
-            RecordStep.PickDrink ->
+            Step.PickDrink ->
                 DrinkTypePicker(
                     onPick = {
-                        taps++
-                        taste = TasteInput()
-                        step = RecordStep.Probes(it)
+                        viewModel.pickType(it)
+                        step = Step.Probes
                     },
                     modifier = modifier,
                 )
 
-            is RecordStep.Probes ->
+            Step.Probes ->
                 ProbeSequenceScreen(
-                    type = current.type,
-                    answers = taste,
-                    onAnswer = { trait, answer ->
-                        taps++
-                        taste = taste.with(trait, answer)
-                    },
-                    onComplete = { step = RecordStep.Done(current.type, taps) },
+                    type = state.type ?: DrinkType.Wine,
+                    answers = state.taste,
+                    onAnswer = viewModel::answer,
+                    onComplete = { step = Step.Detail },
                     modifier = modifier,
                 )
 
-            is RecordStep.Done ->
-                RecordDone(
-                    taps = current.taps,
-                    answered = taste.directionalCount,
-                    unsure = taste.answers.size - taste.directionalCount,
+            Step.Detail ->
+                RecordDetailStep(
+                    type = state.type ?: DrinkType.Wine,
+                    form = state.form,
+                    onFormChange = viewModel::updateForm,
+                    onSave = viewModel::save,
+                    saving = state.saving,
+                    modifier = modifier,
+                )
+
+            Step.Saved ->
+                RecordSaved(
+                    taps = state.taps,
+                    answered = state.taste.directionalCount,
+                    unsure = state.taste.answers.size - state.taste.directionalCount,
                     onRestart = {
-                        taps = 0
-                        step = RecordStep.PickDrink
+                        viewModel.startOver()
+                        step = Step.PickDrink
                     },
                     modifier = modifier,
                 )
         }
+    }
+
+    state.error?.let {
+        // 저장 실패는 조용히 넘기지 않는다(harness.md §7).
+        Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(20.dp))
     }
 }
 
@@ -92,10 +95,7 @@ private fun DrinkTypePicker(
     ) {
         Text("무엇을 마셨나요?", style = MaterialTheme.typography.headlineSmall)
         DrinkType.entries.forEach { type ->
-            Card(
-                onClick = { onPick(type) },
-                modifier = Modifier.fillMaxWidth(),
-            ) {
+            Card(onClick = { onPick(type) }, modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = if (type == DrinkType.Wine) "와인" else "위스키",
                     style = MaterialTheme.typography.titleLarge,
@@ -107,7 +107,7 @@ private fun DrinkTypePicker(
 }
 
 @Composable
-private fun RecordDone(
+private fun RecordSaved(
     taps: Int,
     answered: Int,
     unsure: Int,
@@ -119,10 +119,7 @@ private fun RecordDone(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text("기록했습니다.", style = MaterialTheme.typography.headlineSmall)
-        Text(
-            text = "탭 ${taps}번으로 끝났습니다.",
-            style = MaterialTheme.typography.bodyLarge,
-        )
+        Text("취향 입력은 탭 ${taps}번으로 끝났습니다.", style = MaterialTheme.typography.bodyLarge)
         Text(
             text = "방향을 답한 축 ${answered}개, 모르겠다고 답한 축 ${unsure}개.",
             style = MaterialTheme.typography.bodyMedium,
@@ -134,13 +131,7 @@ private fun RecordDone(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Card(onClick = onRestart, modifier = Modifier.fillMaxWidth()) {
-            Text("다시 기록하기", modifier = Modifier.padding(20.dp))
+            Text("한 잔 더 기록하기", modifier = Modifier.padding(20.dp))
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun RecordFlowPreview() {
-    DrinkDiaryTheme { RecordFlow() }
 }

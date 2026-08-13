@@ -30,12 +30,12 @@ class AppContainer(
             .databaseBuilder(application, DrinkDiaryDatabase::class.java, "taste_archive.db")
             .build()
 
-    private val recordRepository: DrinkRecordRepository =
+    val drinkRecordRepository: DrinkRecordRepository =
         DrinkRecordRepositoryImpl(database.drinkRecordDao())
 
     val userPreferencesRepository: UserPreferencesRepository =
         UserPreferencesRepositoryImpl(application)
 
-    val observeTasteProfileUseCase = ObserveTasteProfileUseCase(recordRepository)
+    val observeTasteProfileUseCase = ObserveTasteProfileUseCase(drinkRecordRepository)
     val resolveProfileReadinessUseCase = ResolveProfileReadinessUseCase()
 }
