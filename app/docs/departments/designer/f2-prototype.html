@@ -1,0 +1,460 @@
+<title>F2 취향 입력 프로토타입 — 테이스트 아카이브</title>
+<style>
+  /* ── 라이트 팔레트 (완전 정의) ───────────────────────────── */
+  :root{
+    --paper:#FFF8F2;
+    --surface:#FFFFFF;
+    --surface-sunk:#F6EDE4;
+    --ink:#241E19;
+    --ink-soft:#6B5F56;
+    --ink-faint:#9C8F84;
+    --line:#E7DACC;
+    --line-strong:#D3C2B0;
+
+    --green:#2F6F4E;
+    --green-soft:#E4EFE8;
+    --on-green:#FFFFFF;
+    --wine:#93425E;
+    --wine-soft:#F6E6EC;
+    --malt:#9C6722;
+    --malt-soft:#F8ECDA;
+
+    --shadow:0 1px 2px rgba(58,40,26,.06), 0 12px 32px rgba(58,40,26,.10);
+    --shadow-lift:0 2px 4px rgba(58,40,26,.08), 0 18px 44px rgba(58,40,26,.16);
+
+    --serif:Georgia,"Times New Roman",ui-serif,serif;
+    --sans:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",
+           "Segoe UI",Roboto,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --paper:#15110E;
+      --surface:#221C17;
+      --surface-sunk:#1B1612;
+      --ink:#F2E9E0;
+      --ink-soft:#B3A498;
+      --ink-faint:#7D7066;
+      --line:#3A302A;
+      --line-strong:#4E4139;
+
+      --green:#6FBF93;
+      --green-soft:#1E3229;
+      --on-green:#10201A;
+      --wine:#DB90AC;
+      --wine-soft:#38222B;
+      --malt:#DFA75B;
+      --malt-soft:#38290F;
+
+      --shadow:0 1px 2px rgba(0,0,0,.5), 0 12px 32px rgba(0,0,0,.44);
+      --shadow-lift:0 2px 4px rgba(0,0,0,.55), 0 18px 44px rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#15110E;
+    --surface:#221C17;
+    --surface-sunk:#1B1612;
+    --ink:#F2E9E0;
+    --ink-soft:#B3A498;
+    --ink-faint:#7D7066;
+    --line:#3A302A;
+    --line-strong:#4E4139;
+
+    --green:#6FBF93;
+    --green-soft:#1E3229;
+    --on-green:#10201A;
+    --wine:#DB90AC;
+    --wine-soft:#38222B;
+    --malt:#DFA75B;
+    --malt-soft:#38290F;
+
+    --shadow:0 1px 2px rgba(0,0,0,.5), 0 12px 32px rgba(0,0,0,.44);
+    --shadow-lift:0 2px 4px rgba(0,0,0,.55), 0 18px 44px rgba(0,0,0,.5);
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--sans); line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1080px; margin:0 auto; padding:40px 24px 72px;
+        display:flex; flex-direction:column; gap:36px}
+
+  /* ── 헤더 ───────────────────────────── */
+  header{display:flex; flex-direction:column; gap:12px; max-width:62ch}
+  .eyebrow{
+    font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--green); font-weight:700;
+  }
+  h1{margin:0; font-size:clamp(26px,3.4vw,36px); line-height:1.2; text-wrap:balance; letter-spacing:-.01em}
+  .lede{margin:0; color:var(--ink-soft); font-size:16px}
+
+  /* ── 레이아웃 ───────────────────────────── */
+  .stage{display:grid; grid-template-columns:minmax(0,340px) minmax(0,1fr); gap:40px; align-items:start}
+  @media (max-width:820px){ .stage{grid-template-columns:1fr} }
+
+  /* ── 폰 프레임 ───────────────────────────── */
+  .phone{
+    background:var(--surface); border:1px solid var(--line-strong);
+    border-radius:30px; padding:10px; box-shadow:var(--shadow-lift);
+    position:sticky; top:24px;
+  }
+  @media (max-width:820px){ .phone{position:static} }
+  .screen{
+    background:var(--paper); border-radius:22px; overflow:hidden;
+    height:600px; display:flex; flex-direction:column;
+  }
+  .bar{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:14px 18px 10px; border-bottom:1px solid var(--line);
+  }
+  .bar-title{font-size:13px; font-weight:700; color:var(--ink-soft)}
+  .taps{
+    font-family:var(--serif); font-variant-numeric:tabular-nums;
+    font-size:12px; color:var(--ink-soft);
+    background:var(--surface-sunk); border:1px solid var(--line);
+    border-radius:999px; padding:3px 10px;
+  }
+  .taps b{color:var(--ink); font-size:14px}
+  .body{flex:1; overflow-y:auto; padding:22px 18px 18px; display:flex; flex-direction:column; gap:18px}
+
+  .dots{display:flex; gap:6px; padding:0 18px 14px}
+  .dot{height:3px; flex:1; border-radius:2px; background:var(--line)}
+  .dot.on{background:var(--green)}
+
+  .q{margin:0; font-size:23px; line-height:1.35; text-wrap:balance; letter-spacing:-.01em}
+  .q-sub{margin:0; color:var(--ink-faint); font-size:13px}
+
+  .opts{display:flex; flex-direction:column; gap:10px; margin-top:auto}
+  .opt{
+    font:inherit; font-size:16px; text-align:left; cursor:pointer;
+    background:var(--surface); color:var(--ink);
+    border:1.5px solid var(--line); border-radius:14px;
+    padding:16px 18px; transition:transform .12s ease, border-color .12s ease, background .12s ease;
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+  }
+  .opt:hover{border-color:var(--line-strong)}
+  .opt:active{transform:scale(.985)}
+  .opt:focus-visible{outline:2.5px solid var(--green); outline-offset:2px}
+  .opt .tag{font-family:var(--serif); font-size:13px; color:var(--ink-faint)}
+  .opt.sel{border-color:var(--accent,var(--green)); background:var(--accent-soft,var(--green-soft))}
+  .opt.sel .tag{color:var(--accent,var(--green)); font-weight:700}
+
+  .pick{display:flex; flex-direction:column; gap:12px; margin-top:auto}
+  .pick .opt{padding:22px 18px; font-size:18px; font-weight:600}
+
+  /* ── 결과 ───────────────────────────── */
+  .code{
+    font-family:var(--serif); font-size:52px; letter-spacing:.14em;
+    color:var(--accent,var(--green)); margin:0; line-height:1;
+  }
+  .type-name{margin:0; font-size:20px; font-weight:700}
+  .type-desc{margin:0; color:var(--ink-soft); font-size:15px}
+  .axes{display:flex; flex-direction:column; gap:1px; background:var(--line);
+        border:1px solid var(--line); border-radius:12px; overflow:hidden}
+  .axis{display:grid; grid-template-columns:26px 1fr auto; gap:12px; align-items:center;
+        background:var(--paper); padding:11px 14px; font-size:14px}
+  .axis .ltr{font-family:var(--serif); font-size:19px; color:var(--accent,var(--green)); font-weight:700}
+  .axis .nm{color:var(--ink-soft); font-size:13px}
+  .axis .val{font-weight:600}
+
+  .note{
+    background:var(--surface-sunk); border:1px solid var(--line);
+    border-radius:12px; padding:14px; font-size:13px; color:var(--ink-soft); margin:0;
+  }
+  .pending{
+    border:1.5px dashed var(--line-strong); border-radius:14px;
+    padding:20px; text-align:center; display:flex; flex-direction:column; gap:8px;
+  }
+  .pending .slots{font-family:var(--serif); font-size:44px; letter-spacing:.2em; color:var(--ink-faint)}
+
+  .btn{
+    font:inherit; font-size:15px; font-weight:600; cursor:pointer;
+    background:var(--green); color:var(--on-green); border:none; border-radius:12px; padding:14px;
+    transition:filter .12s ease;
+  }
+  .btn:hover{filter:brightness(1.06)}
+  .btn:focus-visible{outline:2.5px solid var(--ink); outline-offset:2px}
+  .btn.ghost{background:transparent; color:var(--ink-soft); border:1.5px solid var(--line)}
+
+  /* ── 우측 패널 ───────────────────────────── */
+  .panel{display:flex; flex-direction:column; gap:26px}
+  .card{background:var(--surface); border:1px solid var(--line); border-radius:16px;
+        padding:22px; box-shadow:var(--shadow); display:flex; flex-direction:column; gap:12px}
+  .card h2{margin:0; font-size:17px; letter-spacing:-.01em}
+  .card h3{margin:0; font-size:13px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint)}
+  .card p{margin:0; font-size:14.5px; color:var(--ink-soft)}
+  ul{margin:0; padding-left:19px; display:flex; flex-direction:column; gap:7px;
+     font-size:14.5px; color:var(--ink-soft)}
+  li strong{color:var(--ink)}
+  .verdict{display:flex; gap:10px; align-items:baseline; padding:12px 14px;
+           border-radius:10px; background:var(--green-soft); border:1px solid var(--green);
+           font-size:14px; color:var(--ink)}
+  .verdict b{color:var(--green)}
+  .q-open{border-left:3px solid var(--malt); padding-left:14px}
+  .q-open b{color:var(--malt)}
+  .controls{display:flex; gap:8px; flex-wrap:wrap}
+  .controls .btn{flex:1; min-width:130px; padding:11px}
+  table{width:100%; border-collapse:collapse; font-size:13.5px}
+  .scroll{overflow-x:auto}
+  th,td{text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); white-space:nowrap}
+  th{color:var(--ink-faint); font-weight:600; font-size:11.5px; letter-spacing:.08em; text-transform:uppercase}
+  td.c{font-family:var(--serif); color:var(--green); font-weight:700}
+  @media (prefers-reduced-motion:reduce){ *{transition:none!important; animation:none!important} }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">F2 프로토타입 · 테이스트 아카이브</div>
+    <h1>취향 입력이 정말 몇 번의 탭으로 끝나는가</h1>
+    <p class="lede">
+      PRD F2는 “기본 경로에서 탭 5회 이내, 슬라이더 없음, 일상어만”을 요구합니다.
+      문서로는 판정할 수 없어서 실제로 눌러보는 프로토타입으로 만들었습니다.
+      오른쪽 위 카운터가 탭 수를 셉니다. <strong>2026-08-13 검증 반영</strong> — 가운데 선택지를
+      “보통이었어요”에서 <strong>“잘 모르겠어요”</strong>로 바꿨습니다.
+    </p>
+  </header>
+
+  <div class="stage">
+    <!-- ── 폰 ── -->
+    <div class="phone">
+      <div class="screen">
+        <div class="bar">
+          <span class="bar-title" id="barTitle">기록하기</span>
+          <span class="taps">탭 <b id="tapCount">0</b></span>
+        </div>
+        <div class="dots" id="dots"></div>
+        <div class="body" id="body"></div>
+      </div>
+    </div>
+
+    <!-- ── 패널 ── -->
+    <div class="panel">
+      <div class="card">
+        <h3>무엇을 판단해야 하나</h3>
+        <ul>
+          <li><strong>탭 수</strong> — 주종 1회 + 질문 4회 = 5회. PRD 상한과 정확히 같습니다. 이름·사진까지 넣으면 초과합니다.</li>
+          <li><strong>선택지 문구</strong> — “탄닌 4.5” 대신 “떫었어요”. 입문자가 망설임 없이 고를 수 있는지가 전부입니다.</li>
+          <li><strong>가운데 선택지</strong> — <em>“잘 모르겠어요”</em>로 확정했습니다. 입문자가 가운데를 고르는 실제 이유는 판단이 안 서는 것이지 “중간이라고 판단”한 게 아닙니다. 모른다고 답할 수 있어야 부담이 사라집니다.</li>
+          <li><strong>유형 결과</strong> — 자랑하고 싶은 화면인지. 아니라면 F4 공유 카드의 동력이 사라집니다.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>설계상 반드시 지킨 것</h3>
+        <div class="verdict">
+          <b>유형은 한 잔으로 나오지 않는다</b>
+          <span>한 번의 기록은 데이터 한 점일 뿐입니다. 유형은 여러 기록에서 <em>높게 평가한 것</em>의 경향으로 계산됩니다 — 그래서 프로토타입도 “12개 기록 후”를 시뮬레이션합니다.</span>
+        </div>
+        <p>
+          축 하나라도 선호를 판정할 수 없으면 <strong>유형을 내지 않습니다.</strong>
+          기록 3개로 “당신은 ○○형”이라 단정했다가 사용자가 “아닌데?”라고 느끼면
+          그 순간부터 앱의 모든 판단이 의심받습니다. ‘판단 유보’ 상태를 눌러 확인해 보세요.
+        </p>
+        <div class="controls">
+          <button class="btn ghost" id="btnPending">판단 유보 상태 보기</button>
+          <button class="btn ghost" id="btnRestart">처음부터</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>4축 → 16유형 코드</h3>
+        <div class="scroll">
+          <table>
+            <thead><tr><th>축</th><th>한쪽</th><th>반대쪽</th></tr></thead>
+            <tbody>
+              <tr><td>Sweetness</td><td><span class="c">S</span> 달콤</td><td><span class="c">D</span> 드라이</td></tr>
+              <tr><td>Body</td><td><span class="c">F</span> 묵직</td><td><span class="c">L</span> 가벼움</td></tr>
+              <tr><td>Intensity</td><td><span class="c">R</span> 진함</td><td><span class="c">M</span> 은은함</td></tr>
+              <tr><td>Aftertaste</td><td><span class="c">E</span> 긴 여운</td><td><span class="c">Q</span> 산뜻</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>축 순서는 고정입니다. 코드 글자를 축으로 되짚을 수 있어야 사용자가 자기 유형을 납득합니다.</p>
+      </div>
+
+      <div class="card">
+        <h3>이 프로토타입으로 답해야 할 열린 질문</h3>
+        <ul>
+          <li class="q-open"><b>축이 4개여야 하나</b> — 3개로 줄이면 탭이 하나 줄지만 유형이 8개가 되어 변별력이 떨어집니다.</li>
+          <li class="q-open"><b>Unsure가 많으면 유형이 늦게 나온다</b> — 결함이 아니라 정직함입니다. 다만 UI는 “대비가 부족함”과 “모르겠다고 답함”을 구분해 안내해야 합니다.</li>
+          <li class="q-open"><b>짧은 이름의 2축 선택</b> — 지금은 Body×Intensity입니다. 입문자가 가장 확신 있게 답하는 축이 무엇인지 이 프로토타입으로 확인해야 합니다.</li>
+          <li class="q-open" style="border-color:var(--green)"><b style="color:var(--green)">확정</b> — 영문 4글자 코드, 가운데 선택지는 “잘 모르겠어요”, 선택지 문구 현행 유지.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const AXES = [
+    { key:'sweet', name:'Sweetness',
+      q:{wine:'달았나요?', whisky:'달큰했나요?'},
+      opts:[ {t:'드라이했어요', l:'D'}, {t:'잘 모르겠어요', l:'?'}, {t:'달았어요', l:'S'} ] },
+    { key:'body', name:'Body',
+      q:{wine:'묵직했나요?', whisky:'묵직했나요?'},
+      opts:[ {t:'가벼웠어요', l:'L'}, {t:'잘 모르겠어요', l:'?'}, {t:'묵직했어요', l:'F'} ] },
+    { key:'intensity', name:'Intensity',
+      q:{wine:'향이 진했나요?', whisky:'향이 강했나요?'},
+      opts:[ {t:'은은했어요', l:'M'}, {t:'잘 모르겠어요', l:'?'}, {t:'진했어요', l:'R'} ] },
+    { key:'after', name:'Aftertaste',
+      q:{wine:'여운이 길었나요?', whisky:'여운이 길었나요?'},
+      opts:[ {t:'금방 사라졌어요', l:'Q'}, {t:'잘 모르겠어요', l:'?'}, {t:'오래 남았어요', l:'E'} ] }
+  ];
+  const AXIS_LABEL = {
+    S:'달콤한 쪽', D:'드라이한 쪽', F:'묵직한 쪽', L:'가벼운 쪽',
+    R:'진한 쪽', M:'은은한 쪽', E:'여운이 긴 쪽', Q:'산뜻한 쪽'
+  };
+
+  const body=document.getElementById('body'), dots=document.getElementById('dots'),
+        barTitle=document.getElementById('barTitle'), tapEl=document.getElementById('tapCount');
+
+  let taps=0, drink=null, step=0, answers={}, mode='flow';
+
+  const bump=()=>{ taps++; tapEl.textContent=taps; };
+  const accent=()=> drink==='wine'
+    ? {a:'var(--wine)', s:'var(--wine-soft)'} : {a:'var(--malt)', s:'var(--malt-soft)'};
+
+  function setAccent(el){
+    if(!drink) return;
+    const {a,s}=accent(); el.style.setProperty('--accent',a); el.style.setProperty('--accent-soft',s);
+  }
+
+  function renderDots(total,on){
+    dots.innerHTML='';
+    for(let i=0;i<total;i++){
+      const d=document.createElement('div');
+      d.className='dot'+(i<on?' on':''); dots.appendChild(d);
+    }
+  }
+
+  function pickDrink(){
+    mode='flow'; barTitle.textContent='기록하기'; renderDots(5,0);
+    body.innerHTML='';
+    body.insertAdjacentHTML('beforeend',
+      '<p class="q">무엇을 마셨나요?</p><p class="q-sub">기록은 여기서 시작합니다.</p>');
+    const wrap=document.createElement('div'); wrap.className='pick';
+    [['wine','와인','#93425E'],['whisky','위스키','#9C6722']].forEach(([k,label])=>{
+      const b=document.createElement('button');
+      b.className='opt'; b.type='button';
+      b.innerHTML='<span>'+label+'</span><span class="tag">→</span>';
+      b.addEventListener('click',()=>{ bump(); drink=k; step=0; answers={}; question(); });
+      wrap.appendChild(b);
+    });
+    body.appendChild(wrap);
+  }
+
+  function question(){
+    const ax=AXES[step];
+    barTitle.textContent = (drink==='wine'?'와인':'위스키')+' · '+(step+1)+'/4';
+    renderDots(5, step+1);
+    body.innerHTML='';
+    body.insertAdjacentHTML('beforeend',
+      '<p class="q">'+ax.q[drink]+'</p><p class="q-sub">'+ax.name+' · 느낀 대로 고르면 됩니다</p>');
+    const wrap=document.createElement('div'); wrap.className='opts';
+    ax.opts.forEach(o=>{
+      const b=document.createElement('button');
+      b.className='opt'; b.type='button'; setAccent(b);
+      b.innerHTML='<span>'+o.t+'</span><span class="tag">'+o.l+'</span>';
+      b.addEventListener('click',()=>{
+        bump(); answers[ax.key]=o.l;
+        b.classList.add('sel');
+        setTimeout(()=>{ step++; step<AXES.length ? question() : saved(); }, 160);
+      });
+      wrap.appendChild(b);
+    });
+    body.appendChild(wrap);
+  }
+
+  function saved(){
+    renderDots(5,5); barTitle.textContent='저장됨';
+    const answered = Object.values(answers).filter(l=>l!=='?').length;
+    body.innerHTML=
+      '<p class="q">기록했습니다.</p>'+
+      '<p class="q-sub">탭 '+taps+'번으로 한 잔이 남았습니다.</p>'+
+      '<p class="note">이 한 번의 기록만으로는 유형이 나오지 않습니다. 유형은 여러 기록에서 '+
+      '<strong>높게 평가한 것</strong>의 경향으로 계산됩니다. 아래에서 기록이 쌓인 뒤를 확인해 보세요.'+
+      (answered<4 ? '<br><br>이번 기록에서 ‘잘 모르겠어요’로 답한 축이 '+(4-answered)+'개 있습니다. '+
+        '모른다고 답한 축은 <strong>그 기록에 한해 판정에서 제외</strong>됩니다 — 지각하지 못한 것을 '+
+        '근거로 취향을 단정하지 않기 위해서입니다.' : '')+'</p>';
+    const wrap=document.createElement('div'); wrap.className='opts';
+    const b1=document.createElement('button');
+    b1.className='btn'; b1.type='button'; b1.textContent='기록 12개 쌓인 뒤 보기';
+    b1.addEventListener('click',()=>{ bump(); result(); });
+    const b2=document.createElement('button');
+    b2.className='btn ghost'; b2.type='button'; b2.textContent='한 잔 더 기록하기';
+    b2.addEventListener('click',()=>{ bump(); pickDrink(); });
+    wrap.appendChild(b1); wrap.appendChild(b2); body.appendChild(wrap);
+  }
+
+  function result(){
+    mode='result'; barTitle.textContent='내 취향'; renderDots(5,5);
+    // 이 화면은 12개 기록의 선호 판정 결과를 시뮬레이션한 것이다.
+    const code = drink==='wine' ? 'DFRE' : 'DFRQ';
+    const letters = code.split('');
+    const names = ['Sweetness','Body','Intensity','Aftertaste'];
+    const shortName = (letters[1]==='F'?'묵직한':'가벼운')+' '+(letters[2]==='R'?'진한':'은은한')+' 취향';
+    const desc = (letters[0]==='D'?'드라이':'달콤')+'하고 '+(letters[1]==='F'?'묵직':'가벼우')+'며, '+
+                 (letters[2]==='R'?'진한':'은은한')+' 향에 '+
+                 (letters[3]==='E'?'여운이 깁니다.':'산뜻하게 끝납니다.');
+
+    body.innerHTML='';
+    const head=document.createElement('div');
+    head.style.cssText='display:flex;flex-direction:column;gap:8px'; setAccent(head);
+    head.innerHTML=
+      '<p class="q-sub">'+(drink==='wine'?'와인':'위스키')+' 기록 12개 기준</p>'+
+      '<p class="code">'+code+'</p>'+
+      '<p class="type-name">'+shortName+'</p>'+
+      '<p class="type-desc">'+desc+'</p>';
+    body.appendChild(head);
+
+    const ax=document.createElement('div'); ax.className='axes'; setAccent(ax);
+    letters.forEach((l,i)=>{
+      const row=document.createElement('div'); row.className='axis';
+      row.innerHTML='<span class="ltr">'+l+'</span>'+
+        '<span class="nm">'+names[i]+'</span>'+
+        '<span class="val">'+AXIS_LABEL[l]+'</span>';
+      ax.appendChild(row);
+    });
+    body.appendChild(ax);
+
+    body.insertAdjacentHTML('beforeend',
+      '<p class="note">글자마다 어느 축인지 펼쳐 보여줍니다. 자기 유형을 납득해야 공유합니다.<br><br>'+
+      '<strong>통합 유형</strong>(와인+위스키를 합친 하나)은 Pro입니다. 두 주종을 다 마시는 사람에게만 '+
+      '의미가 생기므로, 과금이 제품의 최대 차별점과 같은 곳을 가리킵니다.</p>');
+
+    const wrap=document.createElement('div'); wrap.className='opts';
+    const b=document.createElement('button');
+    b.className='btn'; b.type='button'; b.textContent='처음부터 다시';
+    b.addEventListener('click',()=>{ taps=0; tapEl.textContent=0; drink=null; pickDrink(); });
+    wrap.appendChild(b); body.appendChild(wrap);
+  }
+
+  function pending(){
+    mode='pending'; barTitle.textContent='내 취향'; renderDots(5,2);
+    body.innerHTML=
+      '<p class="q-sub">와인 기록 3개 기준</p>'+
+      '<div class="pending"><div class="slots">? ? ? ?</div>'+
+      '<p class="type-name" style="font-size:16px">아직 유형을 말하기 이릅니다</p>'+
+      '<p class="type-desc" style="font-size:14px">묵직한 쪽을 좋아하시는 건 보이는데, 나머지 축은 '+
+      '한쪽 경험만 있어 비교할 수가 없어요.</p></div>'+
+      '<p class="note"><strong>서로 다른 스타일 4개</strong>를 더 기록하면 유형이 나옵니다. '+
+      '개수가 아니라 <strong>대비</strong>가 기준입니다 — 같은 스타일만 30개 마셔도 유형은 나오지 않습니다.</p>'+
+      '<p class="note">이 화면이 이 제품에서 가장 중요한 정직함입니다. 근거 없이 유형을 단정하는 순간 '+
+      '앱의 모든 판단이 의심받습니다.</p>';
+    const wrap=document.createElement('div'); wrap.className='opts';
+    const b=document.createElement('button');
+    b.className='btn ghost'; b.type='button'; b.textContent='입력 흐름으로 돌아가기';
+    b.addEventListener('click',()=>{ taps=0; tapEl.textContent=0; drink=null; pickDrink(); });
+    wrap.appendChild(b); body.appendChild(wrap);
+  }
+
+  document.getElementById('btnPending').addEventListener('click',pending);
+  document.getElementById('btnRestart').addEventListener('click',()=>{
+    taps=0; tapEl.textContent=0; drink=null; pickDrink();
+  });
+
+  pickDrink();
+})();
+</script>

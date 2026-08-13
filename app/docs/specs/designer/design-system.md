@@ -30,7 +30,7 @@
 >
 > | 필요 | 용도 |
 > | --- | --- |
-> | `DDProbeQuestion` | Probe 1문항 — 질문 + 3단계 선택지. 탭 1회로 응답 |
+> | `DDProbeQuestion` | Probe 1문항 — 질문 + 3선택지(낮음/모르겠음/높음). 탭 1회로 응답 |
 > | `DDProbeSequence` | Probe 3~5개를 순차 제시. 진행도 표시 |
 > | `DDTasteSentence` | 취향 요약 문장 표시(F3). 차트가 아니라 문장이 주인공 |
 > | `DDProfileProgress` | 임계치까지 남은 개수 안내 |
