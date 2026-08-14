@@ -68,8 +68,7 @@ fun RecordFlow(modifier: Modifier = Modifier) {
             Step.Saved ->
                 RecordSaved(
                     taps = state.taps,
-                    answered = state.taste.directionalCount,
-                    unsure = state.taste.answers.size - state.taste.directionalCount,
+                    leaning = state.taste.leaningCount,
                     onRestart = {
                         viewModel.startOver()
                         step = Step.PickDrink
@@ -110,8 +109,7 @@ private fun DrinkTypePicker(
 @Composable
 private fun RecordSaved(
     taps: Int,
-    answered: Int,
-    unsure: Int,
+    leaning: Int,
     onRestart: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -122,7 +120,8 @@ private fun RecordSaved(
         Text("기록했습니다.", style = MaterialTheme.typography.headlineSmall)
         Text("취향 입력은 탭 ${taps}번으로 끝났습니다.", style = MaterialTheme.typography.bodyLarge)
         Text(
-            text = "방향을 답한 축 ${answered}개, 모르겠다고 답한 축 ${unsure}개.",
+            // '보통'을 뺀 개수를 말하되 그것이 버려졌다는 인상을 주지 않는다 — 판정에는 다 쓰인다.
+            text = "뚜렷한 인상을 남긴 축 ${leaning}개.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

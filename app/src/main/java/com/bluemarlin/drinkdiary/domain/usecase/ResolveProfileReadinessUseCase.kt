@@ -9,22 +9,14 @@ class ResolveProfileReadinessUseCase {
         val shared = profile.preferences.filter { it.trait.shared }
 
         val type =
-            TasteType.from(
-                shared.mapNotNull { pref -> pref.direction?.let { pref.trait to it } }.toMap(),
-            )
+            TasteType.from(shared.associate { it.trait to it.preference })
         if (type != null) return ProfileReadiness.Ready(type)
 
-        // 유형은 shared 축으로만 성립하므로 진행도도 shared 축으로 판단한다.
-        if (shared.none { it.resolved }) return ProfileReadiness.NotReady
-
-        val unresolved = shared.filterNot { it.resolved }
-        return ProfileReadiness.Partial(
-            unresolved = unresolved.map { it.trait },
-            // 지각하지 못해서 막힌 축과 경험이 부족해서 막힌 축은 사용자가 할 일이 다르다.
-            blockedByUnsure =
-                unresolved
-                    .filter { it.unsureSamples > it.highSamples + it.lowSamples }
-                    .map { it.trait },
+        // 표본이 가장 적은 축을 기준으로 남은 거리를 말한다. 기본 경로가 공통 축 4개를 매번
+        // 함께 묻기 때문에 이 값은 사실상 축 전체에 대한 답이다.
+        val fewest = shared.minOfOrNull { it.samples } ?: 0
+        return ProfileReadiness.NotReady(
+            recordsNeeded = (TasteThresholds.MIN_SAMPLES - fewest).coerceAtLeast(1),
         )
     }
 }

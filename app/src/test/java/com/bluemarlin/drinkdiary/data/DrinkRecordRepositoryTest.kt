@@ -69,7 +69,7 @@ class DrinkRecordRepositoryTest {
             val taste =
                 TasteInput()
                     .with(Trait.Body, TraitAnswer.High)
-                    .with(Trait.Sweetness, TraitAnswer.Unsure)
+                    .with(Trait.Sweetness, TraitAnswer.Mid)
                     .with(Trait.Tannin, TraitAnswer.Low)
             val id = saveId(wine(taste = taste))
 
@@ -79,7 +79,7 @@ class DrinkRecordRepositoryTest {
             assertEquals(2019, loaded.vintage)
             assertEquals(CollectionStatus.Repurchase, loaded.collectionStatus)
             assertEquals(TraitAnswer.High, loaded.taste[Trait.Body])
-            assertEquals(TraitAnswer.Unsure, loaded.taste[Trait.Sweetness])
+            assertEquals(TraitAnswer.Mid, loaded.taste[Trait.Sweetness])
             assertEquals(TraitAnswer.Low, loaded.taste[Trait.Tannin])
         }
 

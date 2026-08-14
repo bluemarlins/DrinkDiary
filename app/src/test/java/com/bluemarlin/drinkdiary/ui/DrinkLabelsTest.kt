@@ -1,5 +1,6 @@
 package com.bluemarlin.drinkdiary.ui
 
+import com.bluemarlin.drinkdiary.domain.model.TastePreference
 import com.bluemarlin.drinkdiary.domain.model.Trait
 import com.bluemarlin.drinkdiary.domain.model.TraitAnswer
 import org.junit.Assert.assertEquals
@@ -11,21 +12,29 @@ import java.util.TimeZone
 
 class DrinkLabelsTest {
     @Test
-    fun `pole reflects the winning side only`() {
-        assertEquals("달콤", DrinkLabels.pole(Trait.Sweetness, TraitAnswer.High))
-        assertEquals("드라이", DrinkLabels.pole(Trait.Sweetness, TraitAnswer.Low))
-        assertEquals("스모키함", DrinkLabels.pole(Trait.Peat, TraitAnswer.High))
+    fun `a judged preference reads as the winning side`() {
+        assertEquals("달콤", DrinkLabels.preference(Trait.Sweetness, TastePreference.High))
+        assertEquals("드라이", DrinkLabels.preference(Trait.Sweetness, TastePreference.Low))
+        assertEquals("스모키함", DrinkLabels.preference(Trait.Peat, TastePreference.High))
     }
 
-    // Unsure는 방향이 아니다. 축의 어느 한쪽으로 표시되면 사용자가 답하지 않은 것을
-    // 답한 것으로 읽게 된다.
+    // '보통'은 축의 어느 쪽도 아니다. 한쪽으로 표시되면 사용자가 하지 않은 답을 한 것으로 만든다.
     @Test
-    fun `unsure never renders as a direction`() {
+    fun `mid never renders as a direction`() {
         Trait.entries.forEach { trait ->
-            val unsure = DrinkLabels.answer(trait, TraitAnswer.Unsure)
-            assertEquals("잘 모르겠어요", unsure)
-            assertNotEquals(DrinkLabels.pole(trait, TraitAnswer.High), unsure)
-            assertNotEquals(DrinkLabels.pole(trait, TraitAnswer.Low), unsure)
+            val mid = DrinkLabels.answer(trait, TraitAnswer.Mid)
+            assertEquals("보통", mid)
+            assertNotEquals(DrinkLabels.answer(trait, TraitAnswer.High), mid)
+            assertNotEquals(DrinkLabels.answer(trait, TraitAnswer.Low), mid)
+        }
+    }
+
+    @Test
+    fun `neutral preference never borrows a pole label`() {
+        Trait.entries.forEach { trait ->
+            val neutral = DrinkLabels.preference(trait, TastePreference.Neutral)
+            assertNotEquals(DrinkLabels.preference(trait, TastePreference.High), neutral)
+            assertNotEquals(DrinkLabels.preference(trait, TastePreference.Low), neutral)
         }
     }
 

@@ -4,6 +4,7 @@ import com.bluemarlin.drinkdiary.domain.model.CollectionStatus
 import com.bluemarlin.drinkdiary.domain.model.DrinkRecord
 import com.bluemarlin.drinkdiary.domain.model.DrinkType
 import com.bluemarlin.drinkdiary.domain.model.ServingStyle
+import com.bluemarlin.drinkdiary.domain.model.TastePreference
 import com.bluemarlin.drinkdiary.domain.model.Trait
 import com.bluemarlin.drinkdiary.domain.model.TraitAnswer
 import java.time.Instant
@@ -47,11 +48,29 @@ object DrinkLabels {
             Trait.AlcoholBurn -> "알코올감"
         }
 
-    // 축의 한쪽 끝을 가리키는 말. High/Low에만 의미가 있다.
-    fun pole(
+    // 판정된 선호를 가리키는 말. 중립은 방향이 없으므로 여기서 다루지 않는다.
+    fun preference(
+        trait: Trait,
+        preference: TastePreference,
+    ): String =
+        when (preference) {
+            TastePreference.High -> poles(trait).second
+            TastePreference.Low -> poles(trait).first
+            TastePreference.Neutral -> "가리지 않음"
+        }
+
+    // 기록에 남은 답. '보통'은 축의 어느 쪽도 아니다.
+    fun answer(
         trait: Trait,
         answer: TraitAnswer,
-    ): String {
+    ): String =
+        when (answer) {
+            TraitAnswer.High -> poles(trait).second
+            TraitAnswer.Low -> poles(trait).first
+            TraitAnswer.Mid -> "보통"
+        }
+
+    private fun poles(trait: Trait): Pair<String, String> {
         val (low, high) =
             when (trait) {
                 Trait.Sweetness -> "드라이" to "달콤"
@@ -63,14 +82,8 @@ object DrinkLabels {
                 Trait.Peat -> "스모키하지 않음" to "스모키함"
                 Trait.AlcoholBurn -> "부드러움" to "화끈함"
             }
-        return if (answer == TraitAnswer.High) high else low
+        return low to high
     }
-
-    // 기록에 남은 답. Unsure는 방향이 아니므로 축 이름으로 되돌려 말한다.
-    fun answer(
-        trait: Trait,
-        answer: TraitAnswer,
-    ): String = if (answer == TraitAnswer.Unsure) "잘 모르겠어요" else pole(trait, answer)
 
     // 주종 · 빈티지/음용방법 · 날짜. 없는 값은 자리를 차지하지 않는다.
     fun subtitle(record: DrinkRecord): String =

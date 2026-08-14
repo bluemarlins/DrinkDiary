@@ -8,6 +8,7 @@ import com.bluemarlin.drinkdiary.domain.model.TasteProfile
 import com.bluemarlin.drinkdiary.domain.model.TypeScope
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveTasteProfileUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ResolveProfileReadinessUseCase
+import com.bluemarlin.drinkdiary.domain.usecase.TasteThresholds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -19,7 +20,9 @@ import kotlinx.coroutines.flow.stateIn
 data class ProfileUiState(
     val scope: TypeScope = TypeScope.Wine,
     val profile: TasteProfile? = null,
-    val readiness: ProfileReadiness = ProfileReadiness.NotReady,
+    // 첫 프레임의 기본값. 실제 값은 UseCase가 계산해 곧바로 덮어쓴다.
+    val readiness: ProfileReadiness =
+        ProfileReadiness.NotReady(recordsNeeded = TasteThresholds.MIN_SAMPLES),
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)

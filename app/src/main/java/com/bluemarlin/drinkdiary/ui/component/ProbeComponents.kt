@@ -43,10 +43,12 @@ fun DDProbeQuestion(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+            // 가운데는 "보통이었어요"다(2026-08-14). 판단이 안 서는 사람에게 여전히 안전한
+            // 자리를 주면서, 그 답을 판정에서 버리지 않는다 — prd.md F2.
             val options =
                 listOf(
                     TraitAnswer.Low to copy.lowLabel,
-                    TraitAnswer.Unsure to "잘 모르겠어요",
+                    TraitAnswer.Mid to "보통이었어요",
                     TraitAnswer.High to copy.highLabel,
                 )
 

@@ -1,44 +1,98 @@
 package com.bluemarlin.drinkdiary.ui.profile
 
+import com.bluemarlin.drinkdiary.domain.model.TastePreference
 import com.bluemarlin.drinkdiary.domain.model.TasteType
-import com.bluemarlin.drinkdiary.domain.model.TraitAnswer
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class TasteTypeCopyTest {
-    private fun type(
-        sweetness: TraitAnswer,
-        body: TraitAnswer,
-        intensity: TraitAnswer,
-        aftertaste: TraitAnswer,
-    ) = TasteType(sweetness, body, intensity, aftertaste)
+    private val H = TastePreference.High
+    private val L = TastePreference.Low
+    private val N = TastePreference.Neutral
 
-    // taste-type-naming.md 3절의 예시 3개를 그대로 재현한다 — 문구가 문서와 어긋나면
-    // 사용자에게 확정된 규칙과 다른 것이 노출된다.
     @Test
-    fun `DFRE matches the spec example`() {
-        val dfre = type(TraitAnswer.Low, TraitAnswer.High, TraitAnswer.High, TraitAnswer.High)
+    fun `DFRE reads as a full sentence`() {
+        val type = TasteType(L, H, H, H)
 
-        assertEquals("DFRE", dfre.code)
-        assertEquals("묵직한 진한 취향", TasteTypeCopy.shortName(dfre))
-        assertEquals("드라이하고 묵직하며, 진한 향에 여운이 깁니다", TasteTypeCopy.sentence(dfre))
+        assertEquals("DFRE", type.code)
+        assertEquals("드라이한 묵직한 취향", TasteTypeCopy.shortName(type))
+        assertEquals("드라이하고 묵직하며 향이 진하고 여운이 깁니다.", TasteTypeCopy.sentence(type))
     }
 
     @Test
-    fun `SLMQ matches the spec example`() {
-        val slmq = type(TraitAnswer.High, TraitAnswer.Low, TraitAnswer.Low, TraitAnswer.Low)
+    fun `SLMQ reads as a full sentence`() {
+        val type = TasteType(H, L, L, L)
 
-        assertEquals("SLMQ", slmq.code)
-        assertEquals("가벼운 은은한 취향", TasteTypeCopy.shortName(slmq))
-        assertEquals("달콤하고 가벼우며, 은은한 향에 산뜻하게 끝납니다", TasteTypeCopy.sentence(slmq))
+        assertEquals("SLMQ", type.code)
+        assertEquals("달콤한 가벼운 취향", TasteTypeCopy.shortName(type))
+        assertEquals("달콤하고 가벼우며 향이 은은하고 산뜻하게 끝납니다.", TasteTypeCopy.sentence(type))
+    }
+
+    // 중립 축이 있어도 문장이 끝나야 한다. 마지막 방향 축이 종결형으로 닫히는지 본다.
+    @Test
+    fun `a neutral axis is named at the end, not treated as missing`() {
+        val type = TasteType(L, H, N, H)
+
+        assertEquals("DFXE", type.code)
+        assertEquals("드라이한 묵직한 취향", TasteTypeCopy.shortName(type))
+        assertEquals(
+            "드라이하고 묵직하며 여운이 깁니다. 향의 세기는 크게 가리지 않으세요.",
+            TasteTypeCopy.sentence(type),
+        )
     }
 
     @Test
-    fun `DLRQ matches the spec example`() {
-        val dlrq = type(TraitAnswer.Low, TraitAnswer.Low, TraitAnswer.High, TraitAnswer.Low)
+    fun `a single direction still forms a sentence`() {
+        val type = TasteType(H, N, N, N)
 
-        assertEquals("DLRQ", dlrq.code)
-        assertEquals("가벼운 진한 취향", TasteTypeCopy.shortName(dlrq))
-        assertEquals("드라이하고 가벼우며, 진한 향에 산뜻하게 끝납니다", TasteTypeCopy.sentence(dlrq))
+        assertEquals("SXXX", type.code)
+        assertEquals("달콤한 취향", TasteTypeCopy.shortName(type))
+        assertEquals(
+            "달콤합니다. 무게감과 향의 세기와 여운은 크게 가리지 않으세요.",
+            TasteTypeCopy.sentence(type),
+        )
+    }
+
+    @Test
+    fun `all neutral is phrased as a preference, not an absence`() {
+        val type = TasteType(N, N, N, N)
+
+        assertEquals("XXXX", type.code)
+        assertEquals("고루 즐기는 취향", TasteTypeCopy.shortName(type))
+        assertEquals("어느 쪽에도 치우치지 않고 두루 즐기시네요.", TasteTypeCopy.sentence(type))
+    }
+
+    // 중립을 결핍처럼 말하지 않는다 — branding.md 4-5절.
+    @Test
+    fun `neutral copy never says the user lacks something`() {
+        val all = TastePreference.entries
+        val phrases =
+            all.flatMap { s ->
+                all.flatMap { b ->
+                    all.flatMap { i ->
+                        all.map { a -> TasteTypeCopy.sentence(TasteType(s, b, i, a)) }
+                    }
+                }
+            }
+
+        assertEquals(81, phrases.size)
+        phrases.forEach { phrase ->
+            assertFalse(phrase, phrase.contains("아직"))
+            assertFalse(phrase, phrase.contains("없"))
+            assertFalse(phrase, phrase.contains("부족"))
+            assertTrue(phrase, phrase.endsWith("."))
+        }
+    }
+
+    // 조사를 조립하는 이상 축 이름이 바뀌어도 "여운는"이 나오면 안 된다.
+    @Test
+    fun `korean particles agree with the preceding noun`() {
+        assertEquals("단맛은", Josa.topic("단맛"))
+        assertEquals("향의 세기는", Josa.topic("향의 세기"))
+        assertEquals("여운은", Josa.topic("여운"))
+        assertEquals("무게감과", Josa.and("무게감"))
+        assertEquals("향의 세기와", Josa.and("향의 세기"))
     }
 }

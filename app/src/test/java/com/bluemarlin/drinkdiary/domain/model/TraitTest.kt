@@ -1,8 +1,6 @@
 package com.bluemarlin.drinkdiary.domain.model
 
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class TraitTest {
@@ -17,20 +15,25 @@ class TraitTest {
         assertEquals(listOf(Trait.Peat, Trait.AlcoholBurn), whiskey.filterNot { it.shared })
     }
 
+    // 순서값은 상관 계산의 x축이다. 뒤집히면 모든 판정 방향이 뒤집힌다.
     @Test
-    fun `unsure is not a direction`() {
-        assertFalse(TraitAnswer.Unsure.isDirectional)
-        assertTrue(TraitAnswer.Low.isDirectional)
-        assertTrue(TraitAnswer.High.isDirectional)
+    fun `answer levels are ordered low to high`() {
+        assertEquals(0, TraitAnswer.Low.level)
+        assertEquals(1, TraitAnswer.Mid.level)
+        assertEquals(2, TraitAnswer.High.level)
     }
 
     @Test
-    fun `unsure answers are not counted as perceived`() {
+    fun `mid answers are not counted as leaning`() {
         val input =
             TasteInput()
                 .with(Trait.Body, TraitAnswer.High)
-                .with(Trait.Sweetness, TraitAnswer.Unsure)
+                .with(Trait.Sweetness, TraitAnswer.Mid)
                 .with(Trait.Intensity, TraitAnswer.Low)
-        assertEquals(2, input.directionalCount)
+
+        assertEquals(2, input.leaningCount)
+        // 세지 않는다고 버리는 것은 아니다 — 답 자체는 그대로 남아 판정에 쓰인다.
+        assertEquals(3, input.answers.size)
+        assertEquals(TraitAnswer.Mid, input[Trait.Sweetness])
     }
 }

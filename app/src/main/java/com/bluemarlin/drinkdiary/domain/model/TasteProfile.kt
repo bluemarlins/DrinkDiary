@@ -2,20 +2,19 @@ package com.bluemarlin.drinkdiary.domain.model
 
 data class TraitPreference(
     val trait: Trait,
-    // 판정된 선호 방향. 판정 불가면 null.
-    val direction: TraitAnswer?,
-    val highSamples: Int,
-    val lowSamples: Int,
-    val unsureSamples: Int,
+    // 판정 결과. null 은 "아직 판단할 표본이 없다"이며 Neutral("취향이 없다")과 다르다.
+    val preference: TastePreference?,
+    // 그 축에 답이 달린 기록 수.
+    val samples: Int,
+    // |상관|. 확신도를 그대로 보여줄 수 있게 남긴다 — 이전 이진 관문에는 없던 값이다.
+    val strength: Double,
+    // '보통'으로 답한 수. 압도적으로 크면 그 축은 입문자가 지각하지 못하는 축이라는 신호다
+    // (Unsure를 없애면서 잃은 진단을 이걸로 갈음한다 — prd.md F2).
+    val midSamples: Int,
 ) {
-    val resolved: Boolean get() = direction != null
+    val evaluated: Boolean get() = preference != null
 
-    // 그 축을 지각하지 못한 비율. 높으면 질문이나 축 자체를 의심해야 한다.
-    val unsureRatio: Double
-        get() {
-            val total = highSamples + lowSamples + unsureSamples
-            return if (total == 0) 0.0 else unsureSamples.toDouble() / total
-        }
+    val midRatio: Double get() = if (samples == 0) 0.0 else midSamples.toDouble() / samples
 }
 
 data class TasteProfile(
@@ -26,28 +25,21 @@ data class TasteProfile(
     val type: TasteType?
         get() =
             TasteType.from(
-                preferences
-                    .filter { it.trait.shared }
-                    .mapNotNull { p ->
-                        p.direction?.let { p.trait to it }
-                    }.toMap(),
+                preferences.filter { it.trait.shared }.associate { it.trait to it.preference },
             )
 
     fun preference(trait: Trait): TraitPreference? = preferences.firstOrNull { it.trait == trait }
 }
 
 sealed interface ProfileReadiness {
-    // 유형이 나왔다.
+    // 유형이 나왔다. 중립 축이 섞여 있어도 유형이다.
     data class Ready(
         val type: TasteType,
     ) : ProfileReadiness
 
-    // 일부 축은 판정됐으나 유형은 아직 성립하지 않는다.
-    data class Partial(
-        val unresolved: List<Trait>,
-        val blockedByUnsure: List<Trait>,
+    // 아직 판단할 표본이 없다. Partial 상태는 두지 않는다 — 기본 경로가 공통 축 4개를 매번
+    // 함께 묻기 때문에 축별 표본 수가 사실상 같고, "일부만 표본이 찬" 상태가 생기지 않는다.
+    data class NotReady(
+        val recordsNeeded: Int,
     ) : ProfileReadiness
-
-    // 판정된 축이 하나도 없다.
-    data object NotReady : ProfileReadiness
 }

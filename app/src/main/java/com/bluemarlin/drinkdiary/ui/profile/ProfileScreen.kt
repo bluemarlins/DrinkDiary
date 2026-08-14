@@ -54,8 +54,7 @@ fun ProfileScreen(
 
         // 고유 축은 확장 입력 경로로만 채워진다. 답이 하나도 없으면 아예 보여주지 않는다 —
         // 채울 방법이 없는 항목을 미완성으로 걸어두지 않는다.
-        val answeredSpecific =
-            specific.filter { it.highSamples + it.lowSamples + it.unsureSamples > 0 }
+        val answeredSpecific = specific.filter { it.samples > 0 }
         if (answeredSpecific.isNotEmpty()) {
             Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                 Text("추가로 기록한 축", style = MaterialTheme.typography.titleMedium)
@@ -102,7 +101,8 @@ private fun SummaryHeadline(
                 )
                 Text(TasteTypeCopy.shortName(readiness.type), style = MaterialTheme.typography.titleLarge)
                 Text(
-                    text = TasteTypeCopy.sentence(readiness.type) + ".",
+                    // 마침표는 조립 규칙이 이미 붙인다 — 중립 절이 뒤에 오면 위치가 달라진다.
+                    text = TasteTypeCopy.sentence(readiness.type),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -114,7 +114,7 @@ private fun SummaryHeadline(
             }
         }
 
-        else -> {
+        is ProfileReadiness.NotReady -> {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text("아직 취향을 판단하기엔 일러요", style = MaterialTheme.typography.headlineSmall)
                 Text(
@@ -122,7 +122,8 @@ private fun SummaryHeadline(
                         if (recordCount == 0) {
                             "첫 기록을 남기면 여기서 취향이 보이기 시작해요."
                         } else {
-                            "지금까지 ${recordCount}개를 기록했어요. 아래에서 축별로 얼마나 남았는지 볼 수 있어요."
+                            "지금까지 ${recordCount}개를 기록했어요. " +
+                                "${readiness.recordsNeeded}개만 더 남기면 유형이 나와요."
                         },
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -141,45 +142,34 @@ private fun TraitStatusRow(pref: TraitPreference) {
     ) {
         Text(DrinkLabels.trait(pref.trait), style = MaterialTheme.typography.bodyLarge)
 
-        when (val status = traitStatus(pref)) {
-            TraitStatus.Resolved -> {
+        when (traitStatus(pref)) {
+            TraitStatus.Resolved ->
                 AssistChip(
                     onClick = {},
-                    label = { Text(DrinkLabels.pole(pref.trait, pref.direction!!)) },
+                    label = { Text(DrinkLabels.preference(pref.trait, pref.preference!!)) },
                     colors =
                         AssistChipDefaults.assistChipColors(
                             containerColor = MaterialTheme.colorScheme.primaryContainer,
                             labelColor = MaterialTheme.colorScheme.onPrimaryContainer,
                         ),
                 )
-            }
 
-            TraitStatus.NeedsSamples -> {
+            // 결핍이 아니라 결론이다. "아직"이라고 말하지 않는다.
+            TraitStatus.Neutral ->
                 Text(
-                    text = "적어도 ${minimumRecordsNeeded(pref)}개는 더 필요해요",
+                    text = "크게 가리지 않으세요",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.End,
                 )
-            }
 
-            TraitStatus.NeedsClearerGap -> {
+            TraitStatus.NeedsRecords ->
                 Text(
-                    text = "판단 보류 — 아직 뚜렷하지 않아요",
+                    text = "${recordsNeeded(pref)}개 더 필요해요",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.End,
                 )
-            }
-
-            TraitStatus.MostlyUnsure -> {
-                Text(
-                    text = "아직 잘 느껴지지 않는 축이에요",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.End,
-                )
-            }
         }
     }
 }

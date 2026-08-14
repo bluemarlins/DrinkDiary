@@ -4,6 +4,7 @@ import com.bluemarlin.drinkdiary.domain.model.AppResult
 import com.bluemarlin.drinkdiary.domain.model.DrinkRecord
 import com.bluemarlin.drinkdiary.domain.model.DrinkType
 import com.bluemarlin.drinkdiary.domain.model.TasteInput
+import com.bluemarlin.drinkdiary.domain.model.TastePreference
 import com.bluemarlin.drinkdiary.domain.model.Trait
 import com.bluemarlin.drinkdiary.domain.model.TraitAnswer
 import com.bluemarlin.drinkdiary.domain.model.TypeScope
@@ -20,9 +21,9 @@ import org.junit.Test
 
 class ObserveTasteProfileUseCaseTest {
     private fun record(
-        type: DrinkType = DrinkType.Wine,
         answer: TraitAnswer?,
         rating: Double,
+        type: DrinkType = DrinkType.Wine,
         trait: Trait = Trait.Body,
     ): DrinkRecord =
         DrinkRecord(
@@ -38,63 +39,122 @@ class ObserveTasteProfileUseCaseTest {
         scope: TypeScope = TypeScope.Wine,
     ) = runBlocking { ObserveTasteProfileUseCase(FakeRepository(records)).invoke(scope).first() }
 
+    private fun bodyOf(records: List<DrinkRecord>) = profileOf(records).preference(Trait.Body)!!
+
     @Test
     fun `preference follows the better rated side, not the bigger one`() {
-        // Low가 5건으로 더 많지만 만족도는 High 쪽이 높다.
+        // Low가 6건으로 더 많지만 만족도는 High 쪽이 높다.
         val records =
-            List(3) { record(answer = TraitAnswer.High, rating = 4.5) } +
-                List(5) { record(answer = TraitAnswer.Low, rating = 2.0) }
+            List(3) { record(TraitAnswer.High, 4.5) } +
+                List(6) { record(TraitAnswer.Low, 2.0) }
 
-        val body = profileOf(records).preference(Trait.Body)!!
-        assertEquals(TraitAnswer.High, body.direction)
-        assertEquals(3, body.highSamples)
-        assertEquals(5, body.lowSamples)
+        assertEquals(TastePreference.High, bodyOf(records).preference)
+    }
+
+    // 이 방식으로 바꾼 이유 그 자체다. 구 알고리즘은 Mid 기록을 통째로 버렸다.
+    @Test
+    fun `mid answers are data, not holes`() {
+        val records =
+            List(3) { record(TraitAnswer.Low, 2.0) } +
+                List(3) { record(TraitAnswer.Mid, 3.5) } +
+                List(3) { record(TraitAnswer.High, 5.0) }
+
+        val body = bodyOf(records)
+        assertEquals(TastePreference.High, body.preference)
+        assertEquals(9, body.samples)
+        assertEquals(3, body.midSamples)
+    }
+
+    // Low/High가 각 3건씩이라 구 임계치(3+3)는 통과하지만, 표본 총합이 6 미만이면 판단하지 않는다.
+    @Test
+    fun `not evaluated below the sample floor`() {
+        val records = List(2) { record(TraitAnswer.High, 5.0) } + List(3) { record(TraitAnswer.Low, 1.0) }
+
+        val body = bodyOf(records)
+        assertNull(body.preference)
+        assertFalse(body.evaluated)
+        assertEquals(5, body.samples)
+    }
+
+    // 없는 취향을 지어내지 않는 것이 이 알고리즘의 존재 이유다.
+    @Test
+    fun `no relationship reports neutral, not a direction`() {
+        // 축 값과 만족도가 따로 논다.
+        val records =
+            listOf(
+                record(TraitAnswer.Low, 4.0),
+                record(TraitAnswer.High, 4.0),
+                record(TraitAnswer.Mid, 4.0),
+                record(TraitAnswer.Low, 3.0),
+                record(TraitAnswer.High, 3.0),
+                record(TraitAnswer.Mid, 3.0),
+            )
+
+        val body = bodyOf(records)
+        assertEquals(TastePreference.Neutral, body.preference)
+        assertTrue("중립은 판정된 상태다", body.evaluated)
+    }
+
+    // 중립과 표본 부족을 같은 것으로 다루면 "취향이 없다"와 "아직 모른다"가 구분되지 않는다.
+    @Test
+    fun `neutral and not-evaluated are different states`() {
+        val neutral =
+            bodyOf(
+                listOf(
+                    record(TraitAnswer.Low, 3.0),
+                    record(TraitAnswer.High, 3.0),
+                    record(TraitAnswer.Mid, 3.5),
+                    record(TraitAnswer.Low, 3.5),
+                    record(TraitAnswer.High, 3.0),
+                    record(TraitAnswer.Mid, 3.0),
+                ),
+            )
+        val tooFew = bodyOf(List(3) { record(TraitAnswer.High, 5.0) })
+
+        assertEquals(TastePreference.Neutral, neutral.preference)
+        assertNull(tooFew.preference)
     }
 
     @Test
-    fun `no direction when one side is below the sample floor`() {
-        val records =
-            List(2) { record(answer = TraitAnswer.High, rating = 5.0) } +
-                List(9) { record(answer = TraitAnswer.Low, rating = 1.0) }
+    fun `a trait everyone answered the same way cannot be judged`() {
+        // 전부 '보통'이면 그 축은 만족도를 가르지 않는다 — 분산이 0이라 상관이 정의되지 않는다.
+        val records = List(8) { record(TraitAnswer.Mid, (it % 5 + 1).toDouble()) }
 
-        assertNull(profileOf(records).preference(Trait.Body)!!.direction)
+        assertEquals(TastePreference.Neutral, bodyOf(records).preference)
     }
 
     @Test
-    fun `no direction when the rating gap is not meaningful`() {
-        val records =
-            List(4) { record(answer = TraitAnswer.High, rating = 3.6) } +
-                List(4) { record(answer = TraitAnswer.Low, rating = 3.4) }
+    fun `strength grows with a cleaner relationship`() {
+        val noisy =
+            listOf(
+                record(TraitAnswer.Low, 3.0),
+                record(TraitAnswer.Mid, 2.0),
+                record(TraitAnswer.High, 4.0),
+                record(TraitAnswer.Low, 2.0),
+                record(TraitAnswer.Mid, 4.0),
+                record(TraitAnswer.High, 3.0),
+            )
+        val clean =
+            listOf(
+                record(TraitAnswer.Low, 1.0),
+                record(TraitAnswer.Mid, 3.0),
+                record(TraitAnswer.High, 5.0),
+                record(TraitAnswer.Low, 1.0),
+                record(TraitAnswer.Mid, 3.0),
+                record(TraitAnswer.High, 5.0),
+            )
 
-        assertNull(profileOf(records).preference(Trait.Body)!!.direction)
-    }
-
-    @Test
-    fun `unsure records are counted but never averaged`() {
-        // Unsure 기록에 극단적인 평점을 줘도 판정이 흔들리면 안 된다.
-        val records =
-            List(3) { record(answer = TraitAnswer.High, rating = 4.5) } +
-                List(3) { record(answer = TraitAnswer.Low, rating = 2.0) } +
-                List(4) { record(answer = TraitAnswer.Unsure, rating = 0.0) }
-
-        val body = profileOf(records).preference(Trait.Body)!!
-        assertEquals(TraitAnswer.High, body.direction)
-        assertEquals(4, body.unsureSamples)
-        assertEquals(3, body.highSamples)
-        assertEquals(3, body.lowSamples)
+        assertTrue(bodyOf(clean).strength > bodyOf(noisy).strength)
     }
 
     @Test
     fun `records with no answer for a trait are ignored entirely`() {
         val records =
-            List(3) { record(answer = TraitAnswer.High, rating = 4.5) } +
-                List(3) { record(answer = TraitAnswer.Low, rating = 2.0) } +
-                List(2) { record(answer = null, rating = 5.0) }
+            List(3) { record(TraitAnswer.High, 4.5) } +
+                List(3) { record(TraitAnswer.Low, 2.0) } +
+                List(2) { record(null, 5.0) }
 
-        val body = profileOf(records).preference(Trait.Body)!!
-        assertEquals(3, body.highSamples)
-        assertEquals(3, body.lowSamples)
-        assertEquals(0, body.unsureSamples)
+        assertEquals(6, bodyOf(records).samples)
         assertEquals(8, profileOf(records).recordCount)
     }
 
