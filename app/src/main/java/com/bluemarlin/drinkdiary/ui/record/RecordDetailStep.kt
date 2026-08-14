@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import com.bluemarlin.drinkdiary.domain.model.CollectionStatus
 import com.bluemarlin.drinkdiary.domain.model.DrinkType
 import com.bluemarlin.drinkdiary.domain.model.ServingStyle
+import com.bluemarlin.drinkdiary.ui.DrinkLabels
 import com.bluemarlin.drinkdiary.ui.component.DDUriImage
 
 // 취향 입력 이후 단계. 이름과 만족도만 필수이고 나머지는 접어둔다 —
@@ -77,7 +78,7 @@ fun RecordDetailStep(
                 FilterChip(
                     selected = form.collectionStatus == status,
                     onClick = { onFormChange(form.copy(collectionStatus = status)) },
-                    label = { Text(statusLabel(status)) },
+                    label = { Text(DrinkLabels.collectionStatus(status)) },
                 )
             }
         }
@@ -173,7 +174,7 @@ private fun OptionalFields(
                     FilterChip(
                         selected = form.servingStyle == style,
                         onClick = { onFormChange(form.copy(servingStyle = style)) },
-                        label = { Text(servingLabel(style)) },
+                        label = { Text(DrinkLabels.servingStyle(style)) },
                     )
                 }
             }
@@ -205,17 +206,4 @@ private fun OptionalFields(
     }
 }
 
-private fun statusLabel(status: CollectionStatus): String =
-    when (status) {
-        CollectionStatus.Normal -> "그냥 그래요"
-        CollectionStatus.Repurchase -> "또 살래요"
-        CollectionStatus.NotForMe -> "안 맞아요"
-    }
-
-private fun servingLabel(style: ServingStyle): String =
-    when (style) {
-        ServingStyle.Neat -> "니트"
-        ServingStyle.OnTheRocks -> "온더락"
-        ServingStyle.WithWater -> "물 타서"
-        ServingStyle.Highball -> "하이볼"
-    }
+// 라벨은 ui.DrinkLabels 한 곳에서 온다 — 기록 화면과 컬렉션 화면이 같은 것을 다르게 부르지 않도록.

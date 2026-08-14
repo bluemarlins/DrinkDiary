@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.bluemarlin.drinkdiary.DrinkDiaryApplication
 import com.bluemarlin.drinkdiary.domain.model.DrinkType
+import com.bluemarlin.drinkdiary.ui.DrinkLabels
 
 private enum class Step { PickDrink, Probes, Detail, Saved }
 
@@ -97,7 +98,7 @@ private fun DrinkTypePicker(
         DrinkType.entries.forEach { type ->
             Card(onClick = { onPick(type) }, modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    text = if (type == DrinkType.Wine) "와인" else "위스키",
+                    text = DrinkLabels.drinkType(type),
                     style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.padding(24.dp),
                 )

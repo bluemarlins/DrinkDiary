@@ -1,7 +1,6 @@
 package com.bluemarlin.drinkdiary.ui.profile
 
 import com.bluemarlin.drinkdiary.domain.model.TasteType
-import com.bluemarlin.drinkdiary.domain.model.Trait
 import com.bluemarlin.drinkdiary.domain.model.TraitAnswer
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -41,12 +40,5 @@ class TasteTypeCopyTest {
         assertEquals("DLRQ", dlrq.code)
         assertEquals("가벼운 진한 취향", TasteTypeCopy.shortName(dlrq))
         assertEquals("드라이하고 가벼우며, 진한 향에 산뜻하게 끝납니다", TasteTypeCopy.sentence(dlrq))
-    }
-
-    @Test
-    fun `poleLabel reflects the winning side only`() {
-        assertEquals("달콤", TasteTypeCopy.poleLabel(Trait.Sweetness, TraitAnswer.High))
-        assertEquals("드라이", TasteTypeCopy.poleLabel(Trait.Sweetness, TraitAnswer.Low))
-        assertEquals("스모키함", TasteTypeCopy.poleLabel(Trait.Peat, TraitAnswer.High))
     }
 }

@@ -21,6 +21,7 @@ import com.bluemarlin.drinkdiary.domain.model.ProfileReadiness
 import com.bluemarlin.drinkdiary.domain.model.TasteProfile
 import com.bluemarlin.drinkdiary.domain.model.TraitPreference
 import com.bluemarlin.drinkdiary.domain.model.TypeScope
+import com.bluemarlin.drinkdiary.ui.DrinkLabels
 
 // F3 — 문장 우선, 차트는 보조(software-architecture.md 6절).
 // N개 미만이어도 화면을 비우지 않고 "아직 이르다"와 근거를 함께 보여준다(prd.md F3).
@@ -138,13 +139,13 @@ private fun TraitStatusRow(pref: TraitPreference) {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(TasteTypeCopy.traitLabel(pref.trait), style = MaterialTheme.typography.bodyLarge)
+        Text(DrinkLabels.trait(pref.trait), style = MaterialTheme.typography.bodyLarge)
 
         when (val status = traitStatus(pref)) {
             TraitStatus.Resolved -> {
                 AssistChip(
                     onClick = {},
-                    label = { Text(TasteTypeCopy.poleLabel(pref.trait, pref.direction!!)) },
+                    label = { Text(DrinkLabels.pole(pref.trait, pref.direction!!)) },
                     colors =
                         AssistChipDefaults.assistChipColors(
                             containerColor = MaterialTheme.colorScheme.primaryContainer,

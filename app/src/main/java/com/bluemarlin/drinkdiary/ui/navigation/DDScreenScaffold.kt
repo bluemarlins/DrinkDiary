@@ -273,27 +273,35 @@ private fun AppNavigationRail(
     onSearchClick: (() -> Unit)?,
 ) {
     NavigationRail {
-        NavigationRailItem(
-            selected = selectedTab == DDTopLevelTab.Dashboard,
-            onClick = { onDashboardClick?.invoke() },
-            icon = { Text(stringResource(R.string.nav_home)) },
-            label = { Text(stringResource(R.string.nav_dashboard)) },
-        )
-        NavigationRailItem(
-            selected = selectedTab == DDTopLevelTab.Collection,
-            onClick = { onCollectionClick?.invoke() },
-            icon = { Text(stringResource(R.string.nav_list)) },
-            label = { Text(stringResource(R.string.nav_collection)) },
-        )
-        NavigationRailItem(
-            selected = selectedTab == DDTopLevelTab.Search,
-            onClick = { onSearchClick?.invoke() },
-            icon = { Text(stringResource(R.string.nav_search)) },
-            label = { Text(stringResource(R.string.nav_search)) },
-        )
+        onDashboardClick?.let { onClick ->
+            NavigationRailItem(
+                selected = selectedTab == DDTopLevelTab.Dashboard,
+                onClick = onClick,
+                icon = { Text(stringResource(R.string.nav_dashboard)) },
+            )
+        }
+        onCollectionClick?.let { onClick ->
+            NavigationRailItem(
+                selected = selectedTab == DDTopLevelTab.Collection,
+                onClick = onClick,
+                icon = { Text(stringResource(R.string.nav_collection)) },
+            )
+        }
+        onSearchClick?.let { onClick ->
+            NavigationRailItem(
+                selected = selectedTab == DDTopLevelTab.Search,
+                onClick = onClick,
+                icon = { Text(stringResource(R.string.nav_search)) },
+            )
+        }
     }
 }
 
+// 핸들러가 없는 탭은 그리지 않는다. 눌러도 아무 일이 없는 탭을 노출하면 사용자는 앱이
+// 고장난 것으로 읽는다(실기기에서 확인된 결함) — 화면이 생기면 핸들러와 함께 나타난다.
+//
+// 아이콘 에셋이 아직 없다. 아이콘 자리에 텍스트를 넣고 라벨도 함께 두면 같은 말이 두 번
+// 보인다("홈" 위에 "대시보드") — 이름을 한 번만 보여준다. 아이콘이 생기면 label을 되살린다.
 @Composable
 private fun RowScope.AppNavigationItems(
     selectedTab: DDTopLevelTab?,
@@ -301,22 +309,25 @@ private fun RowScope.AppNavigationItems(
     onCollectionClick: (() -> Unit)?,
     onSearchClick: (() -> Unit)?,
 ) {
-    NavigationBarItem(
-        selected = selectedTab == DDTopLevelTab.Dashboard,
-        onClick = { onDashboardClick?.invoke() },
-        icon = { Text(stringResource(R.string.nav_home)) },
-        label = { Text(stringResource(R.string.nav_dashboard)) },
-    )
-    NavigationBarItem(
-        selected = selectedTab == DDTopLevelTab.Collection,
-        onClick = { onCollectionClick?.invoke() },
-        icon = { Text(stringResource(R.string.nav_list)) },
-        label = { Text(stringResource(R.string.nav_collection)) },
-    )
-    NavigationBarItem(
-        selected = selectedTab == DDTopLevelTab.Search,
-        onClick = { onSearchClick?.invoke() },
-        icon = { Text(stringResource(R.string.nav_search)) },
-        label = { Text(stringResource(R.string.nav_search)) },
-    )
+    onDashboardClick?.let { onClick ->
+        NavigationBarItem(
+            selected = selectedTab == DDTopLevelTab.Dashboard,
+            onClick = onClick,
+            icon = { Text(stringResource(R.string.nav_dashboard)) },
+        )
+    }
+    onCollectionClick?.let { onClick ->
+        NavigationBarItem(
+            selected = selectedTab == DDTopLevelTab.Collection,
+            onClick = onClick,
+            icon = { Text(stringResource(R.string.nav_collection)) },
+        )
+    }
+    onSearchClick?.let { onClick ->
+        NavigationBarItem(
+            selected = selectedTab == DDTopLevelTab.Search,
+            onClick = onClick,
+            icon = { Text(stringResource(R.string.nav_search)) },
+        )
+    }
 }
