@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import com.bluemarlin.drinkdiary.domain.model.CollectionStatus
 import com.bluemarlin.drinkdiary.domain.model.DrinkType
 import com.bluemarlin.drinkdiary.domain.model.ServingStyle
+import com.bluemarlin.drinkdiary.domain.model.TagCategory
 import com.bluemarlin.drinkdiary.ui.DrinkLabels
 import com.bluemarlin.drinkdiary.ui.component.DDUriImage
 
@@ -40,11 +41,14 @@ import com.bluemarlin.drinkdiary.ui.component.DDUriImage
 fun RecordDetailStep(
     type: DrinkType,
     form: RecordForm,
+    alwaysAskTags: Set<TagCategory>,
     onFormChange: (RecordForm) -> Unit,
     onSave: () -> Unit,
     saving: Boolean,
     modifier: Modifier = Modifier,
 ) {
+    // 사용자가 "매번 물어봐 달라"고 고른 것은 접지 않고 늘 보인다.
+    val (always, folded) = remainingTags(type).partition { it in alwaysAskTags }
     var expanded by remember { mutableStateOf(false) }
     val photoPicker =
         rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
@@ -101,12 +105,25 @@ fun RecordDetailStep(
             }
         }
 
+        TagPicker(
+            type = type,
+            tags = form.tags,
+            categories = always,
+            onTagsChange = { onFormChange(form.copy(tags = it)) },
+            title = null,
+        )
+
         TextButton(onClick = { expanded = !expanded }) {
             Text(if (expanded) "덜 남기기" else "더 남기기 (선택)")
         }
 
         if (expanded) {
-            OptionalFields(type = type, form = form, onFormChange = onFormChange)
+            OptionalFields(
+                type = type,
+                form = form,
+                foldedTags = folded,
+                onFormChange = onFormChange,
+            )
         }
 
         Button(
@@ -152,12 +169,14 @@ private fun RatingPicker(
 private fun OptionalFields(
     type: DrinkType,
     form: RecordForm,
+    foldedTags: List<TagCategory>,
     onFormChange: (RecordForm) -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         TagPicker(
             type = type,
             tags = form.tags,
+            categories = foldedTags,
             onTagsChange = { onFormChange(form.copy(tags = it)) },
         )
 

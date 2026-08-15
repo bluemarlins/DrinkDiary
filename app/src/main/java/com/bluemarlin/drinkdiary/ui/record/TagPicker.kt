@@ -24,18 +24,24 @@ import com.bluemarlin.drinkdiary.ui.DrinkLabels
 // 이 화면은 "더 남기기"를 편 사용자만 본다.
 //
 // 한 번 더 누르면 해제된다. 잘못 고른 값을 되돌릴 방법이 없으면 사용자는 아예 안 고른다.
+// 첫 화면이 물은 것을 뺀, 이 주종에서 남은 태그.
+fun remainingTags(type: DrinkType): List<TagCategory> = TagCategory.of(type).filterNot { it in promotedTags(type) }
+
 @Composable
 fun TagPicker(
     type: DrinkType,
     tags: DrinkTags,
+    categories: List<TagCategory>,
     onTagsChange: (DrinkTags) -> Unit,
     modifier: Modifier = Modifier,
+    title: String? = "라벨에 있는 것들 (선택)",
 ) {
-    Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text("라벨에 있는 것들 (선택)", style = MaterialTheme.typography.titleSmall)
+    if (categories.isEmpty()) return
 
-        // 첫 화면에서 이미 물은 것은 빼고 보여준다.
-        TagCategory.of(type).filterNot { it in promotedTags(type) }.forEach { category ->
+    Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        title?.let { Text(it, style = MaterialTheme.typography.titleSmall) }
+
+        categories.forEach { category ->
             TagRow(
                 label = DrinkLabels.tagCategory(category),
                 options = optionsOf(category),
