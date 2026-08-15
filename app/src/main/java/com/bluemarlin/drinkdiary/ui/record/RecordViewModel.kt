@@ -36,6 +36,24 @@ data class RecordForm(
 ) {
     // 만족도는 선택이 아니다 — 선호 판정의 종속 변수라 없으면 그 기록은 유형에 기여하지 못한다.
     val isSavable: Boolean get() = name.isNotBlank() && rating > 0.0
+
+    companion object {
+        // 편집 화면이 같은 폼을 쓰기 위한 역변환. 저장 규칙이 한 곳에만 있어야
+        // "이름과 만족도는 필수"가 기록에서만 지켜지는 일이 안 생긴다.
+        fun of(record: DrinkRecord): RecordForm =
+            RecordForm(
+                name = record.name,
+                rating = record.rating,
+                collectionStatus = record.collectionStatus,
+                vintage = record.vintage?.toString().orEmpty(),
+                servingStyle = record.servingStyle,
+                price = record.price?.toString().orEmpty(),
+                place = record.place.orEmpty(),
+                memo = record.memo.orEmpty(),
+                imageUri = record.imageUri,
+                tags = record.tags,
+            )
+    }
 }
 
 data class RecordUiState(

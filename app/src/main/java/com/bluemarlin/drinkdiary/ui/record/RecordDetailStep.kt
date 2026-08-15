@@ -46,6 +46,11 @@ fun RecordDetailStep(
     onSave: () -> Unit,
     saving: Boolean,
     modifier: Modifier = Modifier,
+    // 편집 화면도 이 폼을 그대로 쓴다. 폼을 복제하면 저장 규칙이 한쪽에서만 지켜진다.
+    saveLabel: String = "저장",
+    // 편집에서만 채워지는 자리. 작성 경로는 마법사가 이미 취향을 물었으므로 비어 있다 —
+    // 같은 것을 두 번 물으면 F2의 탭 예산이 무너진다.
+    tasteSection: @Composable () -> Unit = {},
 ) {
     // 사용자가 "매번 물어봐 달라"고 고른 것은 접지 않고 늘 보인다.
     val (always, folded) = remainingTags(type).partition { it in alwaysAskTags }
@@ -86,6 +91,8 @@ fun RecordDetailStep(
                 )
             }
         }
+
+        tasteSection()
 
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             TextButton(
@@ -130,7 +137,7 @@ fun RecordDetailStep(
             onClick = onSave,
             enabled = form.isSavable && !saving,
             modifier = Modifier.fillMaxWidth().height(56.dp),
-        ) { Text(if (saving) "저장 중" else "저장") }
+        ) { Text(if (saving) "저장 중" else saveLabel) }
     }
 }
 

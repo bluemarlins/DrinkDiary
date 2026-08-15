@@ -24,13 +24,9 @@ import com.bluemarlin.drinkdiary.ui.DrinkLabels
 // 그때는 이미 가치를 받은 뒤라 마찰로 느껴지지 않는다.
 //
 // 기록 1건만 이 설정 이전이라 표본이 어긋나는 폭이 무시할 수준이다 —
-// 나중에 설정에서 바꾸는 방식은 이 문제가 훨씬 크다.
-private val offerable =
-    listOf(
-        TagCategory.Peat to "스모키한지 — 위스키를 가장 크게 나누는 기준이에요",
-        TagCategory.AbvBand to "라벨에 늘 적혀 있어요",
-        TagCategory.Origin to "구대륙 / 신대륙",
-    )
+// 나중에 설정에서 바꾸는 방식은 이 문제가 훨씬 크다. 그래서 설정에도 같은 경고를 적어 뒀다.
+//
+// 목록은 promotableTags 한 곳에서 온다 — 설정 화면과 갈라지면 여기서 켠 것을 끌 수 없게 된다.
 
 @Composable
 fun TagPreferencePrompt(
@@ -45,12 +41,13 @@ fun TagPreferencePrompt(
     ) {
         Text("앞으로 이런 것도 매번 물어볼까요?", style = MaterialTheme.typography.titleMedium)
         Text(
-            text = "고르지 않으면 지금처럼 '더 남기기' 안에 그대로 있어요.",
+            // 설정 화면이 생겼으므로 이제 이 약속을 지킬 수 있다. 없는 화면을 약속하지 않는다.
+            text = "고르지 않으면 지금처럼 '더 남기기' 안에 그대로 있어요. 설정에서 언제든 바꿀 수 있어요.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
-        offerable.forEach { (category, hint) ->
+        promotableTags.forEach { (category, hint) ->
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 FilterChip(
                     selected = category in selected,

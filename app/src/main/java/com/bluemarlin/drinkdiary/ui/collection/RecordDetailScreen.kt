@@ -11,6 +11,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
+import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -34,6 +35,7 @@ import com.bluemarlin.drinkdiary.ui.component.DDUriImage
 @Composable
 fun RecordDetailScreen(
     record: DrinkRecord?,
+    onEdit: () -> Unit,
     onDelete: () -> Unit,
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
@@ -112,6 +114,13 @@ fun RecordDetailScreen(
         }
 
         HorizontalDivider()
+
+        // 고치기가 지우기보다 위에 있고 채워진 버튼이다. 오타 하나 때문에 지우고 다시 쓰게
+        // 만들면 그 기록의 날짜가 바뀌고, 취향 판정의 표본도 한 번 흔들린다.
+        Button(
+            onClick = onEdit,
+            modifier = Modifier.fillMaxWidth(),
+        ) { Text("고치기") }
 
         OutlinedButton(
             onClick = { confirming = true },
