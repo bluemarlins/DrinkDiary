@@ -1,9 +1,12 @@
 package com.bluemarlin.drinkdiary.ui.profile
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -33,48 +36,61 @@ fun ProfileScreen(
     onScopeChange: (TypeScope) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(
-        modifier = modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(20.dp),
-        verticalArrangement = Arrangement.spacedBy(28.dp),
-    ) {
-        ScopeSelector(selected = state.scope, onSelect = onScopeChange)
-        SummaryHeadline(readiness = state.readiness, profile = state.profile)
+    // FAB는 내용 위에 떠 있다. 아래 여백만 주면 부족한데, **내용이 화면보다 짧으면 스크롤이
+    // 아예 생기지 않아** FAB 밑에 깔린 줄을 걷어낼 방법이 없기 때문이다 —
+    // 실제로 "버번 캐스크 2.3점"이 통째로 가려졌다(에뮬레이터에서 확인된 결함).
+    // 최소 높이를 화면보다 FAB만큼 크게 잡아 **항상 그만큼은 스크롤되도록** 보장한다.
+    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
+        val fabClearance = 96.dp
 
-        val preferences = state.profile?.preferences.orEmpty()
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .heightIn(min = maxHeight + fabClearance)
+                    .padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = fabClearance),
+            verticalArrangement = Arrangement.spacedBy(28.dp),
+        ) {
+            ScopeSelector(selected = state.scope, onSelect = onScopeChange)
+            SummaryHeadline(readiness = state.readiness, profile = state.profile)
 
-        // 유형은 공통 축만으로 성립한다. 주종 고유 축을 같은 목록에 섞으면 유형까지의 거리가
-        // 실제보다 멀어 보이고, 기본 입력 경로가 묻지도 않는 축에 "더 기록하면 된다"고
-        // 약속하게 된다(실기기에서 확인된 결함).
-        val (shared, specific) = preferences.partition { it.trait.shared }
+            val preferences = state.profile?.preferences.orEmpty()
 
-        if (shared.isNotEmpty()) {
-            Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                Text("유형을 만드는 축", style = MaterialTheme.typography.titleMedium)
-                shared.forEach { pref -> TraitStatusRow(pref) }
+            // 유형은 공통 축만으로 성립한다. 주종 고유 축을 같은 목록에 섞으면 유형까지의 거리가
+            // 실제보다 멀어 보이고, 기본 입력 경로가 묻지도 않는 축에 "더 기록하면 된다"고
+            // 약속하게 된다(실기기에서 확인된 결함).
+            val (shared, specific) = preferences.partition { it.trait.shared }
+
+            if (shared.isNotEmpty()) {
+                Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                    Text("유형을 만드는 축", style = MaterialTheme.typography.titleMedium)
+                    shared.forEach { pref -> TraitStatusRow(pref) }
+                }
             }
-        }
 
-        // 고유 축은 확장 입력 경로로만 채워진다. 답이 하나도 없으면 아예 보여주지 않는다 —
-        // 채울 방법이 없는 항목을 미완성으로 걸어두지 않는다.
-        val answeredSpecific = specific.filter { it.samples > 0 }
-        if (answeredSpecific.isNotEmpty()) {
-            Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                Text("추가로 기록한 축", style = MaterialTheme.typography.titleMedium)
-                answeredSpecific.forEach { pref -> TraitStatusRow(pref) }
+            // 고유 축은 확장 입력 경로로만 채워진다. 답이 하나도 없으면 아예 보여주지 않는다 —
+            // 채울 방법이 없는 항목을 미완성으로 걸어두지 않는다.
+            val answeredSpecific = specific.filter { it.samples > 0 }
+            if (answeredSpecific.isNotEmpty()) {
+                Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                    Text("추가로 기록한 축", style = MaterialTheme.typography.titleMedium)
+                    answeredSpecific.forEach { pref -> TraitStatusRow(pref) }
+                }
             }
-        }
 
-        if (state.tagPreferences.isNotEmpty()) {
-            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                Text("라벨로 본 취향", style = MaterialTheme.typography.titleMedium)
-                Text(
-                    // 이쪽 결과는 가져갈 수 있다는 점이 감각 축과 다르다.
-                    text = "매장에서 라벨만 보고도 쓸 수 있는 기준이에요.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                state.tagPreferences.forEach { pref ->
-                    TagPreferenceBlock(pref, state.scope)
+            if (state.tagPreferences.isNotEmpty()) {
+                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Text("라벨로 본 취향", style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        // 이쪽 결과는 가져갈 수 있다는 점이 감각 축과 다르다.
+                        text = "매장에서 라벨만 보고도 쓸 수 있는 기준이에요.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    state.tagPreferences.forEach { pref ->
+                        TagPreferenceBlock(pref, state.scope)
+                    }
                 }
             }
         }
@@ -185,14 +201,15 @@ private fun TagPreferenceBlock(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
+                // 표본 수는 값을 한정하는 말이므로 값 옆에 둔다. 오른쪽 끝은 FAB가 떠 있는
+                // 자리라, 거기 두면 화면 아래쪽에서 잘린다(에뮬레이터에서 확인된 결함).
                 Text(
-                    text = DrinkLabels.tagValue(pref.category, value.value, drinkType),
+                    text = "${DrinkLabels.tagValue(pref.category, value.value, drinkType)} · ${value.samples}잔",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                // 표본 수를 늘 함께 보여준다 — "5점(1잔)"과 "4.3점(7잔)"은 전혀 다른 말이다.
                 Text(
-                    text = "%.1f점 (%d잔)".format(value.averageRating, value.samples),
+                    text = "%.1f점".format(value.averageRating),
                     style = MaterialTheme.typography.bodyMedium,
                 )
             }

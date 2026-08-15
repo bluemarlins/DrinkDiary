@@ -6,6 +6,7 @@ import com.bluemarlin.drinkdiary.domain.model.TagCategory
 import com.bluemarlin.drinkdiary.domain.model.TagPreference
 import com.bluemarlin.drinkdiary.domain.model.TagValueRating
 import com.bluemarlin.drinkdiary.domain.model.TypeScope
+import com.bluemarlin.drinkdiary.domain.repository.BottleDictionary
 import com.bluemarlin.drinkdiary.domain.repository.DrinkRecordRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -18,6 +19,7 @@ import kotlinx.coroutines.flow.map
 // software-architecture.md 4-2절.
 class ObserveTagPreferenceUseCase(
     private val repository: DrinkRecordRepository,
+    private val dictionary: BottleDictionary,
 ) {
     operator fun invoke(scope: TypeScope): Flow<List<TagPreference>> {
         val drinkType =
@@ -32,11 +34,29 @@ class ObserveTagPreferenceUseCase(
         }
     }
 
+    // 사용자가 답한 태그와, 사전이 아는 사실을 같은 자리에서 꺼낸다. 판정 방식은 동일하다 —
+    // 어디서 왔든 "그 값을 가진 기록의 만족도"를 비교할 뿐이다.
+    private fun valueOf(
+        record: DrinkRecord,
+        category: TagCategory,
+    ): String? =
+        if (category.fromDictionary) {
+            dictionary.lookup(record.type, record.name)?.let { facts ->
+                when (category) {
+                    TagCategory.Cask -> facts.cask?.name
+                    TagCategory.WineStyle -> facts.wineStyle?.name
+                    else -> null
+                }
+            }
+        } else {
+            record.tags[category]
+        }
+
     private fun summarise(
         category: TagCategory,
         records: List<DrinkRecord>,
     ): TagPreference? {
-        val tagged = records.mapNotNull { record -> record.tags[category]?.let { it to record.rating } }
+        val tagged = records.mapNotNull { record -> valueOf(record, category)?.let { it to record.rating } }
         if (tagged.isEmpty()) return null
 
         val byValue =

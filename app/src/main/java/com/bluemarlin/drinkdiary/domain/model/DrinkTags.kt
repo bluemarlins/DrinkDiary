@@ -10,24 +10,30 @@ package com.bluemarlin.drinkdiary.domain.model
 //     채움률 100%여도 표본이 안 된다.
 // departments/planner/structural-attributes-2026-08.md
 
-enum class TagCategory {
+enum class TagCategory(
+    // 사용자가 입력하지 않고 내장 사전이 채우는 값. 사용자에게 묻지 않는다.
+    val fromDictionary: Boolean = false,
+) {
     WhiskyStyle,
     Peat,
     WineColor,
     AbvBand,
     Origin,
+    Cask(fromDictionary = true),
+    WineStyle(fromDictionary = true),
     ;
 
-    // 그 주종에서 물어볼 태그인지. 도수·산지는 둘 다에 해당한다.
+    // 그 주종에서 다룰 태그인지. 도수·산지는 둘 다에 해당한다.
     fun appliesTo(type: DrinkType): Boolean =
         when (this) {
-            WhiskyStyle, Peat -> type == DrinkType.Whiskey
-            WineColor -> type == DrinkType.Wine
+            WhiskyStyle, Peat, Cask -> type == DrinkType.Whiskey
+            WineColor, WineStyle -> type == DrinkType.Wine
             AbvBand, Origin -> true
         }
 
     companion object {
-        fun of(type: DrinkType): List<TagCategory> = entries.filter { it.appliesTo(type) }
+        // 사용자에게 물을 수 있는 것만. 사전이 채우는 값은 질문 대상이 아니다.
+        fun of(type: DrinkType): List<TagCategory> = entries.filter { it.appliesTo(type) && !it.fromDictionary }
     }
 }
 

@@ -1,6 +1,7 @@
 package com.bluemarlin.drinkdiary.ui
 
 import com.bluemarlin.drinkdiary.domain.model.AbvBand
+import com.bluemarlin.drinkdiary.domain.model.CaskGroup
 import com.bluemarlin.drinkdiary.domain.model.CollectionStatus
 import com.bluemarlin.drinkdiary.domain.model.DrinkRecord
 import com.bluemarlin.drinkdiary.domain.model.DrinkType
@@ -13,6 +14,7 @@ import com.bluemarlin.drinkdiary.domain.model.Trait
 import com.bluemarlin.drinkdiary.domain.model.TraitAnswer
 import com.bluemarlin.drinkdiary.domain.model.WhiskyStyle
 import com.bluemarlin.drinkdiary.domain.model.WineColor
+import com.bluemarlin.drinkdiary.domain.model.WineStyle
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -98,6 +100,8 @@ object DrinkLabels {
             TagCategory.WineColor -> "색"
             TagCategory.AbvBand -> "도수"
             TagCategory.Origin -> "산지"
+            TagCategory.Cask -> "캐스크"
+            TagCategory.WineStyle -> "스타일"
         }
 
     // 저장된 값 이름을 화면 문구로. 모르는 값은 그대로 보여준다 — 태그 집합이 바뀌는 중이라
@@ -139,6 +143,25 @@ object DrinkLabels {
                 when (value) {
                     Origin.OldWorld.name -> "구대륙"
                     Origin.NewWorld.name -> "신대륙"
+                    else -> value
+                }
+
+            // 사전이 채우는 값. 사용자가 고르는 자리는 없고 취향 화면에서만 보인다.
+            TagCategory.Cask ->
+                when (value) {
+                    CaskGroup.Bourbon.name -> "버번 캐스크"
+                    CaskGroup.Sherry.name -> "셰리 캐스크"
+                    CaskGroup.VirginOak.name -> "새 오크"
+                    CaskGroup.Mixed.name -> "여러 캐스크"
+                    else -> value
+                }
+
+            TagCategory.WineStyle ->
+                when (value) {
+                    WineStyle.LightRed.name -> "가벼운 레드"
+                    WineStyle.FullRed.name -> "묵직한 레드"
+                    WineStyle.DryWhite.name -> "드라이 화이트"
+                    WineStyle.AromaticWhite.name -> "아로마틱 화이트"
                     else -> value
                 }
         }

@@ -1,0 +1,635 @@
+[
+ {
+  "type": "Whiskey",
+  "name": "글렌피딕 12",
+  "cask": "Mixed",
+  "aliases": [
+   "Glenfiddich 12"
+  ]
+ },
+ {
+  "type": "Whiskey",
+  "name": "글렌리벳 12",
+  "cask": "Bourbon",
+  "aliases": [
+   "Glenlivet 12"
+  ]
+ },
+ {
+  "type": "Whiskey",
+  "name": "글렌모렌지 10 오리지널",
+  "cask": "Bourbon",
+  "aliases": [
+   "Glenmorangie 10"
+  ]
+ },
+ {
+  "type": "Whiskey",
+  "name": "달위니 15",
+  "cask": "Bourbon"
+ },
+ {
+  "type": "Whiskey",
+  "name": "오켄토션 12",
+  "cask": "Mixed"
+ },
+ {
+  "type": "Whiskey",
+  "name": "글렌킨치 12",
+  "cask": "Bourbon"
+ },
+ {
+  "type": "Whiskey",
+  "name": "몽키숄더",
+  "cask": "Bourbon"
+ },
+ {
+  "type": "Whiskey",
+  "name": "카듀 12",
+  "cask": "Bourbon"
+ },
+ {
+  "type": "Whiskey",
+  "name": "맥캘란 12 셰리오크",
+  "cask": "Sherry",
+  "aliases": [
+   "Macallan 12 Sherry Oak"
+  ]
+ },
+ {
+  "type": "Whiskey",
+  "name": "맥캘란 12 더블캐스크",
+  "cask": "Mixed",
+  "aliases": [
+   "Macallan 12 Double Cask"
+  ]
+ },
+ {
+  "type": "Whiskey",
+  "name": "발베니 12 더블우드",
+  "cask": "Mixed",
+  "aliases": [
+   "Balvenie 12 DoubleWood"
+  ]
+ },
+ {
+  "type": "Whiskey",
+  "name": "발베니 14 캐리비안캐스크",
+  "cask": "Mixed",
+  "aliases": [
+   "Balvenie 14 Caribbean Cask"
+  ]
+ },
+ {
+  "type": "Whiskey",
+  "name": "글렌모렌지 라산타",
+  "cask": "Mixed"
+ },
+ {
+  "type": "Whiskey",
+  "name": "글렌모렌지 넥타도르",
+  "cask": "Mixed"
+ },
+ {
+  "type": "Whiskey",
+  "name": "아벨라워 12",
+  "cask": "Mixed",
+  "aliases": [
+   "Aberlour 12"
+  ]
+ },
+ {
+  "type": "Whiskey",
+  "name": "글렌드로낙 12",
+  "cask": "Sherry",
+  "aliases": [
+   "Glendronach 12"
+  ]
+ },
+ {
+  "type": "Whiskey",
+  "name": "글렌파클라스 12",
+  "cask": "Sherry",
+  "aliases": [
+   "Glenfarclas 12"
+  ]
+ },
+ {
+  "type": "Whiskey",
+  "name": "달모어 12",
+  "cask": "Mixed",
+  "aliases": [
+   "Dalmore 12"
+  ]
+ },
+ {
+  "type": "Whiskey",
+  "name": "싱글톤 12",
+  "cask": "Mixed"
+ },
+ {
+  "type": "Whiskey",
+  "name": "부나하벤 12",
+  "cask": "Mixed"
+ },
+ {
+  "type": "Whiskey",
+  "name": "아벨라워 아부나흐",
+  "cask": "Sherry",
+  "aliases": [
+   "Aberlour A'bunadh"
+  ]
+ },
+ {
+  "type": "Whiskey",
+  "name": "하이랜드파크 12",
+  "cask": "Sherry",
+  "aliases": [
+   "Highland Park 12"
+  ]
+ },
+ {
+  "type": "Whiskey",
+  "name": "탈리스커 10",
+  "cask": "Bourbon",
+  "aliases": [
+   "Talisker 10"
+  ]
+ },
+ {
+  "type": "Whiskey",
+  "name": "보모어 12",
+  "cask": "Mixed",
+  "aliases": [
+   "Bowmore 12"
+  ]
+ },
+ {
+  "type": "Whiskey",
+  "name": "쿨일라 12",
+  "cask": "Bourbon",
+  "aliases": [
+   "Caol Ila 12"
+  ]
+ },
+ {
+  "type": "Whiskey",
+  "name": "라가불린 16",
+  "cask": "Mixed",
+  "aliases": [
+   "Lagavulin 16"
+  ]
+ },
+ {
+  "type": "Whiskey",
+  "name": "라프로익 10",
+  "cask": "Bourbon",
+  "aliases": [
+   "Laphroaig 10"
+  ]
+ },
+ {
+  "type": "Whiskey",
+  "name": "라프로익 쿼터캐스크",
+  "cask": "Bourbon",
+  "aliases": [
+   "Laphroaig Quarter Cask"
+  ]
+ },
+ {
+  "type": "Whiskey",
+  "name": "아드벡 10",
+  "cask": "Bourbon",
+  "aliases": [
+   "Ardbeg 10"
+  ]
+ },
+ {
+  "type": "Whiskey",
+  "name": "아드벡 위비스티 5",
+  "cask": "Mixed",
+  "aliases": [
+   "Ardbeg Wee Beastie"
+  ]
+ },
+ {
+  "type": "Whiskey",
+  "name": "아드벡 안오",
+  "cask": "Mixed",
+  "aliases": [
+   "Ardbeg An Oa"
+  ]
+ },
+ {
+  "type": "Whiskey",
+  "name": "스프링뱅크 10",
+  "cask": "Mixed"
+ },
+ {
+  "type": "Whiskey",
+  "name": "오반 14",
+  "cask": "Bourbon",
+  "aliases": [
+   "Oban 14"
+  ]
+ },
+ {
+  "type": "Whiskey",
+  "name": "크라간모어 12",
+  "cask": "Bourbon"
+ },
+ {
+  "type": "Whiskey",
+  "name": "글렌고인 12",
+  "cask": "Mixed"
+ },
+ {
+  "type": "Whiskey",
+  "name": "벤리악 10",
+  "cask": "Mixed"
+ },
+ {
+  "type": "Whiskey",
+  "name": "야마자키 12",
+  "cask": "Mixed",
+  "aliases": [
+   "Yamazaki 12"
+  ]
+ },
+ {
+  "type": "Whiskey",
+  "name": "하쿠슈 12",
+  "cask": "Mixed",
+  "aliases": [
+   "Hakushu 12"
+  ]
+ },
+ {
+  "type": "Whiskey",
+  "name": "히비키 하모니",
+  "cask": "Mixed",
+  "aliases": [
+   "Hibiki Harmony"
+  ]
+ },
+ {
+  "type": "Whiskey",
+  "name": "치타",
+  "cask": "Mixed"
+ },
+ {
+  "type": "Whiskey",
+  "name": "닛카 프롬더배럴",
+  "cask": "Mixed"
+ },
+ {
+  "type": "Whiskey",
+  "name": "닛카 코페이그레인",
+  "cask": "Bourbon"
+ },
+ {
+  "type": "Whiskey",
+  "name": "닛카 요이치",
+  "cask": "Mixed"
+ },
+ {
+  "type": "Whiskey",
+  "name": "조니워커 레드",
+  "cask": "Mixed",
+  "aliases": [
+   "Johnnie Walker Red"
+  ]
+ },
+ {
+  "type": "Whiskey",
+  "name": "조니워커 블랙 12",
+  "cask": "Mixed",
+  "aliases": [
+   "Johnnie Walker Black"
+  ]
+ },
+ {
+  "type": "Whiskey",
+  "name": "조니워커 그린 15",
+  "cask": "Mixed",
+  "aliases": [
+   "Johnnie Walker Green"
+  ]
+ },
+ {
+  "type": "Whiskey",
+  "name": "조니워커 블루",
+  "cask": "Mixed",
+  "aliases": [
+   "Johnnie Walker Blue"
+  ]
+ },
+ {
+  "type": "Whiskey",
+  "name": "시바스 리갈 12",
+  "cask": "Mixed",
+  "aliases": [
+   "Chivas Regal 12"
+  ]
+ },
+ {
+  "type": "Whiskey",
+  "name": "시바스 리갈 18",
+  "cask": "Mixed",
+  "aliases": [
+   "Chivas Regal 18"
+  ]
+ },
+ {
+  "type": "Whiskey",
+  "name": "발렌타인 파이니스트",
+  "cask": "Mixed"
+ },
+ {
+  "type": "Whiskey",
+  "name": "발렌타인 17",
+  "cask": "Mixed",
+  "aliases": [
+   "Ballantine's 17"
+  ]
+ },
+ {
+  "type": "Whiskey",
+  "name": "듀어스 12",
+  "cask": "Mixed"
+ },
+ {
+  "type": "Whiskey",
+  "name": "페이머스 그라우스",
+  "cask": "Mixed"
+ },
+ {
+  "type": "Whiskey",
+  "name": "로얄살루트 21",
+  "cask": "Mixed"
+ },
+ {
+  "type": "Whiskey",
+  "name": "메이커스 마크",
+  "cask": "VirginOak",
+  "aliases": [
+   "Maker's Mark"
+  ]
+ },
+ {
+  "type": "Whiskey",
+  "name": "짐빔 화이트",
+  "cask": "VirginOak"
+ },
+ {
+  "type": "Whiskey",
+  "name": "와일드터키 101",
+  "cask": "VirginOak",
+  "aliases": [
+   "Wild Turkey 101"
+  ]
+ },
+ {
+  "type": "Whiskey",
+  "name": "버팔로 트레이스",
+  "cask": "VirginOak",
+  "aliases": [
+   "Buffalo Trace"
+  ]
+ },
+ {
+  "type": "Whiskey",
+  "name": "우드포드 리저브",
+  "cask": "VirginOak",
+  "aliases": [
+   "Woodford Reserve"
+  ]
+ },
+ {
+  "type": "Whiskey",
+  "name": "잭다니엘 No.7",
+  "cask": "VirginOak",
+  "aliases": [
+   "Jack Daniel's Old No.7"
+  ]
+ },
+ {
+  "type": "Whiskey",
+  "name": "놉크릭 9",
+  "cask": "VirginOak",
+  "aliases": [
+   "Knob Creek 9"
+  ]
+ },
+ {
+  "type": "Whiskey",
+  "name": "불렛 버번",
+  "cask": "VirginOak",
+  "aliases": [
+   "Bulleit Bourbon"
+  ]
+ },
+ {
+  "type": "Whiskey",
+  "name": "불렛 라이",
+  "cask": "VirginOak",
+  "aliases": [
+   "Bulleit Rye"
+  ]
+ },
+ {
+  "type": "Whiskey",
+  "name": "포로지스 싱글배럴",
+  "cask": "VirginOak"
+ },
+ {
+  "type": "Wine",
+  "name": "보졸레 누보",
+  "wineStyle": "LightRed"
+ },
+ {
+  "type": "Wine",
+  "name": "보졸레 빌라주",
+  "wineStyle": "LightRed"
+ },
+ {
+  "type": "Wine",
+  "name": "부르고뉴 피노누아",
+  "wineStyle": "LightRed"
+ },
+ {
+  "type": "Wine",
+  "name": "오리건 피노누아",
+  "wineStyle": "LightRed"
+ },
+ {
+  "type": "Wine",
+  "name": "키안티 클라시코",
+  "wineStyle": "FullRed"
+ },
+ {
+  "type": "Wine",
+  "name": "발폴리첼라",
+  "wineStyle": "LightRed"
+ },
+ {
+  "type": "Wine",
+  "name": "바롤로",
+  "wineStyle": "FullRed"
+ },
+ {
+  "type": "Wine",
+  "name": "바르바레스코",
+  "wineStyle": "FullRed"
+ },
+ {
+  "type": "Wine",
+  "name": "아마로네",
+  "wineStyle": "FullRed"
+ },
+ {
+  "type": "Wine",
+  "name": "나파 카베르네",
+  "wineStyle": "FullRed"
+ },
+ {
+  "type": "Wine",
+  "name": "보르도 메독",
+  "wineStyle": "FullRed"
+ },
+ {
+  "type": "Wine",
+  "name": "보르도 AOC",
+  "wineStyle": "FullRed"
+ },
+ {
+  "type": "Wine",
+  "name": "리오하 크리안사",
+  "wineStyle": "FullRed"
+ },
+ {
+  "type": "Wine",
+  "name": "리오하 그란 레세르바",
+  "wineStyle": "FullRed"
+ },
+ {
+  "type": "Wine",
+  "name": "멘도사 말벡",
+  "wineStyle": "FullRed"
+ },
+ {
+  "type": "Wine",
+  "name": "바로사 쉬라즈",
+  "wineStyle": "FullRed"
+ },
+ {
+  "type": "Wine",
+  "name": "코트 뒤 론",
+  "wineStyle": "FullRed"
+ },
+ {
+  "type": "Wine",
+  "name": "샤토뇌프 뒤 파프",
+  "wineStyle": "FullRed"
+ },
+ {
+  "type": "Wine",
+  "name": "로디 진판델",
+  "wineStyle": "FullRed"
+ },
+ {
+  "type": "Wine",
+  "name": "칠레 카르메네르",
+  "wineStyle": "FullRed"
+ },
+ {
+  "type": "Wine",
+  "name": "네로 다볼라",
+  "wineStyle": "FullRed"
+ },
+ {
+  "type": "Wine",
+  "name": "도루 레드",
+  "wineStyle": "FullRed"
+ },
+ {
+  "type": "Wine",
+  "name": "루비 포트",
+  "wineStyle": "FullRed"
+ },
+ {
+  "type": "Wine",
+  "name": "말보로 소비뇽블랑",
+  "wineStyle": "DryWhite"
+ },
+ {
+  "type": "Wine",
+  "name": "상세르",
+  "wineStyle": "DryWhite"
+ },
+ {
+  "type": "Wine",
+  "name": "샤블리",
+  "wineStyle": "DryWhite"
+ },
+ {
+  "type": "Wine",
+  "name": "나파 오크 샤르도네",
+  "wineStyle": "DryWhite"
+ },
+ {
+  "type": "Wine",
+  "name": "언오크 샤르도네",
+  "wineStyle": "DryWhite"
+ },
+ {
+  "type": "Wine",
+  "name": "모젤 리슬링 카비네트",
+  "wineStyle": "AromaticWhite"
+ },
+ {
+  "type": "Wine",
+  "name": "알자스 드라이 리슬링",
+  "wineStyle": "AromaticWhite"
+ },
+ {
+  "type": "Wine",
+  "name": "피노 그리지오",
+  "wineStyle": "DryWhite"
+ },
+ {
+  "type": "Wine",
+  "name": "게뷔르츠트라미너",
+  "wineStyle": "AromaticWhite"
+ },
+ {
+  "type": "Wine",
+  "name": "비오니에",
+  "wineStyle": "AromaticWhite"
+ },
+ {
+  "type": "Wine",
+  "name": "알바리뇨",
+  "wineStyle": "DryWhite"
+ },
+ {
+  "type": "Wine",
+  "name": "모스카토 다스티",
+  "wineStyle": "AromaticWhite"
+ },
+ {
+  "type": "Wine",
+  "name": "프로세코",
+  "wineStyle": "DryWhite"
+ },
+ {
+  "type": "Wine",
+  "name": "샴페인 브뤼 NV",
+  "wineStyle": "DryWhite"
+ },
+ {
+  "type": "Wine",
+  "name": "소테른",
+  "wineStyle": "AromaticWhite"
+ }
+]

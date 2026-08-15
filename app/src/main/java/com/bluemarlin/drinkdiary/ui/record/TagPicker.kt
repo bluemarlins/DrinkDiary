@@ -90,6 +90,9 @@ private fun optionsOf(category: TagCategory): List<String> =
         TagCategory.WineColor -> WineColor.entries.map { it.name }
         TagCategory.AbvBand -> AbvBand.entries.map { it.name }
         TagCategory.Origin -> Origin.entries.map { it.name }
+        // 사전이 채우는 값은 TagCategory.of()가 걸러내므로 여기 오지 않는다.
+        // 그 필터가 깨지면 조용히 빈 화면이 되는 대신 여기서 터진다.
+        TagCategory.Cask, TagCategory.WineStyle -> error("사전이 채우는 값은 사용자에게 묻지 않는다: $category")
     }
 
 private fun DrinkTags.withTag(
@@ -108,4 +111,5 @@ private fun DrinkTags.withTag(
         TagCategory.WineColor -> copy(wineColor = value?.let { name -> WineColor.entries.find { it.name == name } })
         TagCategory.AbvBand -> copy(abvBand = value?.let { name -> AbvBand.entries.find { it.name == name } })
         TagCategory.Origin -> copy(origin = value?.let { name -> Origin.entries.find { it.name == name } })
+        TagCategory.Cask, TagCategory.WineStyle -> error("사전이 채우는 값은 기록에 쓰지 않는다: $category")
     }

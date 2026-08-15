@@ -1,6 +1,9 @@
 package com.bluemarlin.drinkdiary.domain.usecase
 
 import com.bluemarlin.drinkdiary.domain.model.AppResult
+import com.bluemarlin.drinkdiary.domain.model.BottleEntry
+import com.bluemarlin.drinkdiary.domain.model.BottleFacts
+import com.bluemarlin.drinkdiary.domain.model.CaskGroup
 import com.bluemarlin.drinkdiary.domain.model.DrinkRecord
 import com.bluemarlin.drinkdiary.domain.model.DrinkTags
 import com.bluemarlin.drinkdiary.domain.model.DrinkType
@@ -8,6 +11,7 @@ import com.bluemarlin.drinkdiary.domain.model.PeatTag
 import com.bluemarlin.drinkdiary.domain.model.TagCategory
 import com.bluemarlin.drinkdiary.domain.model.TypeScope
 import com.bluemarlin.drinkdiary.domain.model.WhiskyStyle
+import com.bluemarlin.drinkdiary.domain.repository.BottleMatcher
 import com.bluemarlin.drinkdiary.domain.repository.DrinkRecordRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -35,9 +39,14 @@ class ObserveTagPreferenceUseCaseTest {
 
     private fun unpeated(rating: Double) = record(rating, DrinkTags(peat = PeatTag.Unpeated))
 
+    // 사전이 아무것도 모르는 상태. 태그 경로만 검사한다 — 사전 쪽은 BottleMatcherTest 담당.
+    private val emptyDictionary = BottleMatcher { emptyList() }
+
     private fun preferences(records: List<DrinkRecord>) =
         runBlocking {
-            ObserveTagPreferenceUseCase(FakeRepository(records)).invoke(TypeScope.Whiskey).first()
+            ObserveTagPreferenceUseCase(FakeRepository(records), emptyDictionary)
+                .invoke(TypeScope.Whiskey)
+                .first()
         }
 
     private fun peat(records: List<DrinkRecord>) = preferences(records).firstOrNull { it.category == TagCategory.Peat }
@@ -106,15 +115,83 @@ class ObserveTagPreferenceUseCaseTest {
         assertEquals(6, pref.totalSamples)
     }
 
+    // 사전이 채운 값도 사용자 태그와 똑같이 판정된다. 이것이 사전을 넣은 이유다 —
+    // 캐스크는 라벨에서 읽히지 않아 사용자가 답할 수 없다.
+    @Test
+    fun `dictionary facts are judged like any other tag`() {
+        val dictionary =
+            BottleMatcher {
+                listOf(
+                    BottleEntry(
+                        DrinkType.Whiskey,
+                        "글렌드로낙 12",
+                        setOf("글렌드로낙 12"),
+                        BottleFacts(cask = CaskGroup.Sherry),
+                    ),
+                    BottleEntry(
+                        DrinkType.Whiskey,
+                        "아드벡 10",
+                        setOf("아드벡 10"),
+                        BottleFacts(cask = CaskGroup.Bourbon),
+                    ),
+                )
+            }
+        val named = { name: String, rating: Double ->
+            DrinkRecord(
+                type = DrinkType.Whiskey,
+                name = name,
+                rating = rating,
+                recordedAtMillis = 0L,
+            )
+        }
+        val records =
+            List(3) { named("글렌드로낙 12", 4.8) } + List(3) { named("아드벡 10", 2.5) }
+
+        val cask =
+            runBlocking {
+                ObserveTagPreferenceUseCase(FakeRepository(records), dictionary)
+                    .invoke(TypeScope.Whiskey)
+                    .first()
+            }.first { it.category == TagCategory.Cask }
+
+        assertEquals(CaskGroup.Sherry.name, cask.best?.value)
+        assertTrue(cask.meaningfulGap)
+        // 사용자는 캐스크를 한 번도 입력하지 않았다.
+        assertTrue(records.all { it.tags.isEmpty })
+    }
+
+    @Test
+    fun `a bottle the dictionary does not know contributes nothing`() {
+        val dictionary = BottleMatcher { emptyList() }
+        val records =
+            List(6) {
+                DrinkRecord(
+                    type = DrinkType.Whiskey,
+                    name = "처음 보는 위스키",
+                    rating = 5.0,
+                    recordedAtMillis = 0L,
+                )
+            }
+
+        val all =
+            runBlocking {
+                ObserveTagPreferenceUseCase(FakeRepository(records), dictionary)
+                    .invoke(TypeScope.Whiskey)
+                    .first()
+            }
+
+        assertTrue(all.none { it.category == TagCategory.Cask })
+    }
+
     @Test
     fun `scope decides which records the repository is asked for`() {
         val repository = FakeRepository(emptyList())
 
         runBlocking {
-            ObserveTagPreferenceUseCase(repository).invoke(TypeScope.Wine).first()
+            ObserveTagPreferenceUseCase(repository, emptyDictionary).invoke(TypeScope.Wine).first()
             assertEquals(DrinkType.Wine, repository.lastRequestedType)
 
-            ObserveTagPreferenceUseCase(repository).invoke(TypeScope.Combined).first()
+            ObserveTagPreferenceUseCase(repository, emptyDictionary).invoke(TypeScope.Combined).first()
             assertNull(repository.lastRequestedType)
         }
     }

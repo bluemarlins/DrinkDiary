@@ -2,9 +2,12 @@ package com.bluemarlin.drinkdiary
 
 import android.app.Application
 import androidx.room.Room
+import com.bluemarlin.drinkdiary.data.local.AssetBottleDictionary
 import com.bluemarlin.drinkdiary.data.local.DrinkDiaryDatabase
 import com.bluemarlin.drinkdiary.data.repository.DrinkRecordRepositoryImpl
 import com.bluemarlin.drinkdiary.data.repository.UserPreferencesRepositoryImpl
+import com.bluemarlin.drinkdiary.domain.repository.BottleDictionary
+import com.bluemarlin.drinkdiary.domain.repository.BottleMatcher
 import com.bluemarlin.drinkdiary.domain.repository.DrinkRecordRepository
 import com.bluemarlin.drinkdiary.domain.repository.UserPreferencesRepository
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveTagPreferenceUseCase
@@ -42,6 +45,11 @@ class AppContainer(
         UserPreferencesRepositoryImpl(application)
 
     val observeTasteProfileUseCase = ObserveTasteProfileUseCase(drinkRecordRepository)
-    val observeTagPreferenceUseCase = ObserveTagPreferenceUseCase(drinkRecordRepository)
+
+    // 사전은 assets에서 첫 조회 때 한 번 읽고 메모리에 둔다.
+    private val bottleAssets = AssetBottleDictionary(application)
+    val bottleDictionary: BottleDictionary = BottleMatcher { bottleAssets.entries }
+
+    val observeTagPreferenceUseCase = ObserveTagPreferenceUseCase(drinkRecordRepository, bottleDictionary)
     val resolveProfileReadinessUseCase = ResolveProfileReadinessUseCase()
 }
