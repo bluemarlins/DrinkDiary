@@ -17,7 +17,7 @@ agy agents           # (현재 비어 있음 — 사전 정의된 에이전트 �
 ```
 
 위 `agy models` 목록은 **CLI가 노출하는 전체 목록일 뿐 사용 허가 목록이 아니다.** 이 저장소가
-실제로 쓰는 것은 `harness.md` §6-2의 4개 로스터뿐이다.
+실제로 쓰는 것은 `harness.md` §6-2의 3개 로스터뿐이다.
 
 `agy agents`가 비어 있으므로 별도 에이전트 프로필에 의존하지 않고, 태스크 유형별로 아래 프롬프트
 템플릿 + 모델 + 플래그 조합을 그때그때 구성한다.
@@ -40,13 +40,14 @@ agy agents           # (현재 비어 있음 — 사전 정의된 에이전트 �
 
 ## 태스크 유형별 템플릿
 
-**로스터 제약**: `--model`에는 `harness.md` §6-2의 4개 모델만 쓴다 —
-`gemini-3.7-flash-medium`, `gemini-3.7-flash-high`, `gemini-3.1-pro-high`, `claude-sonnet-4-6`.
+**로스터 제약**: `--model`에는 `harness.md` §6-2의 3개 모델만 쓴다 —
+`gemini-3.7-flash-medium`, `gemini-3.7-flash-high`, `claude-sonnet-4-6`.
 `agy models`가 보여주는 나머지 모델은 이 저장소에서 사용하지 않는다.
 
-**2026-08-16 세대 교체**: 플래시 계열이 3.5/3.6 → **3.7**로 올라갔다. 이 문서의 옛 호출 예시를
-어딘가에서 복사해 쓰지 않도록 주의한다 — 구세대 모델 ID는 여전히 유효해서 **에러 없이 조용히
-구모델로 실행된다.** 근거는 `harness.md` §6-2의 전환 절이다.
+**2026-08-16 로스터 개편**: 플래시 계열이 3.5/3.6 → **3.7**로 올라갔고, **`gemini-3.1-pro-high`는
+제외됐다**(이름만 `pro`일 뿐 3.7 플래시보다 사고력·코드 구성이 떨어지는 구세대). 이 문서의 옛 호출
+예시를 어딘가에서 복사해 쓰지 않도록 주의한다 — 제외된 모델 ID도 여전히 유효해서 **에러 없이
+조용히 구모델로 실행된다.** 근거는 `harness.md` §6-2의 전환 절이다.
 
 아래 각 템플릿의 `--model` 값은 **그 태스크 유형에서 가장 흔한 경우의 기본값**이다. 실제 태스크의
 난이도/성격이 전형적인 경우와 다르면(예: "반복 코드"인데 로직이 복잡함) §6-2 로스터 표의 역할
@@ -86,9 +87,11 @@ EOF
 ### 3. 반복적 코드 작성 (UseCase/Mapper/DAO)
 
 이 유형은 §6-2의 "반복/보일러플레이트" 축과 "추론 깊이" 축 중 **어느 쪽에 더 가까운지**를 먼저
-판단한다. 둘을 하나의 모델로 뭉뚱그리지 않는다(과거 P2-2는 계산 로직이 복잡해 pro-high를 썼고,
-P2-5는 단순 CRUD라 flash-medium으로 충분했다 — 겉보기엔 둘 다 "UseCase 구현"이었지만 실제 배정은
-갈렸다).
+판단한다. 둘을 뭉뚱그리지 않는다(과거 P2-2는 계산 로직이 복잡해 상위 티어를 썼고, P2-5는 단순
+CRUD라 medium으로 충분했다 — 겉보기엔 둘 다 "UseCase 구현"이었지만 실제 배정은 갈렸다).
+
+로스터가 3개로 줄면서 이 선택은 **모델 교체가 아니라 같은 모델의 사고 단계 선택**이 됐다.
+그래도 판단 자체는 그대로 필요하다 — 3-a에 3-b를 맡기면 얕게 생각하고, 반대면 낭비다.
 
 #### 3-a. 기존 패턴을 그대로 복제하는 단순 CRUD/Mapper
 
@@ -113,7 +116,7 @@ agy -p "$(cat <<'EOF'
 을 반드시 따른다.
 [요청] <구체적 UseCase 작업 내용 — 계산식/분기 규칙을 프롬프트에 명시 + 대응 단위 테스트 작성 요청>
 EOF
-)" --model gemini-3.1-pro-high --mode accept-edits \
+)" --model gemini-3.7-flash-high --mode accept-edits \
    --add-dir app/src/main/java/com/bluemarlin/drinkdiary/domain \
    --add-dir app/src/main/java/com/bluemarlin/drinkdiary/data \
    --add-dir app/src/test/java/com/bluemarlin/drinkdiary \
@@ -194,7 +197,7 @@ agy -p "$(cat <<'EOF'
 [요청] <구체적 기획/전략 요청>
 [참조] Researcher가 작성한 리서치 결과(app/docs/departments/researcher/market-analysis.md)
 EOF
-)" --model gemini-3.1-pro-high --mode accept-edits --add-dir app/docs/departments/planner --output-format json
+)" --model gemini-3.7-flash-high --mode accept-edits --add-dir app/docs/departments/planner --output-format json
 ```
 
 ## Claude가 위임하지 않는 것

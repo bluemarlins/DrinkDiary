@@ -29,7 +29,7 @@ description: Delegate a research or drafting task to the agy CLI and verify the 
 3. 파일 수정이 필요 없거나 `--add-dir`로 범위를 좁힐 수 있는가
 4. 결과가 나빠도 버리고 다시 하면 되는가
 
-모델은 로스터 4개 중에서만 고른다(`harness.md` §6-2). 리서치는 보통 `gemini-3.7-flash-high`,
+모델은 로스터 3개 중에서만 고른다(`harness.md` §6-2). 리서치는 보통 `gemini-3.7-flash-high`,
 정형 요약만 필요하면 `gemini-3.7-flash-medium`.
 
 **모델이 새것이라고 검증을 줄이지 않는다.** 위 세 실패 양상은 모델의 성능 문제가 아니라 위임
