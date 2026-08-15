@@ -4,6 +4,7 @@ import com.bluemarlin.drinkdiary.data.local.DrinkRecordDao
 import com.bluemarlin.drinkdiary.data.mapper.toAnswerEntities
 import com.bluemarlin.drinkdiary.data.mapper.toDomain
 import com.bluemarlin.drinkdiary.data.mapper.toEntity
+import com.bluemarlin.drinkdiary.data.mapper.toTagEntities
 import com.bluemarlin.drinkdiary.domain.model.AppError
 import com.bluemarlin.drinkdiary.domain.model.AppResult
 import com.bluemarlin.drinkdiary.domain.model.DrinkRecord
@@ -36,9 +37,11 @@ class DrinkRecordRepositoryImpl(
 
     override suspend fun save(record: DrinkRecord): AppResult<Long> =
         runCatching {
-            dao.saveWithAnswers(record.toEntity()) { recordId ->
-                record.toAnswerEntities(recordId)
-            }
+            dao.saveWithAnswers(
+                entity = record.toEntity(),
+                answers = { recordId -> record.toAnswerEntities(recordId) },
+                tags = { recordId -> record.toTagEntities(recordId) },
+            )
         }.fold(
             onSuccess = { AppResult.Success(it) },
             onFailure = { AppResult.Failure(AppError.Storage) },

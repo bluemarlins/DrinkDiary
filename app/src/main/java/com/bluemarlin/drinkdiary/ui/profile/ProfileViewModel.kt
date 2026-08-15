@@ -4,8 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.bluemarlin.drinkdiary.domain.model.ProfileReadiness
+import com.bluemarlin.drinkdiary.domain.model.TagPreference
 import com.bluemarlin.drinkdiary.domain.model.TasteProfile
 import com.bluemarlin.drinkdiary.domain.model.TypeScope
+import com.bluemarlin.drinkdiary.domain.usecase.ObserveTagPreferenceUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveTasteProfileUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ResolveProfileReadinessUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.TasteThresholds
@@ -13,13 +15,14 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
 data class ProfileUiState(
     val scope: TypeScope = TypeScope.Wine,
     val profile: TasteProfile? = null,
+    val tagPreferences: List<TagPreference> = emptyList(),
     // 첫 프레임의 기본값. 실제 값은 UseCase가 계산해 곧바로 덮어쓴다.
     val readiness: ProfileReadiness =
         ProfileReadiness.NotReady(recordsNeeded = TasteThresholds.MIN_SAMPLES),
@@ -28,19 +31,23 @@ data class ProfileUiState(
 @OptIn(ExperimentalCoroutinesApi::class)
 class ProfileViewModel(
     private val observeTasteProfile: ObserveTasteProfileUseCase,
+    private val observeTagPreference: ObserveTagPreferenceUseCase,
     private val resolveReadiness: ResolveProfileReadinessUseCase,
 ) : ViewModel() {
     private val scope = MutableStateFlow(TypeScope.Wine)
 
     val uiState: StateFlow<ProfileUiState> =
         scope
-            .flatMapLatest { selected -> observeTasteProfile(selected).map { selected to it } }
-            .map { (selected, profile) ->
-                ProfileUiState(
-                    scope = selected,
-                    profile = profile,
-                    readiness = resolveReadiness(profile),
-                )
+            .flatMapLatest { selected ->
+                // 감각 축과 태그는 별개 경로다. 한쪽이 비어도 다른 쪽은 말할 수 있어야 한다.
+                combine(observeTasteProfile(selected), observeTagPreference(selected)) { profile, tags ->
+                    ProfileUiState(
+                        scope = selected,
+                        profile = profile,
+                        tagPreferences = tags,
+                        readiness = resolveReadiness(profile),
+                    )
+                }
             }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ProfileUiState())
 
     fun selectScope(newScope: TypeScope) {
@@ -49,10 +56,11 @@ class ProfileViewModel(
 
     class Factory(
         private val observeTasteProfile: ObserveTasteProfileUseCase,
+        private val observeTagPreference: ObserveTagPreferenceUseCase,
         private val resolveReadiness: ResolveProfileReadinessUseCase,
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            ProfileViewModel(observeTasteProfile, resolveReadiness) as T
+            ProfileViewModel(observeTasteProfile, observeTagPreference, resolveReadiness) as T
     }
 }

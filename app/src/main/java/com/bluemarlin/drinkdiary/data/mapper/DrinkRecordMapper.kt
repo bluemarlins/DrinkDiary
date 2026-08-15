@@ -2,11 +2,14 @@ package com.bluemarlin.drinkdiary.data.mapper
 
 import com.bluemarlin.drinkdiary.data.local.DrinkRecordEntity
 import com.bluemarlin.drinkdiary.data.local.DrinkRecordWithAnswers
+import com.bluemarlin.drinkdiary.data.local.RecordTagEntity
 import com.bluemarlin.drinkdiary.data.local.TraitAnswerEntity
 import com.bluemarlin.drinkdiary.domain.model.CollectionStatus
 import com.bluemarlin.drinkdiary.domain.model.DrinkRecord
+import com.bluemarlin.drinkdiary.domain.model.DrinkTags
 import com.bluemarlin.drinkdiary.domain.model.DrinkType
 import com.bluemarlin.drinkdiary.domain.model.ServingStyle
+import com.bluemarlin.drinkdiary.domain.model.TagCategory
 import com.bluemarlin.drinkdiary.domain.model.TasteInput
 import com.bluemarlin.drinkdiary.domain.model.Trait
 import com.bluemarlin.drinkdiary.domain.model.TraitAnswer
@@ -28,6 +31,12 @@ fun DrinkRecordWithAnswers.toDomain(): DrinkRecord? {
         }
     }
 
+    val tagMap = mutableMapOf<TagCategory, String>()
+    for (tagEntity in tags) {
+        val category = runCatching { TagCategory.valueOf(tagEntity.category) }.getOrNull()
+        if (category != null) tagMap[category] = tagEntity.value
+    }
+
     return DrinkRecord(
         id = record.id,
         type = type,
@@ -35,6 +44,7 @@ fun DrinkRecordWithAnswers.toDomain(): DrinkRecord? {
         vintage = record.vintage,
         servingStyle = servingStyle,
         taste = TasteInput(traitMap),
+        tags = DrinkTags.from(tagMap),
         rating = record.rating,
         collectionStatus = collectionStatus,
         imageUri = record.imageUri,
@@ -67,5 +77,14 @@ fun DrinkRecord.toAnswerEntities(recordId: Long): List<TraitAnswerEntity> =
             recordId = recordId,
             trait = trait.name,
             answer = answer.name,
+        )
+    }
+
+fun DrinkRecord.toTagEntities(recordId: Long): List<RecordTagEntity> =
+    tags.entries.map { (category, value) ->
+        RecordTagEntity(
+            recordId = recordId,
+            category = category.name,
+            value = value,
         )
     }

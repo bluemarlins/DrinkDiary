@@ -273,11 +273,18 @@ domain/model
 
 ```text
 data/local
-  DrinkDiaryDatabase   version = 1  (재정의, 기존 마이그레이션 폐기)
+  DrinkDiaryDatabase   version = 2  (재정의, 기존 마이그레이션 폐기)
+                       fallbackToDestructiveMigration — 출시 전이라 스키마가 바뀌면 데이터를 버린다.
+                       마이그레이션을 쌓기 시작하면 아직 재정의 중인 스키마에 발이 묶인다.
   DrinkRecordEntity    주종/이름/빈티지/음용방법/사진/가격/장소/메모/만족도/컬렉션상태/기록일시
   TraitAnswerEntity    기록 1건에 대한 Trait별 답 (기록 : 답 = 1 : N)
+  RecordTagEntity      기록 1건에 대한 선택 태그 (기록 : 태그 = 1 : N)
   DrinkRecordDao
 ```
+
+`RecordTagEntity`도 행 단위인 이유는 `TraitAnswerEntity`와 같다 — 태그 집합이 아직 가설이라
+컬럼으로 고정하면 태그 하나를 바꿀 때마다 스키마가 흔들린다. 저장·삭제도 답과 같은 트랜잭션에서
+**지우고 다시 넣는다**(수정 시 옛 값이 남으면 판정이 오염된다).
 
 **`TraitAnswerEntity`를 별도 테이블로 두는 이유**: Trait 개수가 아직 가설이므로(PRD 7절), 컬럼으로
 고정하면 축을 바꿀 때마다 스키마가 흔들린다. 행으로 두면 Trait 추가·삭제가 스키마 변경 없이 가능하다.

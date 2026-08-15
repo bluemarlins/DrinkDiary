@@ -72,6 +72,7 @@ fun DrinkDiaryApp(modifier: Modifier = Modifier) {
                     factory =
                         ProfileViewModel.Factory(
                             appContainer.observeTasteProfileUseCase,
+                            appContainer.observeTagPreferenceUseCase,
                             appContainer.resolveProfileReadinessUseCase,
                         ),
                 )

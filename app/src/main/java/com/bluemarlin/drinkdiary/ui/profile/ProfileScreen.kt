@@ -17,7 +17,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.bluemarlin.drinkdiary.domain.model.DrinkType
 import com.bluemarlin.drinkdiary.domain.model.ProfileReadiness
+import com.bluemarlin.drinkdiary.domain.model.TagPreference
 import com.bluemarlin.drinkdiary.domain.model.TasteProfile
 import com.bluemarlin.drinkdiary.domain.model.TraitPreference
 import com.bluemarlin.drinkdiary.domain.model.TypeScope
@@ -59,6 +61,21 @@ fun ProfileScreen(
             Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                 Text("추가로 기록한 축", style = MaterialTheme.typography.titleMedium)
                 answeredSpecific.forEach { pref -> TraitStatusRow(pref) }
+            }
+        }
+
+        if (state.tagPreferences.isNotEmpty()) {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                Text("라벨로 본 취향", style = MaterialTheme.typography.titleMedium)
+                Text(
+                    // 이쪽 결과는 가져갈 수 있다는 점이 감각 축과 다르다.
+                    text = "매장에서 라벨만 보고도 쓸 수 있는 기준이에요.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                state.tagPreferences.forEach { pref ->
+                    TagPreferenceBlock(pref, state.scope)
+                }
             }
         }
     }
@@ -127,6 +144,56 @@ private fun SummaryHeadline(
                         },
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun TagPreferenceBlock(
+    pref: TagPreference,
+    scope: TypeScope,
+) {
+    // 통합 스코프에서는 주종을 특정할 수 없으므로 도수 구간을 순서로만 말한다.
+    val drinkType =
+        when (scope) {
+            TypeScope.Wine -> DrinkType.Wine
+            TypeScope.Whiskey -> DrinkType.Whiskey
+            TypeScope.Combined -> null
+        }
+
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(DrinkLabels.tagCategory(pref.category), style = MaterialTheme.typography.bodyLarge)
+            if (!pref.meaningfulGap) {
+                // 차이가 없으면 없다고 말한다. 순위만 보여주면 없는 선호가 있는 것처럼 읽힌다.
+                Text(
+                    text = "아직 차이가 뚜렷하지 않아요",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+
+        pref.values.forEach { value ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text(
+                    text = DrinkLabels.tagValue(pref.category, value.value, drinkType),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                // 표본 수를 늘 함께 보여준다 — "5점(1잔)"과 "4.3점(7잔)"은 전혀 다른 말이다.
+                Text(
+                    text = "%.1f점 (%d잔)".format(value.averageRating, value.samples),
+                    style = MaterialTheme.typography.bodyMedium,
                 )
             }
         }

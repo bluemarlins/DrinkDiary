@@ -154,7 +154,13 @@ private fun OptionalFields(
     form: RecordForm,
     onFormChange: (RecordForm) -> Unit,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        TagPicker(
+            type = type,
+            tags = form.tags,
+            onTagsChange = { onFormChange(form.copy(tags = it)) },
+        )
+
         // P4 — 같은 이름이 같은 맛을 보장하지 않게 만드는 변수들
         if (type == DrinkType.Wine) {
             OutlinedTextField(

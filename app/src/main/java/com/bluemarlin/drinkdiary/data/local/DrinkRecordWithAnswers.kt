@@ -10,4 +10,9 @@ data class DrinkRecordWithAnswers(
         entityColumn = "recordId",
     )
     val answers: List<TraitAnswerEntity>,
+    @Relation(
+        parentColumn = "id",
+        entityColumn = "recordId",
+    )
+    val tags: List<RecordTagEntity> = emptyList(),
 )

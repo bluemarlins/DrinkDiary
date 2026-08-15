@@ -5,15 +5,19 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.bluemarlin.drinkdiary.data.local.DrinkDiaryDatabase
 import com.bluemarlin.drinkdiary.data.repository.DrinkRecordRepositoryImpl
+import com.bluemarlin.drinkdiary.domain.model.AbvBand
 import com.bluemarlin.drinkdiary.domain.model.AppError
 import com.bluemarlin.drinkdiary.domain.model.AppResult
 import com.bluemarlin.drinkdiary.domain.model.CollectionStatus
 import com.bluemarlin.drinkdiary.domain.model.DrinkRecord
+import com.bluemarlin.drinkdiary.domain.model.DrinkTags
 import com.bluemarlin.drinkdiary.domain.model.DrinkType
+import com.bluemarlin.drinkdiary.domain.model.Origin
 import com.bluemarlin.drinkdiary.domain.model.ServingStyle
 import com.bluemarlin.drinkdiary.domain.model.TasteInput
 import com.bluemarlin.drinkdiary.domain.model.Trait
 import com.bluemarlin.drinkdiary.domain.model.TraitAnswer
+import com.bluemarlin.drinkdiary.domain.model.WineColor
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -114,6 +118,53 @@ class DrinkRecordRepositoryTest {
             val reloaded = repository.observeRecord(id).first()!!
             assertEquals(1, reloaded.taste.answers.size)
             assertEquals(TraitAnswer.Low, reloaded.taste[Trait.Body])
+        }
+
+    @Test
+    fun `tags survive a round trip`() =
+        runBlocking {
+            val id =
+                saveId(
+                    wine().copy(
+                        tags = DrinkTags(wineColor = WineColor.Red, abvBand = AbvBand.Mid, origin = Origin.OldWorld),
+                    ),
+                )
+
+            val loaded = repository.observeRecord(id).first()!!
+
+            assertEquals(WineColor.Red, loaded.tags.wineColor)
+            assertEquals(AbvBand.Mid, loaded.tags.abvBand)
+            assertEquals(Origin.OldWorld, loaded.tags.origin)
+            assertNull(loaded.tags.peat)
+        }
+
+    @Test
+    fun `re-saving a record replaces its tags instead of piling them up`() =
+        runBlocking {
+            val id = saveId(wine().copy(tags = DrinkTags(origin = Origin.OldWorld)))
+
+            val edited =
+                repository.observeRecord(id).first()!!.copy(
+                    tags = DrinkTags(origin = Origin.NewWorld),
+                )
+            repository.save(edited)
+
+            val reloaded = repository.observeRecord(id).first()!!
+            assertEquals(1, reloaded.tags.entries.size)
+            assertEquals(Origin.NewWorld, reloaded.tags.origin)
+        }
+
+    @Test
+    fun `a record with no tags loads fine`() =
+        runBlocking {
+            val id = saveId(wine())
+
+            assertTrue(
+                repository
+                    .observeRecord(id)
+                    .first()!!
+                    .tags.isEmpty,
+            )
         }
 
     @Test

@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.bluemarlin.drinkdiary.domain.model.AppResult
 import com.bluemarlin.drinkdiary.domain.model.CollectionStatus
 import com.bluemarlin.drinkdiary.domain.model.DrinkRecord
+import com.bluemarlin.drinkdiary.domain.model.DrinkTags
 import com.bluemarlin.drinkdiary.domain.model.DrinkType
 import com.bluemarlin.drinkdiary.domain.model.ServingStyle
 import com.bluemarlin.drinkdiary.domain.model.TasteInput
@@ -28,6 +29,7 @@ data class RecordForm(
     val place: String = "",
     val memo: String = "",
     val imageUri: String? = null,
+    val tags: DrinkTags = DrinkTags(),
 ) {
     // 만족도는 선택이 아니다 — 선호 판정의 종속 변수라 없으면 그 기록은 유형에 기여하지 못한다.
     val isSavable: Boolean get() = name.isNotBlank() && rating > 0.0
@@ -77,6 +79,7 @@ class RecordViewModel(
                     vintage = state.form.vintage.toIntOrNull(),
                     servingStyle = if (type == DrinkType.Whiskey) state.form.servingStyle else null,
                     taste = state.taste,
+                    tags = state.form.tags,
                     rating = state.form.rating,
                     collectionStatus = state.form.collectionStatus,
                     imageUri = state.form.imageUri,

@@ -7,6 +7,7 @@ import com.bluemarlin.drinkdiary.data.repository.DrinkRecordRepositoryImpl
 import com.bluemarlin.drinkdiary.data.repository.UserPreferencesRepositoryImpl
 import com.bluemarlin.drinkdiary.domain.repository.DrinkRecordRepository
 import com.bluemarlin.drinkdiary.domain.repository.UserPreferencesRepository
+import com.bluemarlin.drinkdiary.domain.usecase.ObserveTagPreferenceUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveTasteProfileUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ResolveProfileReadinessUseCase
 
@@ -25,9 +26,13 @@ class AppContainer(
     application: Application,
 ) {
     // 출시 전이라 마이그레이션을 쌓지 않는다(problem-definition.md 7-1절).
+    // 스키마가 바뀌면 기존 설치본의 데이터는 버린다 — 아직 사용자 데이터가 없고,
+    // 마이그레이션을 쌓기 시작하면 재정의 중인 스키마에 발이 묶인다.
+    @Suppress("DEPRECATION")
     private val database: DrinkDiaryDatabase =
         Room
             .databaseBuilder(application, DrinkDiaryDatabase::class.java, "taste_archive.db")
+            .fallbackToDestructiveMigration()
             .build()
 
     val drinkRecordRepository: DrinkRecordRepository =
@@ -37,5 +42,6 @@ class AppContainer(
         UserPreferencesRepositoryImpl(application)
 
     val observeTasteProfileUseCase = ObserveTasteProfileUseCase(drinkRecordRepository)
+    val observeTagPreferenceUseCase = ObserveTagPreferenceUseCase(drinkRecordRepository)
     val resolveProfileReadinessUseCase = ResolveProfileReadinessUseCase()
 }
