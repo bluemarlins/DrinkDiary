@@ -3,17 +3,18 @@ package com.bluemarlin.drinkdiary.ui.record
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -26,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.bluemarlin.drinkdiary.domain.model.CollectionStatus
@@ -33,6 +35,7 @@ import com.bluemarlin.drinkdiary.domain.model.DrinkType
 import com.bluemarlin.drinkdiary.domain.model.ServingStyle
 import com.bluemarlin.drinkdiary.domain.model.TagCategory
 import com.bluemarlin.drinkdiary.ui.DrinkLabels
+import com.bluemarlin.drinkdiary.ui.component.DDPrimaryButton
 import com.bluemarlin.drinkdiary.ui.component.DDUriImage
 
 // 취향 입력 이후 단계. 이름과 만족도만 필수이고 나머지는 접어둔다 —
@@ -107,7 +110,7 @@ fun RecordDetailStep(
                 DDUriImage(
                     imageUri = it,
                     contentDescription = "선택한 사진",
-                    modifier = Modifier.size(64.dp),
+                    modifier = Modifier.size(64.dp).clip(MaterialTheme.shapes.small),
                 )
             }
         }
@@ -133,11 +136,12 @@ fun RecordDetailStep(
             )
         }
 
-        Button(
+        DDPrimaryButton(
+            text = if (saving) "저장 중" else saveLabel,
             onClick = onSave,
             enabled = form.isSavable && !saving,
-            modifier = Modifier.fillMaxWidth().height(56.dp),
-        ) { Text(if (saving) "저장 중" else saveLabel) }
+            modifier = Modifier.fillMaxWidth(),
+        )
     }
 }
 
@@ -149,24 +153,45 @@ private fun RatingPicker(
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         (1..5).forEach { value ->
             val selected = rating >= value
+            val containerColor =
+                if (selected) {
+                    MaterialTheme.colorScheme.primaryContainer
+                } else {
+                    MaterialTheme.colorScheme.surface
+                }
+            val contentColor =
+                if (selected) {
+                    MaterialTheme.colorScheme.onPrimaryContainer
+                } else {
+                    MaterialTheme.colorScheme.onSurface
+                }
+            val borderColor =
+                if (selected) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.outlineVariant
+                }
+
             Card(
                 onClick = { onRatingChange(value.toDouble()) },
                 modifier = Modifier.size(56.dp),
+                shape = MaterialTheme.shapes.medium,
                 colors =
-                    androidx.compose.material3.CardDefaults.cardColors(
-                        containerColor =
-                            if (selected) {
-                                MaterialTheme.colorScheme.primaryContainer
-                            } else {
-                                MaterialTheme.colorScheme.surfaceVariant
-                            },
+                    CardDefaults.cardColors(
+                        containerColor = containerColor,
+                        contentColor = contentColor,
                     ),
+                border = BorderStroke(1.dp, borderColor),
             ) {
-                Text(
-                    text = value.toString(),
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(16.dp),
-                )
+                Box(
+                    modifier = Modifier.size(56.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = value.toString(),
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                }
             }
         }
     }

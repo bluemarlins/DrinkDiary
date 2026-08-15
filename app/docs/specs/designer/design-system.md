@@ -1,291 +1,151 @@
-# DrinkDiary Design System
+# DrinkDiary (테이스트 아카이브) Design System
 
-> [!IMPORTANT]
-> **2026-08-13 점검 — 부분적으로 낡았다.** 제품 재정의 전에 작성된 문서이며, 코드와 양방향으로
-> 어긋나 있다. Foundation·Action·Input·Display 컴포넌트의 **사용 규칙은 여전히 유효**하므로
-> 폐기하지 않되, 아래 격차를 감안해서 읽는다. 전면 개정은 **F2 취향 입력 프로토타입이 확정된 뒤**
-> 한다 — 입력 패턴이 정해지기 전에 컴포넌트 목록을 다시 쓰면 두 번 쓰게 된다.
->
-> **(1) 문서에만 있고 구현되지 않은 것 7개** — 카탈로그에 있으나 코드에 없다. 신규 작성 시
-> "이미 있는 컴포넌트"로 오인하지 말 것:
-> `DDFilterChipRow`, `DDIconButton`, `DDInlineValidationMessage`, `DDOutlinedButton`,
-> `DDSnackbarMessage`, `DDTastingNoteBlock`, `DDTextButton`
->
-> **(2) 코드에 있으나 문서화되지 않은 것 10개**:
-> `DDSensoryMetricSlider`, `DDRatingBreakdownRadarChart`, `DDRatingValueText`, `DDUriImage`,
-> `DDDashboardMetricTile`, `DDDrinkTypeDonutCard`, `DDMonthlyTrendCard`, `DDPriceBracketCard`,
-> `DDProUpgradeDialog`, `DDProLockOverlay`
->
-> **(3) 11절 화면별 매핑은 구 4화면 기준**이다(Dashboard/Collection/Detail/Editor).
-> 재정의된 화면 구성은 `../developer/software-architecture.md` 6절을 따른다 —
-> `record`/`profile`/`collection`/`lookup`/`share`/`settings`.
->
-> ### F2와의 관계 — 충돌이 아니라 공백이다
->
-> 이 문서는 취향 입력에 대해 **아무 말도 하지 않는다.** `DDRatingInput`(5점 별점)만 있고,
-> 실제 코드의 `DDSensoryMetricSlider`(5축 슬라이더)는 문서에 없다. 그 슬라이더가 PRD S5
-> 실패 시나리오의 원인이고 F2에서 폐기 대상이다.
->
-> **F2가 필요로 하는 신규 컴포넌트**(아직 존재하지 않음):
->
-> | 필요 | 용도 |
-> | --- | --- |
-> | `DDProbeQuestion` | Probe 1문항 — 질문 + 3선택지(낮음/모르겠음/높음). 탭 1회로 응답 |
-> | `DDProbeSequence` | Probe 3~5개를 순차 제시. 진행도 표시 |
-> | `DDTasteSentence` | 취향 요약 문장 표시(F3). 차트가 아니라 문장이 주인공 |
-> | `DDProfileProgress` | 임계치까지 남은 개수 안내 |
-> | `DDShareCard` | 9:16 공유 카드 레이아웃(F4) |
-> | `DDLookupResult` | 매장 조회 결과 — 좋아했는지를 한눈에(F5) |
->
-> 위 목록은 **설계 입력**이지 확정 스펙이 아니다. F2 프로토타입에서 실제 형태가 정해진다.
+> [!NOTE]
+> **확정 명세 (2026-08-16 승격).**  
+> 2026-08 제품 재정의에 맞추어 6화면 체제(`record`, `profile`, `collection`, `detail`, `settings`, `navigation`), 3~5탭 입력(F2), 81유형 모델(F3), 반응형 브레이크포인트, 모션, Figma 3계층 토큰 및 순수 디자인 Do & Don't 원칙을 반영하여 전면 개정함.  
+> 근거: `../../departments/designer/design-system-ux-research.md`, `design-system-showcase.html`
 
+---
 
-## 1. 문서 목적
+## 1. 개요 및 설계 철학
 
-이 문서는 DrinkDiary 앱의 화면별 UI 일관성을 유지하기 위한 Basic UI Component 목록과 사용 기준을 정의한다.
-각 Screen은 가능한 한 이 문서의 공통 컴포넌트를 조합해 구현한다.
+테이스트 아카이브(DrinkDiary) 디자인 시스템은 **"한 잔의 기록이, 당신의 취향을 만듭니다"**라는 제품 가치에 맞추어, 아날로그 양장본 테이스팅 저널의 깊이감과 모바일에서의 최고 가독성·터치 조작성을 제공하는 UI 프레임워크입니다.
 
-## 2. 설계 기준
+### 핵심 설계 원칙
+1. **에디토리얼 무드 (Editorial & Warm)**: 차가운 블루톤을 배제하고, 종이 질감(`Paper`)과 주류 웜톤(`Wine`, `Malt`), Serif(코드)+Sans(UI) 페어링으로 품격 있는 저널 느낌 전달.
+2. **반응형 & 적응형 (Adaptive Layout)**: `Compact`, `Medium`, `Expanded` 3단계 브레이크포인트와 가로/세로 화면 전환에 완전 대응.
+3. **공간적 깊이감과 모션 (Spatial Motion)**: `Depth In/Out` (Z-Axis Shared Axis), `Selection Mode` 일괄 작업 바, 탭 전환 모핑.
+4. **접근성 및 터치 보장 (Accessibility First)**: 모든 인터랙티브 컴포넌트의 최소 48×48dp 터치 영역 및 WCAG 2.1 AAA/AA 명도 대비 보장.
 
-- UI는 Jetpack Compose와 Material 3를 기준으로 한다.
-- 화면별 커스텀 UI보다 공통 컴포넌트 재사용을 우선한다.
-- 주류 종류는 와인, 위스키, 맥주 3개만 표현한다.
-- 컬렉션 상태는 일반 기록, 재구매 후보, 비선호 3개만 표현한다.
-- Loading, Empty, Error, Success 상태를 모든 주요 화면에서 일관되게 표현한다.
-- Composable은 가능한 stateless로 만들고 상태와 이벤트는 상위에서 주입한다.
+---
 
-## 3. 컴포넌트 분류
+## 2. 순수 시각 디자인 원칙 (Pure Design Do & Don't)
 
-| 분류 | 목적 |
-| --- | --- |
-| Foundation | 색상, 타이포그래피, 간격, 모양 등 기본 토큰 |
-| Action | 버튼, FAB, 아이콘 버튼 등 사용자 액션 |
-| Input | 텍스트, 숫자, 날짜, 사진, 별점 입력 |
-| Selection & Filter | 필터, 세그먼트, 칩, 선택 항목 |
-| Display | 카드, 목록 아이템, 정보 행, 요약 카드 |
-| Feedback | 로딩, 빈 상태, 오류, 다이얼로그, 스낵바 |
-| Domain | DrinkDiary 도메인에 특화된 컴포넌트 |
+| 영역 | ✅ DO (권장 규격) | ❌ DON'T (금지 규격) |
+| :--- | :--- | :--- |
+| **1. 색상 배합 (Color Harmony)** | • **한 화면 내 액센트 컬러 최대 2개로 제한**<br>• **60-30-10 법칙** 준수 (배경 60%, 중립 서피스 30%, 액센트 10%) | • 한 뷰포트에 3가지 이상의 다채색/원색 혼용 금지 (시각적 소음 유발)<br>• 코드 내 임의 Hex 하드코딩 금지 |
+| **2. 테마 & 시인성 (Theme & Contrast)** | • **WCAG 2.1 본문 7.0:1 (AAA), 보조 4.5:1 (AA) 대비 보장**<br>• 완전 블랙 대신 깊이감 있는 웜 다크(`#15110E`) 사용 | • Dark 모드에서 채도 100% 원색/네온 텍스트 사용 금지 (눈부심/Halation 유발)<br>• 라이트 테마 단순 색상 반전(Invert) 금지 |
+| **3. 타이포그래피 (Typography)** | • **앱 전체 서체 최대 2종(Serif + Sans)으로 제한**<br>• 본문 폰트 대비 140~150% 행간 및 자간 보정 | • 한 화면에 3종 이상의 이종 서체(필기체, 장식체 등) 혼용 금지<br>• 자간(Tracking) 보정 없는 거대 텍스트 남발 금지 |
+| **4. 에셋 무결성 (Iconography)** | • **모든 아이콘은 24×24dp 그리드, 2dp 선 굵기, 동일 코너 반경으로 자체 제작/규격화**<br>• 해상도 독립적인 Vector XML 사용 | • 웹/외부에서 개별 다운로드한 이종 스타일 아이콘(선형+채움형 혼합, 선 굵기 불일치) 혼용 금지<br>• 저해상도 래스터 이미지(PNG/JPG) 사용 금지 |
+| **5. 터치 타깃 (Touch & Grid)** | • **모든 인터랙티브 요소는 최소 48×48dp 터치 영역 보장**<br>• 4/8dp 배수 그리드 토큰(`4`, `8`, `12`, `16`, `24`, `32dp`)만 사용 | • 36dp 미만 작은 터치 영역 배치 금지 (오터치 유발)<br>• 임의의 비표준 dp 여백(`7dp`, `13dp` 등) 흩뿌림 금지 |
+| **6. 표면 장식 (Decoration & Depth)** | • **1px의 단정한 외곽선(Stroke)과 부드러운 다단계 섀도우로 은은한 계층 표현** | • 3중 이상 과도하게 중첩된 카드(Over-Nested Cards) 금지<br>• 빛나는 네온 테두리 및 키워드 그라데이션 남발 금지 |
 
-## 4. Foundation Components
+---
 
-| 컴포넌트 | 역할 | 사용 위치 |
-| --- | --- | --- |
-| DrinkDiaryTheme | 앱 전체 Material 3 Theme 제공 | 앱 루트 |
-| DrinkDiaryColors | Primary, Secondary, Surface, Error 등 색상 토큰 | 모든 화면 |
-| DrinkDiaryTypography | 제목, 본문, 라벨 텍스트 스타일 | 모든 화면 |
-| DrinkDiarySpacing | 4, 8, 12, 16, 24, 32dp 간격 토큰 | 모든 화면 |
-| DrinkDiaryShapes | 버튼, 카드, 이미지 모서리 반경 정의 | 모든 화면 |
+## 3. 디자인 파운데이션 (Tokens)
 
-권장 사항:
+### 3.1 색상 토큰 (Color Palette)
 
-- 카드와 버튼은 과도한 라운드를 피하고 8dp 이하를 기본으로 한다.
-- 화면 내부 텍스트는 Material 3 Typography를 기반으로 통일한다.
-- 화면마다 직접 dp 값을 흩뿌리기보다 spacing 토큰을 사용한다.
+| 토큰명 | Light 테마 Hex | Dark 테마 Hex | 시맨틱 용도 |
+| :--- | :--- | :--- | :--- |
+| `Paper` | `#FFF8F2` | `#15110E` | 앱 전체 배경 기본색 (양장본 종이 톤) |
+| `Surface` | `#FFFFFF` | `#221C17` | 카드, 바텀시트, 다이얼로그 배경 |
+| `SurfaceSunk` | `#F6EDE4` | `#1B1612` | 칩 미선택 상태, 배경 속 인셋 영역 |
+| `Ink` | `#241E19` | `#F2E9E0` | 본문 기본 텍스트 (Primary Text) |
+| `InkSoft` | `#6B5F56` | `#B3A498` | 보조 텍스트, 캡션 (Secondary Text) |
+| `InkFaint` | `#9C8F84` | `#7D7066` | 비활성 텍스트, 플레이스홀더 |
+| `Line` | `#E7DACC` | `#3A302A` | 기본 1px 구분선 |
+| `LineStrong` | `#D3C2B0` | `#4E4139` | 카드/인풋 테두리 강한 구분 |
+| `Primary` | `#2F6F4E` | `#6FBF93` | 주 액션 버튼, 브랜드 강조 |
+| `PrimaryContainer` | `#E4EFE8` | `#1E3229` | 액션 보조 배경, 선택된 칩 배경 |
+| `Wine` | `#93425E` | `#DB90AC` | 와인 주종 뱃지 및 테마 포인트 |
+| `WineContainer` | `#F6E6EC` | `#38222B` | 와인 뱃지/배경용 연한 톤 |
+| `Malt` | `#9C6722` | `#DFA75B` | 위스키 주종 뱃지 및 테마 포인트 |
+| `MaltContainer` | `#F8ECDA` | `#38290F` | 위스키 뱃지/배경용 연한 톤 |
+| `Destructive` | `#BA1A1A` | `#FFB4AB` | 삭제, 위험 액션 |
 
-## 5. Action Components
+### 3.2 타이포그래피 (Typography Hierarchy)
 
-| 컴포넌트 | 역할 | 사용 위치 |
-| --- | --- | --- |
-| DDPrimaryButton | 저장, 등록 완료 등 주요 긍정 액션 | 기록 등록/수정 |
-| DDSecondaryButton | 취소, 보조 이동 등 부가 액션 | 입력 폼, 다이얼로그 |
-| DDContainedButton | 강조 배경을 가진 일반 실행 액션 | 빈 상태, 상세 화면 |
-| DDOutlinedButton | 덜 강조되는 선택형 액션 | 빈 상태, 필터 보조 액션 |
-| DDTextButton | 낮은 강조도의 텍스트 액션 | 다이얼로그, 상세 화면 |
-| DDDestructiveButton | 삭제처럼 되돌리기 어려운 액션 | 기록 상세, 삭제 다이얼로그 |
-| DDIconButton | 수정, 삭제, 뒤로가기, 이미지 제거 등 아이콘 액션 | 상단 바, 상세, 입력 폼 |
-| DDAddRecordFab | 신규 기록 등록 진입 | Dashboard, Collection |
+- **Serif Family**: `FontFamily.Serif` (Georgia 계열)
+- **Sans Family**: `FontFamily.SansSerif` (시스템 산세리프 / Pretendard / Noto Sans KR)
 
-버튼 사용 기준:
+| 스타일 Role | 서체 / Weight | 크기 / 행간 | Tracking | 주요 사용처 |
+| :--- | :--- | :--- | :--- | :--- |
+| `DisplayTasteCode` | Serif Bold | 32sp / 40sp | +0.05em | 81가지 취향 유형 코드 (`SFRE`), 9:16 공유 카드 |
+| `HeadlineSentence` | Sans SemiBold | 20sp / 28sp | -0.02em | 취향 요약 핵심 문장 |
+| `TitleLarge` | Sans Bold | 18sp / 24sp | -0.01em | 상단 앱바 타이틀, 화면 주요 섹션 헤더 |
+| `TitleMedium` | Sans SemiBold | 16sp / 22sp | 0.00em | 카드 타이틀, 질문 문항 텍스트 |
+| `BodyLarge` | Sans Regular | 15sp / 22sp | 0.00em | 폼 필드 입력값, 본문 |
+| `BodyMedium` | Sans Regular | 13sp / 18sp | +0.01em | 카드 설명, 보조 텍스트, 날짜/가격 |
+| `LabelLarge` | Sans SemiBold | 14sp / 20sp | +0.01em | 주요 버튼 레이블 (`DDPrimaryButton`) |
+| `LabelSmall` | Sans Medium | 11sp / 14sp | +0.03em | 주종 뱃지, 태그 칩 레이블 |
 
-- 저장, 등록 완료는 `DDPrimaryButton`을 사용한다.
-- 주요 저장 액션이 아닌 일반 강조 액션은 `DDContainedButton`을 사용한다.
-- 삭제는 항상 `DDDestructiveButton` 또는 destructive 색상의 `DDTextButton`을 사용한다.
-- 한 화면의 가장 중요한 액션은 1개만 Primary로 둔다.
-- 아이콘이 의미를 충분히 전달할 수 있는 경우 `DDIconButton`을 사용하고 접근성 라벨을 제공한다.
+### 3.3 간격 및 형태 (Spacing & Shapes)
+- **간격 토큰**: `4dp`(xxs), `8dp`(xs), `12dp`(sm), `16dp`(md - 표준 마진), `20dp`(lg), `24dp`(xl), `32dp`(xxl)
+- **라운드 토큰**:
+  - `ShapeSmall` (6dp): 태그 칩, 도메인 배지
+  - `ShapeMedium` (12dp): 버튼, 텍스트 필드, 작은 카드
+  - `ShapeLarge` (18dp): 메인 카드, 다이얼로그, 바텀시트 상단
 
-## 6. Input Components
+---
 
-| 컴포넌트 | 역할 | 사용 위치 |
-| --- | --- | --- |
-| DDTextField | 이름, 장소 등 단문 입력 | 기록 등록/수정 |
-| DDNumberField | 가격 입력 | 기록 등록/수정 |
-| DDMultilineTextField | 테이스팅 노트 입력 | 기록 등록/수정 |
-| DDDateTimeField | 기록 일시 선택 | 기록 등록/수정 |
-| DDImagePicker | 사진 선택 및 미리보기 | 기록 등록/수정 |
-| DDRatingInput | 5점 기준 별점 입력 | 기록 등록/수정 |
-| DDFormSection | 입력 항목을 의미 단위로 묶는 섹션 | 기록 등록/수정 |
-| DDFormErrorText | 필드 단위 오류 메시지 표시 | 기록 등록/수정 |
+## 4. 반응형 브레이크포인트 (Adaptive Breakpoints)
 
-입력 컴포넌트 제약:
+| WindowSizeClass | 기준 너비 (Width) | 마진 (Margin) | 네비게이션 구조 | 화면별 적응형 레이아웃 |
+| :--- | :--- | :--- | :--- | :--- |
+| **Compact** | `< 600dp` (일반 폰) | `16dp` | `BottomNavigationBar` | 1-Column 단일 스택 플로우 |
+| **Medium** | `600dp ~ 839dp` (폴더블/가로) | `24dp` | `NavigationRail` (좌측) | 2-Column 분할 (좌 40% : 우 60%) |
+| **Expanded** | `≥ 840dp` (태블릿/DeX) | `32dp` | `NavigationDrawer` (영구) | List-Detail / Supporting Pane (최대 콘텐츠폭 720dp 제한) |
 
-- 이름, 주류 종류, 별점, 컬렉션 상태, 기록 일시는 필수 입력이다.
-- 가격은 선택 입력이며 비어 있는 값을 허용한다.
-- 가격 입력 시 0 미만 값은 허용하지 않는다.
-- 사진 선택 실패 시 오류를 표시하되 사진 없이 저장 가능해야 한다.
-- 테이스팅 노트는 여러 줄 입력을 지원한다.
+---
 
-## 7. Selection & Filter Components
+## 5. 공통 컴포넌트 카탈로그 (`DD*`)
 
-| 컴포넌트 | 역할 | 사용 위치 |
-| --- | --- | --- |
-| DDDrinkTypeSelector | 와인, 위스키, 맥주 중 하나 선택 | 기록 등록/수정 |
-| DDDrinkTypeFilter | 전체, 와인, 위스키, 맥주 필터 | Collection |
-| DDCollectionStatusSelector | 일반 기록, 재구매 후보, 비선호 중 하나 선택 | 기록 등록/수정 |
-| DDCollectionStatusFilter | 전체, 일반, 재구매 후보, 비선호 필터 | Collection |
-| DDPeriodSegmentedControl | 주간, 월간, 연간 기간 선택 | Dashboard |
-| DDFilterChipRow | 여러 필터 칩을 가로 배치 | Collection |
+### 5.1 Action Components
+| 컴포넌트 | 파라미터 / 역할 | 비고 |
+| :--- | :--- | :--- |
+| `DDPrimaryButton` | `text`, `onClick`, `modifier`, `enabled`, `icon` | 최소 48dp 높이, 긍정 액션 버튼 |
+| `DDSecondaryButton`| `text`, `onClick`, `modifier`, `enabled` | 이전 단계, 취소 등 보조 액션 |
+| `DDDestructiveButton` | `text`, `onClick`, `modifier` | 기록 삭제 등 위험 액션 |
+| `DDIconButton` | `icon`, `contentDescription`, `onClick` | 상단 툴바 뒤로가기, 설정 등 (48×48dp 터치 영역) |
 
-선택 컴포넌트 제약:
+### 5.2 Input & Probe Components (F2)
+| 컴포넌트 | 역할 및 인터랙션 |
+| :--- | :--- |
+| `DDProbeQuestion` | 1개 감각 축 질문 문항 + 3개 선택지 버튼(`Low`/`Mid`/`High`). 탭 1회 즉시 선택 (높이 52dp) |
+| `DDProbeProgress` | 4문항 중 현재 진행 단계 표시 바 (부드러운 진행도 보간) |
+| `DDTagChipGroup` | 선택 태그(와인 색, 위스키 분류, 피트 등) 칩 목록 |
+| `DDRatingInput` | 5점 척도 만족도 선택 (터치 및 드래그) |
+| `DDToggleRow` | 재구매 의향 ("다시 살래요") 원터치 스위치/토글 |
+| `DDTextField` | 술 이름, 장소, 가격 등 단정한 텍스트 필드 |
 
-- 주류 종류와 컬렉션 상태는 정해진 값 외 직접 입력을 허용하지 않는다.
-- Collection에서는 주류 종류 필터와 컬렉션 상태 필터를 동시에 적용할 수 있어야 한다.
-- Dashboard 기간 선택은 주간, 월간, 연간 3개만 제공한다.
+### 5.3 Display & Insight Components (F3, F5, F4)
+| 컴포넌트 | 역할 및 비고 |
+| :--- | :--- |
+| `DDTasteSentenceCard` | **[F3 핵심]** 문장 형태의 취향 요약 표시 카드 (배경 톤 + 인용구 스타일) |
+| `DDTasteTypeBadge` | 81유형 코드(예: `SFRE`)와 레이블을 품격 있게 표현하는 컴포넌트 |
+| `DDProfileProgressCard` | 임계치 도달 전("N잔 더 마시면...") 남은 진행도 안내 카드 |
+| `DDDrinkBadge` | 와인(버건디)/위스키(골드) 및 세부 분류를 한눈에 보여주는 도메인 뱃지 |
+| `DDRepurchaseBadge` | 매장에서 3초 만에 선호도를 확인하는 "재구매 추천" 뱃지 |
+| `DDDrinkRecordCard` | 컬렉션 목록의 직관적인 기록 카드 (이미지 썸네일, 이름, 주종, 만족도, 날짜) |
+| `DDShareCard` | 인스타그램 스토리용 9:16 비율의 로컬 비트맵 렌더링용 Compose 레이아웃 |
 
-## 8. Display Components
+### 5.4 Feedback Components
+| 컴포넌트 | 역할 |
+| :--- | :--- |
+| `DDLoadingContent` | 로딩 인디케이터 및 스켈레톤 UI |
+| `DDEmptyContent` | 기록 없음 또는 필터 결과 없음 시 등록 유도 CTA |
+| `DDConfirmDialog` | 삭제 확인 다이얼로그 (ShapeLarge 18dp) |
+| `DDSnackbar` | 피드백 메시지 표시 |
 
-| 컴포넌트 | 역할 | 사용 위치 |
-| --- | --- | --- |
-| DDScreenScaffold | 공통 TopBar, BottomBar, FAB 슬롯 제공 | 모든 주요 화면 |
-| DDTopAppBar | 화면 제목과 상단 액션 표시 | 모든 주요 화면 |
-| DDBottomNavigationBar | Dashboard, Collection 탭 제공 | 앱 루트 |
-| DDDashboardSummaryCard | 기록 수, 평균 별점 등 요약 지표 표시 | Dashboard |
-| DDStatusSummaryCard | 재구매 후보 수, 비선호 수 표시 | Dashboard |
-| DDDrinkTypeRatioCard | 와인, 위스키, 맥주 비중 표시 | Dashboard |
-| DDDrinkRecordListItem | 컬렉션 목록의 단일 기록 표시 | Collection |
-| DDDrinkRecordCard | 주요 기록 카드 표시 | Dashboard |
-| DDInfoRow | 상세 화면의 라벨-값 행 표시 | RecordDetail |
-| DDImageThumbnail | 목록/카드용 이미지 썸네일 | Dashboard, Collection |
-| DDRecordHeroImage | 상세 화면의 대표 이미지 | RecordDetail |
+---
 
-표시 컴포넌트 제약:
+## 6. 화면별 컴포넌트 매핑 규칙
 
-- 목록은 `LazyColumn` 기반으로 구현한다.
-- 기록 목록 아이템에는 이름, 주류 종류, 별점, 컬렉션 상태, 기록 일시를 우선 표시한다.
-- 가격과 장소는 공간이 부족한 목록에서는 생략 가능하지만 상세 화면에서는 표시한다.
-- 이미지가 없거나 로드 실패한 경우 대체 이미지를 표시한다.
-
-## 9. Feedback Components
-
-| 컴포넌트 | 역할 | 사용 위치 |
-| --- | --- | --- |
-| DDLoadingContent | 화면 또는 섹션 로딩 표시 | Dashboard, Collection, Detail |
-| DDEmptyContent | 기록 없음 또는 필터 결과 없음 표시 | Dashboard, Collection |
-| DDErrorContent | 조회 실패, 저장 실패 등 오류 표시 | 모든 주요 화면 |
-| DDConfirmDialog | 삭제 확인 등 사용자 확인 필요 상황 | RecordDetail |
-| DDSnackbarMessage | 저장 실패, 삭제 실패 등 일시적 메시지 | 모든 주요 화면 |
-| DDInlineValidationMessage | 필드 검증 오류 표시 | RecordEditor |
-
-피드백 컴포넌트 제약:
-
-- Empty 상태는 등록 진입 동선을 제공한다.
-- Error 상태는 가능한 경우 재시도 액션을 제공한다.
-- 삭제는 반드시 `DDConfirmDialog`를 거친다.
-- 기술 상세 오류는 사용자에게 직접 노출하지 않는다.
-
-## 10. Domain Components
-
-| 컴포넌트 | 역할 | 사용 위치 |
-| --- | --- | --- |
-| DDDrinkTypeBadge | 와인, 위스키, 맥주 표시 | 목록, 상세, 카드 |
-| DDCollectionStatusBadge | 일반 기록, 재구매 후보, 비선호 표시 | 목록, 상세, 카드 |
-| DDRatingStars | 별점 표시 전용 | 목록, 상세, Dashboard |
-| DDPriceText | 가격 표시 포맷 통일 | 목록, 상세 |
-| DDRecordedDateText | 기록 일시 표시 포맷 통일 | 목록, 상세 |
-| DDTastingNoteBlock | 테이스팅 노트 표시 | 상세 |
-
-도메인 컴포넌트 제약:
-
-- `DDDrinkTypeBadge`는 와인, 위스키, 맥주 외 값을 표시하지 않는다.
-- `DDCollectionStatusBadge`는 재구매 후보와 비선호를 명확히 구분한다.
-- 별점 표시는 입력용 `DDRatingInput`과 조회용 `DDRatingStars`를 분리한다.
-
-## 11. 화면별 사용 컴포넌트
-
-### DashboardScreen
-
-| 목적 | 컴포넌트 |
-| --- | --- |
-| 화면 구조 | DDScreenScaffold, DDTopAppBar, DDBottomNavigationBar |
-| 기간 선택 | DDPeriodSegmentedControl |
-| 요약 표시 | DDDashboardSummaryCard, DDStatusSummaryCard, DDDrinkTypeRatioCard |
-| 주요 기록 표시 | DDDrinkRecordCard, DDRatingStars, DDCollectionStatusBadge |
-| 상태 표시 | DDLoadingContent, DDEmptyContent, DDErrorContent |
-| 기록 등록 | DDAddRecordFab |
-
-### CollectionScreen
-
-| 목적 | 컴포넌트 |
-| --- | --- |
-| 화면 구조 | DDScreenScaffold, DDTopAppBar, DDBottomNavigationBar |
-| 필터 | DDDrinkTypeFilter, DDCollectionStatusFilter, DDFilterChipRow |
-| 목록 | DDDrinkRecordListItem, DDImageThumbnail, DDRatingStars |
-| 상태 표시 | DDLoadingContent, DDEmptyContent, DDErrorContent |
-| 기록 등록 | DDAddRecordFab |
-
-### RecordDetailScreen
-
-| 목적 | 컴포넌트 |
-| --- | --- |
-| 화면 구조 | DDScreenScaffold, DDTopAppBar |
-| 이미지 | DDRecordHeroImage |
-| 상세 정보 | DDInfoRow, DDDrinkTypeBadge, DDCollectionStatusBadge, DDRatingStars, DDPriceText, DDRecordedDateText, DDTastingNoteBlock |
-| 액션 | DDPrimaryButton 또는 DDIconButton, DDDestructiveButton, DDConfirmDialog |
-| 상태 표시 | DDLoadingContent, DDErrorContent |
-
-### RecordEditorScreen
-
-| 목적 | 컴포넌트 |
-| --- | --- |
-| 화면 구조 | DDScreenScaffold, DDTopAppBar |
-| 입력 폼 | DDFormSection, DDTextField, DDNumberField, DDMultilineTextField, DDDateTimeField |
-| 선택 입력 | DDImagePicker, DDDrinkTypeSelector, DDCollectionStatusSelector, DDRatingInput |
-| 검증 | DDFormErrorText, DDInlineValidationMessage |
-| 액션 | DDPrimaryButton, DDSecondaryButton |
-| 상태 표시 | DDSnackbarMessage |
-
-## 12. 추천 구현 위치
-
-```text
-com.bluemarlin.drinkdiary.ui
-  ├─ component
-  │  ├─ action
-  │  ├─ input
-  │  ├─ selection
-  │  ├─ display
-  │  ├─ feedback
-  │  └─ domain
-  ├─ dashboard
-  ├─ collection
-  ├─ detail
-  ├─ editor
-  ├─ navigation
-  └─ theme
-```
-
-공통 컴포넌트는 `ui.component` 하위에 두고, 특정 화면에서만 쓰는 조합 컴포넌트는 각 feature 패키지에 둔다.
-이유: 재사용 가능한 컴포넌트와 화면 전용 컴포넌트의 책임을 분리하기 위함이다.
-
-## 13. 우선 구현 대상
-
-초기 MVP에서는 아래 컴포넌트부터 구현한다.
-
-1. DrinkDiaryTheme
-2. DDScreenScaffold
-3. DDPrimaryButton
-4. DDSecondaryButton
-5. DDContainedButton
-6. DDDestructiveButton
-7. DDTextField
-8. DDNumberField
-9. DDMultilineTextField
-10. DDDrinkTypeSelector
-11. DDCollectionStatusSelector
-12. DDPeriodSegmentedControl
-13. DDRatingInput
-14. DDRatingStars
-15. DDDrinkRecordListItem
-16. DDDashboardSummaryCard
-17. DDLoadingContent
-18. DDEmptyContent
-19. DDErrorContent
-20. DDConfirmDialog
+1. **기록 플로우 (`ui/record`)**
+   - 주종/기본 분류 선택 (`DrinkPicker`, `DDDrinkBadge`)
+   - 4축 감각 입력 (`ProbeSequenceScreen`, `DDProbeProgress`, `DDProbeQuestion`)
+   - 상세 정보 & 선택 태그 (`RecordDetailStep`, `DDRatingInput`, `DDToggleRow`, `DDTagChipGroup`)
+   - 첫 기록 태그 승격 프롬프트 (`TagPreferencePrompt`)
+2. **취향 프로필 (`ui/profile/ProfileScreen`)**
+   - `DDTasteTypeBadge` + `DDTasteSentenceCard`
+   - 감각 축별 선호 상태 리스트 (`TraitStatusRow`)
+   - 라벨/태그 기반 인사이트 ("셰리 4.7점", "스모키함 4.5점")
+   - 미달 상태 안내: `DDProfileProgressCard`
+3. **컬렉션 & 검색 (`ui/collection/CollectionScreen`)**
+   - 검색창 + 주종/재구매 필터 칩 (`LazyColumn` + `DDDrinkRecordCard`)
+4. **기록 상세 (`ui/collection/RecordDetailScreen`)**
+   - 대표 이미지(`DDUriImage`) + 주종/재구매 뱃지 + 평점 + 감각 축 응답 + 메모
+   - 수정(`EditRecordScreen`), 삭제(`DDDestructiveButton`, `DDConfirmDialog`)
+5. **설정 (`ui/settings/SettingsScreen`)**
+   - 기록 시 물어볼 태그 스위치 관리

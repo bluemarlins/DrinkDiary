@@ -27,6 +27,9 @@ import com.bluemarlin.drinkdiary.domain.model.TasteProfile
 import com.bluemarlin.drinkdiary.domain.model.TraitPreference
 import com.bluemarlin.drinkdiary.domain.model.TypeScope
 import com.bluemarlin.drinkdiary.ui.DrinkLabels
+import com.bluemarlin.drinkdiary.ui.component.DDProfileProgressCard
+import com.bluemarlin.drinkdiary.ui.component.DDTasteSentenceCard
+import com.bluemarlin.drinkdiary.ui.component.DDTasteTypeBadge
 
 // F3 — 문장 우선, 차트는 보조(software-architecture.md 6절).
 // N개 미만이어도 화면을 비우지 않고 "아직 이르다"와 근거를 함께 보여준다(prd.md F3).
@@ -126,42 +129,32 @@ private fun SummaryHeadline(
 
     when (readiness) {
         is ProfileReadiness.Ready -> {
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text(
-                    text = readiness.type.code,
-                    style = MaterialTheme.typography.displaySmall,
-                    color = MaterialTheme.colorScheme.primary,
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                DDTasteTypeBadge(
+                    code = readiness.type.code,
+                    name = TasteTypeCopy.shortName(readiness.type),
                 )
-                Text(TasteTypeCopy.shortName(readiness.type), style = MaterialTheme.typography.titleLarge)
-                Text(
-                    // 마침표는 조립 규칙이 이미 붙인다 — 중립 절이 뒤에 오면 위치가 달라진다.
-                    text = TasteTypeCopy.sentence(readiness.type),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Text(
-                    text = "기록 ${recordCount}개를 바탕으로 판정했어요.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                DDTasteSentenceCard(
+                    sentence = TasteTypeCopy.sentence(readiness.type),
+                    details = listOf("기록 ${recordCount}개를 바탕으로 판정했어요."),
                 )
             }
         }
 
         is ProfileReadiness.NotReady -> {
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text("아직 취향을 판단하기엔 일러요", style = MaterialTheme.typography.headlineSmall)
-                Text(
-                    text =
-                        if (recordCount == 0) {
-                            "첫 기록을 남기면 여기서 취향이 보이기 시작해요."
-                        } else {
-                            "지금까지 ${recordCount}개를 기록했어요. " +
-                                "${readiness.recordsNeeded}개만 더 남기면 유형이 나와요."
-                        },
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
+            val description =
+                if (recordCount == 0) {
+                    "첫 기록을 남기면 여기서 취향이 보이기 시작해요."
+                } else {
+                    "지금까지 ${recordCount}개를 기록했어요. ${readiness.recordsNeeded}개만 더 남기면 유형이 나와요."
+                }
+            val target = recordCount + readiness.recordsNeeded
+            DDProfileProgressCard(
+                title = "아직 취향을 판단하기엔 일러요",
+                description = description,
+                currentCount = recordCount,
+                targetCount = target,
+            )
         }
     }
 }

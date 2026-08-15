@@ -11,10 +11,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
-import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -27,9 +25,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.bluemarlin.drinkdiary.domain.model.CollectionStatus
 import com.bluemarlin.drinkdiary.domain.model.DrinkRecord
 import com.bluemarlin.drinkdiary.domain.model.Trait
 import com.bluemarlin.drinkdiary.ui.DrinkLabels
+import com.bluemarlin.drinkdiary.ui.component.DDDestructiveButton
+import com.bluemarlin.drinkdiary.ui.component.DDDrinkBadge
+import com.bluemarlin.drinkdiary.ui.component.DDPrimaryButton
+import com.bluemarlin.drinkdiary.ui.component.DDRepurchaseBadge
 import com.bluemarlin.drinkdiary.ui.component.DDUriImage
 
 @Composable
@@ -67,7 +70,16 @@ fun RecordDetailScreen(
             )
         }
 
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                DDDrinkBadge(drinkType = record.type)
+                if (record.collectionStatus == CollectionStatus.Repurchase) {
+                    DDRepurchaseBadge()
+                }
+            }
             Text(record.name, style = MaterialTheme.typography.headlineSmall)
             Text(
                 text = DrinkLabels.subtitle(record),
@@ -88,7 +100,7 @@ fun RecordDetailScreen(
             }
         }
 
-        HorizontalDivider()
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
         Text("그때 남긴 취향", style = MaterialTheme.typography.titleMedium)
         if (record.taste.answers.isEmpty()) {
@@ -113,19 +125,21 @@ fun RecordDetailScreen(
             }
         }
 
-        HorizontalDivider()
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
         // 고치기가 지우기보다 위에 있고 채워진 버튼이다. 오타 하나 때문에 지우고 다시 쓰게
         // 만들면 그 기록의 날짜가 바뀌고, 취향 판정의 표본도 한 번 흔들린다.
-        Button(
+        DDPrimaryButton(
+            text = "고치기",
             onClick = onEdit,
             modifier = Modifier.fillMaxWidth(),
-        ) { Text("고치기") }
+        )
 
-        OutlinedButton(
+        DDDestructiveButton(
+            text = "이 기록 지우기",
             onClick = { confirming = true },
             modifier = Modifier.fillMaxWidth(),
-        ) { Text("이 기록 지우기", color = MaterialTheme.colorScheme.error) }
+        )
     }
 
     if (confirming) {

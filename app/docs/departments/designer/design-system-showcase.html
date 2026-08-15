@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>테이스트 아카이브 — Comprehensive Design System & UX Showcase</title>
+  <style>
+    :root {
+      /* Global Primitives & Semantic Tokens */
+      --paper: #FFF8F2;
+      --surface: #FFFFFF;
+      --surface-sunk: #F6EDE4;
+      --ink: #241E19;
+      --ink-soft: #6B5F56;
+      --ink-faint: #9C8F84;
+      --line: #E7DACC;
+      --line-strong: #D3C2B0;
+
+      --primary: #2F6F4E;
+      --primary-container: #E4EFE8;
+      --on-primary: #FFFFFF;
+
+      --wine: #93425E;
+      --wine-container: #F6E6EC;
+      --malt: #9C6722;
+      --malt-container: #F8ECDA;
+
+      --destructive: #BA1A1A;
+      --destructive-container: #FFDAD6;
+
+      --shadow-sm: 0 1px 3px rgba(36, 30, 25, 0.08);
+      --shadow-md: 0 4px 16px rgba(36, 30, 25, 0.10);
+      --shadow-lg: 0 12px 32px rgba(36, 30, 25, 0.14);
+
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-full: 9999px;
+
+      --motion-fast: 150ms cubic-bezier(0.2, 0.0, 0.0, 1.0);
+      --motion-medium: 250ms cubic-bezier(0.4, 0.0, 0.2, 1.0);
+      --motion-slow: 400ms cubic-bezier(0.05, 0.7, 0.1, 1.0);
+
+      --serif: Georgia, "Times New Roman", serif;
+      --sans: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    }
+
+    [data-theme="dark"] {
+      --paper: #15110E;
+      --surface: #221C17;
+      --surface-sunk: #1B1612;
+      --ink: #F2E9E0;
+      --ink-soft: #B3A498;
+      --ink-faint: #7D7066;
+      --line: #3A302A;
+      --line-strong: #4E4139;
+
+      --primary: #6FBF93;
+      --primary-container: #1E3229;
+      --on-primary: #10201A;
+
+      --wine: #DB90AC;
+      --wine-container: #38222B;
+      --malt: #DFA75B;
+      --malt-container: #38290F;
+
+      --destructive: #FFB4AB;
+      --destructive-container: #93000A;
+
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
+      --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.55);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--sans);
+      line-height: 1.5;
+      padding: 32px 20px;
+      transition: background 0.25s ease, color 0.25s ease;
+    }
+
+    .container {
+      max-width: 1080px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 56px;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .header-title h1 {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .header-title p {
+      color: var(--ink-soft);
+      font-size: 14px;
+      margin-top: 6px;
+    }
+    .header-controls {
+      display: flex;
+      gap: 10px;
+    }
+    .theme-toggle-btn {
+      background: var(--surface);
+      border: 1px solid var(--line-strong);
+      color: var(--ink);
+      padding: 8px 16px;
+      border-radius: var(--radius-full);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Section Styling */
+    section {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .section-header {
+      border-left: 3px solid var(--primary);
+      padding-left: 12px;
+    }
+    .section-header h2 {
+      font-size: 21px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+    .section-header p {
+      font-size: 13px;
+      color: var(--ink-soft);
+      margin-top: 2px;
+    }
+
+    /* Pure Design Do & Don't Principles Cards */
+    .dodont-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+    }
+    .dodont-card {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      border: 1.5px solid var(--line);
+    }
+    .dodont-card.do { border-color: var(--primary); }
+    .dodont-card.dont { border-color: var(--destructive); }
+
+    .dodont-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 15px;
+    }
+    .badge-do {
+      background: var(--primary-container);
+      color: var(--primary);
+      padding: 3px 8px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+    }
+    .badge-dont {
+      background: var(--destructive-container);
+      color: var(--destructive);
+      padding: 3px 8px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+    }
+    .dodont-preview-box {
+      background: var(--surface-sunk);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 110px;
+      justify-content: center;
+    }
+
+    /* 1. Responsive Breakpoint Simulator */
+    .simulator-controls {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .sim-btn {
+      background: var(--surface-sunk);
+      border: 1px solid var(--line);
+      color: var(--ink-soft);
+      padding: 8px 16px;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--motion-fast);
+    }
+    .sim-btn.active {
+      background: var(--primary);
+      color: var(--on-primary);
+      border-color: var(--primary);
+    }
+    .device-viewport-frame {
+      border: 2px solid var(--line-strong);
+      border-radius: var(--radius-lg);
+      background: var(--surface);
+      margin: 0 auto;
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+      transition: width var(--motion-slow), height var(--motion-slow);
+      position: relative;
+    }
+    .viewport-compact { width: 360px; height: 580px; }
+    .viewport-medium { width: 680px; height: 500px; }
+    .viewport-expanded { width: 100%; height: 480px; }
+
+    .responsive-demo-inner {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      background: var(--paper);
+    }
+    .app-scaffold-layout {
+      display: flex;
+      height: 100%;
+      overflow: hidden;
+    }
+    .nav-rail {
+      width: 72px;
+      background: var(--surface);
+      border-right: 1px solid var(--line);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 0;
+      gap: 20px;
+    }
+    .nav-rail-item {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--ink-soft);
+      text-align: center;
+    }
+    .nav-rail-item.active { color: var(--primary); }
+
+    .app-main-pane {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      padding: 16px;
+      gap: 16px;
+    }
+    .split-layout-medium {
+      display: flex;
+      gap: 16px;
+      height: 100%;
+    }
+    .split-col-1 { flex: 1; }
+    .split-col-2 { flex: 1.2; }
+
+    .bottom-nav-bar {
+      height: 56px;
+      background: var(--surface);
+      border-top: 1px solid var(--line);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+    }
+    .bottom-nav-item {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink-soft);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+    }
+    .bottom-nav-item.active { color: var(--primary); }
+
+    /* 2. Motion & Interactive Depth Showcase */
+    .motion-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+    }
+    .interactive-motion-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+    .interactive-motion-card h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+    .interactive-motion-card p {
+      font-size: 13px;
+      color: var(--ink-soft);
+    }
+
+    /* Depth In/Out Stage */
+    .depth-stage {
+      height: 200px;
+      background: var(--surface-sunk);
+      border-radius: var(--radius-md);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .depth-card-base {
+      width: 85%;
+      height: 140px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: var(--shadow-sm);
+      transition: transform var(--motion-medium), opacity var(--motion-medium);
+      cursor: pointer;
+    }
+    .depth-card-detail {
+      position: absolute;
+      width: 95%;
+      height: 90%;
+      background: var(--surface);
+      border: 1px solid var(--primary);
+      border-radius: var(--radius-md);
+      padding: 18px;
+      box-shadow: var(--shadow-lg);
+      transform: scale(0.9) translateY(20px);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform var(--motion-slow), opacity var(--motion-slow);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .depth-stage.active .depth-card-base {
+      transform: scale(0.94);
+      opacity: 0.4;
+    }
+    .depth-stage.active .depth-card-detail {
+      transform: scale(1) translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Selection Mode Stage */
+    .selection-list-box {
+      background: var(--surface-sunk);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      position: relative;
+      overflow: hidden;
+    }
+    .select-item-row {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: all var(--motion-fast);
+    }
+    .select-checkbox {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--line-strong);
+      border-radius: 4px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: white;
+      transition: transform var(--motion-fast);
+    }
+    .selection-active .select-checkbox {
+      display: flex;
+      animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .select-item-row.checked {
+      border-color: var(--primary);
+      background: var(--primary-container);
+    }
+    .select-item-row.checked .select-checkbox {
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+    @keyframes popIn {
+      0% { transform: scale(0); }
+      100% { transform: scale(1); }
+    }
+    .batch-action-bar {
+      background: var(--ink);
+      color: var(--paper);
+      padding: 10px 16px;
+      border-radius: var(--radius-md);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 600;
+      transform: translateY(120%);
+      transition: transform var(--motion-medium);
+    }
+    .selection-active .batch-action-bar {
+      transform: translateY(0);
+    }
+
+    /* Typography Hierarchy */
+    .type-table-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+    .type-row {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--line);
+      align-items: center;
+      gap: 16px;
+    }
+    .type-row:last-child { border-bottom: none; }
+    @media (max-width: 720px) { .type-row { grid-template-columns: 1fr; gap: 8px; } }
+    .type-meta { display: flex; flex-direction: column; gap: 2px; }
+    .type-role { font-size: 13px; font-weight: 700; color: var(--primary); }
+    .type-specs { font-size: 11px; color: var(--ink-soft); font-family: monospace; }
+
+    .typo-display-code { font-family: var(--serif); font-size: 34px; font-weight: 700; color: var(--wine); }
+    .typo-headline-sentence { font-size: 20px; font-weight: 600; line-height: 1.5; letter-spacing: -0.02em; }
+    .typo-title-large { font-size: 18px; font-weight: 700; }
+    .typo-title-medium { font-size: 16px; font-weight: 600; }
+    .typo-body-large { font-size: 15px; font-weight: 400; line-height: 1.5; }
+    .typo-body-medium { font-size: 13px; color: var(--ink-soft); }
+
+    /* Figma 6-State Matrix */
+    .state-matrix-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 14px;
+    }
+    .state-cell {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      text-align: center;
+    }
+    .state-title { font-size: 12px; font-weight: 700; color: var(--ink-soft); }
+
+    /* Buttons & Badges */
+    .dd-btn-primary {
+      background: var(--primary);
+      color: var(--on-primary);
+      border: none;
+      min-height: 48px;
+      padding: 12px 20px;
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--motion-fast);
+    }
+    .dd-btn-primary:active { transform: scale(0.97); }
+    .dd-btn-secondary {
+      background: var(--surface-sunk);
+      color: var(--ink);
+      border: 1px solid var(--line);
+      min-height: 48px;
+      padding: 12px 18px;
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .dd-btn-disabled {
+      background: var(--line);
+      color: var(--ink-faint);
+      border: none;
+      min-height: 48px;
+      padding: 12px 18px;
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    .dd-badge-wine { background: var(--wine-container); color: var(--wine); font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: var(--radius-sm); }
+    .dd-badge-whisky { background: var(--malt-container); color: var(--malt); font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: var(--radius-sm); }
+    .dd-badge-repurchase { background: var(--primary-container); color: var(--primary); font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: var(--radius-sm); }
+
+    /* Color Swatches */
+    .palette-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 16px;
+    }
+    .color-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+    .color-preview { height: 60px; width: 100%; }
+    .color-info { padding: 10px; font-size: 12px; }
+    .color-name { font-weight: 600; margin-bottom: 2px; }
+    .color-code { color: var(--ink-soft); font-family: monospace; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="header-title">
+        <h1>테이스트 아카이브 Design System & UX</h1>
+        <p>순수 디자인 Do & Don't 원칙, 반응형 브레이크포인트, 모션(Depth In/Out), Figma 토큰 체계</p>
+      </div>
+      <div class="header-controls">
+        <button class="theme-toggle-btn" onclick="toggleTheme()">테마 전환 (Light / Dark)</button>
+      </div>
+    </header>
+
+    <!-- 1. Pure Design Principles (Do & Don't) -->
+    <section>
+      <div class="section-header">
+        <h2>1. Pure Design Principles (Do & Don't)</h2>
+        <p>기능 변경과 무관하게 시각적 조화, 가독성, 터치 접근성을 지키는 6대 시각 디자인 원칙</p>
+      </div>
+      <div class="dodont-grid">
+        <!-- 1. Color Harmony -->
+        <div class="dodont-card do">
+          <div class="dodont-header">
+            <span class="badge-do">DO</span>
+            <span>색상 절제: 액센트 컬러 최대 2개 (60-30-10 규칙)</span>
+          </div>
+          <div class="dodont-preview-box">
+            <div style="display:flex; gap:8px;">
+              <span class="dd-badge-wine">🍷 Wine</span>
+              <button class="dd-btn-primary" style="min-height:36px; padding:6px 14px;">Primary</button>
+            </div>
+            <div style="font-size:12px; color:var(--ink-soft);">배경(Paper) 60% + 표면 30% + 액센트 10%의 단정한 위계</div>
+          </div>
+          <p style="font-size:12px; color:var(--ink-soft);">시각적 피로를 방지하고 중요한 정보와 액션에만 시선을 집중시킵니다.</p>
+        </div>
+
+        <div class="dodont-card dont">
+          <div class="dodont-header">
+            <span class="badge-dont">DON'T</span>
+            <span>한 화면에 3가지 이상의 다채색/원색 혼용 금지</span>
+          </div>
+          <div class="dodont-preview-box" style="opacity:0.9;">
+            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+              <span style="background:#FF0055; color:white; padding:4px 8px; border-radius:4px; font-size:11px; font-weight:700;">Hot Pink</span>
+              <span style="background:#00E5FF; color:black; padding:4px 8px; border-radius:4px; font-size:11px; font-weight:700;">Cyan</span>
+              <span style="background:#76FF03; color:black; padding:4px 8px; border-radius:4px; font-size:11px; font-weight:700;">Lime</span>
+              <span style="background:#FF9100; color:white; padding:4px 8px; border-radius:4px; font-size:11px; font-weight:700;">Orange</span>
+            </div>
+            <div style="font-size:11px; color:var(--destructive); font-weight:600;">무지개빛 색상 난립으로 시각적 소음 유발</div>
+          </div>
+          <p style="font-size:12px; color:var(--destructive);">시각적 초점이 분산되어 인터페이스의 품격과 위계가 무너집니다.</p>
+        </div>
+
+        <!-- 2. Dark Mode Contrast -->
+        <div class="dodont-card do">
+          <div class="dodont-header">
+            <span class="badge-do">DO</span>
+            <span>시인성: 웜 다크(#15110E) + WCAG 2.1 AAA 명도대비</span>
+          </div>
+          <div class="dodont-preview-box" style="background:#15110E; color:#F2E9E0;">
+            <div style="font-size:14px; font-weight:600; color:#F2E9E0;">선명하고 편안한 대비 (13.8:1)</div>
+            <div style="font-size:12px; color:#B3A498;">보조 텍스트 역시 4.8:1 이상 유지</div>
+          </div>
+          <p style="font-size:12px; color:var(--ink-soft);">어두운 환경에서도 눈의 피로 없이 텍스트를 또렷하게 전달합니다.</p>
+        </div>
+
+        <div class="dodont-card dont">
+          <div class="dodont-header">
+            <span class="badge-dont">DON'T</span>
+            <span>Dark 모드에서 채도 100% 네온 텍스트 / 단순 반전 금지</span>
+          </div>
+          <div class="dodont-preview-box" style="background:#000000;">
+            <div style="font-size:14px; font-weight:700; color:#00FF66; text-shadow:0 0 4px #00FF66;">형광 네온 눈부심 (Halation)</div>
+            <div style="font-size:11px; color:#FF00FF;">과포화 색상으로 인한 눈의 피로도 극대화</div>
+          </div>
+          <p style="font-size:12px; color:var(--destructive);">순수 네온 컬러는 눈부심 현상을 일으키며 양장본 저널 톤앤매너를 훼손합니다.</p>
+        </div>
+
+        <!-- 3. Icon & Asset Integrity -->
+        <div class="dodont-card do">
+          <div class="dodont-header">
+            <span class="badge-do">DO</span>
+            <span>에셋 무결성: 통일된 24dp 2px 스트로크 벡터 자체 제작</span>
+          </div>
+          <div class="dodont-preview-box">
+            <div style="display:flex; gap:16px; align-items:center; font-size:20px;">
+              <span>🍷</span><span>🥃</span><span>⚙️</span><span>🔍</span>
+            </div>
+            <div style="font-size:12px; color:var(--ink-soft);">일관된 선 두께, 코너 반경, 해상도 독립적 Vector XML</div>
+          </div>
+          <p style="font-size:12px; color:var(--ink-soft);">화면 전반에 걸쳐 조화롭고 완성도 높은 브랜드 인상을 구축합니다.</p>
+        </div>
+
+        <div class="dodont-card dont">
+          <div class="dodont-header">
+            <span class="badge-dont">DON'T</span>
+            <span>웹에서 임의 다운로드한 이종 스타일 아이콘 혼용 금지</span>
+          </div>
+          <div class="dodont-preview-box" style="opacity:0.9;">
+            <div style="display:flex; gap:16px; align-items:center;">
+              <span style="border:3px solid black; padding:2px; font-size:12px;">굵은선</span>
+              <span style="background:black; color:white; padding:4px; font-size:11px; border-radius:8px;">채움형</span>
+              <span style="border:1px dashed gray; padding:2px; font-size:10px;">점선형</span>
+            </div>
+            <div style="font-size:11px; color:var(--destructive); font-weight:600;">스타일과 해상도가 제각각인 아이콘 혼합</div>
+          </div>
+          <p style="font-size:12px; color:var(--destructive);">앱의 시각적 통일성을 깨뜨리고 조악한 느낌을 줍니다.</p>
+        </div>
+
+        <!-- 4. Touch Target & Grid -->
+        <div class="dodont-card do">
+          <div class="dodont-header">
+            <span class="badge-do">DO</span>
+            <span>터치 타깃 최소 48×48dp & 8dp 배수 간격 토큰 준수</span>
+          </div>
+          <div class="dodont-preview-box">
+            <div style="border:1px dashed var(--primary); padding:8px; display:inline-flex; align-items:center; justify-content:center; min-height:48px; min-width:48px; border-radius:8px;">
+              <span style="font-size:13px; font-weight:600; color:var(--primary);">48dp 터치 영역 보장</span>
+            </div>
+          </div>
+          <p style="font-size:12px; color:var(--ink-soft);">오조작 없는 쾌적한 한 손 모바일 조작성을 보장합니다.</p>
+        </div>
+
+        <div class="dodont-card dont">
+          <div class="dodont-header">
+            <span class="badge-dont">DON'T</span>
+            <span>36dp 미만 작은 터치 영역 & 임의의 비표준 dp 여백(7dp, 13dp) 금지</span>
+          </div>
+          <div class="dodont-preview-box" style="opacity:0.9;">
+            <button style="height:24px; font-size:10px; padding:2px 6px; margin:7px 13px;">24dp 좁은 버튼</button>
+            <div style="font-size:11px; color:var(--destructive);">오터치 유발 및 비규격 여백 흩뿌림</div>
+          </div>
+          <p style="font-size:12px; color:var(--destructive);">접근성을 저해하고 화면 레이아웃의 정렬이 틀어집니다.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Responsive & Adaptive Breakpoint Simulator -->
+    <section>
+      <div class="section-header">
+        <h2>2. 반응형 & 적응형 브레이크포인트 (Adaptive Layout)</h2>
+        <p>Smallest Width 및 폼팩터에 따른 단일 컬럼 / 2컬럼 / Navigation Rail 자동 적응</p>
+      </div>
+      <div class="simulator-controls">
+        <button class="sim-btn active" onclick="setViewport('compact', this)">Compact (&lt;600dp 세로폰)</button>
+        <button class="sim-btn" onclick="setViewport('medium', this)">Medium (600~839dp 폴더블/가로)</button>
+        <button class="sim-btn" onclick="setViewport('expanded', this)">Expanded (&ge;840dp 태블릿/DeX)</button>
+      </div>
+
+      <div id="deviceFrame" class="device-viewport-frame viewport-compact">
+        <div class="responsive-demo-inner">
+          <div class="app-scaffold-layout">
+            <!-- Nav Rail for Medium/Expanded -->
+            <div id="navRail" class="nav-rail">
+              <div class="nav-rail-item active">●<br>프로필</div>
+              <div class="nav-rail-item">●<br>기록</div>
+              <div class="nav-rail-item">●<br>컬렉션</div>
+            </div>
+
+            <!-- Main Pane -->
+            <div class="app-main-pane">
+              <div id="layoutContainer">
+                <!-- Dynamic responsive content rendered via JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Nav for Compact -->
+          <div id="bottomNav" class="bottom-nav-bar">
+            <div class="bottom-nav-item active">★ 프로필</div>
+            <div class="bottom-nav-item">+ 기록하기</div>
+            <div class="bottom-nav-item">≡ 컬렉션</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Motion & Spatial Depth -->
+    <section>
+      <div class="section-header">
+        <h2>3. 모션 시스템 & 인터랙션 (Depth In/Out & Selection Mode)</h2>
+        <p>물리 기반의 공간적 계층 이동(Z-Axis)과 목록 다중 선택 모션</p>
+      </div>
+      <div class="motion-grid">
+        <!-- Depth In/Out -->
+        <div class="interactive-motion-card">
+          <h3>Depth In / Out 화면 전환 (Z-Axis Shared Axis)</h3>
+          <p>카드를 탭하면 이전 화면이 뒤로 물러나며(scale 0.94) 상세 화면이 오버레이됩니다.</p>
+          <div id="depthStage" class="depth-stage" onclick="toggleDepth()">
+            <div class="depth-card-base">
+              <div>
+                <span class="dd-badge-wine">🍷 와인 · 레드</span>
+                <h4 style="margin-top:6px; font-size:16px;">샤또 마고 2018</h4>
+              </div>
+              <span style="font-size:12px; color:var(--primary); font-weight:600;">탭하여 상세 보기 (Depth In) →</span>
+            </div>
+            <div class="depth-card-detail">
+              <div>
+                <span class="dd-badge-wine">🍷 와인 · 레드</span>
+                <h3 style="font-size:18px; margin-top:4px;">샤또 마고 2018 상세</h3>
+                <p style="font-size:13px; color:var(--ink-soft); margin-top:6px;">"묵직하며 향이 진하고 긴 여운을 남김"</p>
+              </div>
+              <button class="dd-btn-secondary" style="min-height:36px; padding:6px 14px; align-self:flex-end;">닫기 (Depth Out)</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Selection Mode -->
+        <div class="interactive-motion-card">
+          <h3>Selection Mode (다중 선택 모드)</h3>
+          <p>선택 모드 전환 시 팝인 체크박스와 하단 일괄 작업 액션바가 슬라이드업됩니다.</p>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <button class="dd-btn-secondary" style="min-height:36px; padding:6px 14px;" onclick="toggleSelectionMode()">선택 모드 토글</button>
+            <span id="selectedCountText" style="font-size:12px; color:var(--ink-soft); font-weight:600;">일반 모드</span>
+          </div>
+          <div id="selectionBox" class="selection-list-box">
+            <div class="select-item-row" onclick="toggleItemCheck(this)">
+              <span style="font-size:14px; font-weight:600;">발베니 12년 더블우드</span>
+              <div class="select-checkbox">✓</div>
+            </div>
+            <div class="select-item-row" onclick="toggleItemCheck(this)">
+              <span style="font-size:14px; font-weight:600;">탈리스커 10년 (스모키)</span>
+              <div class="select-checkbox">✓</div>
+            </div>
+            <div class="batch-action-bar">
+              <span>선택 항목 일괄 작업</span>
+              <button style="background:var(--destructive); color:white; border:none; padding:4px 10px; border-radius:4px; font-size:11px; font-weight:700; cursor:pointer;">일괄 삭제</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. Typography Hierarchy -->
+    <section>
+      <div class="section-header">
+        <h2>4. Typography Hierarchy & Pairing</h2>
+        <p>Serif(영문 81유형 코드)와 Sans-Serif(문장/UI)의 에디토리얼 페어링</p>
+      </div>
+      <div class="type-table-card">
+        <div class="type-row">
+          <div class="type-meta">
+            <span class="type-role">Display Taste Code</span>
+            <span class="type-specs">Serif Bold · 34sp / 40sp</span>
+          </div>
+          <div class="typo-display-code">SFRE · XFRX · SFRO</div>
+        </div>
+        <div class="type-row">
+          <div class="type-meta">
+            <span class="type-role">Headline Sentence</span>
+            <span class="type-specs">Sans SemiBold · 20sp / 30sp</span>
+          </div>
+          <div class="typo-headline-sentence">"묵직하며 향이 진하고 단맛이 적은 와인을 좋아하시는군요."</div>
+        </div>
+        <div class="type-row">
+          <div class="type-meta">
+            <span class="type-role">Title Large</span>
+            <span class="type-specs">Sans Bold · 18sp / 26sp</span>
+          </div>
+          <div class="typo-title-large">와인 & 위스키 테이스팅 컬렉션</div>
+        </div>
+        <div class="type-row">
+          <div class="type-meta">
+            <span class="type-role">Body Large</span>
+            <span class="type-specs">Sans Regular · 15sp / 22sp</span>
+          </div>
+          <div class="typo-body-large">샤또 마고 2018 (Château Margaux) — 단정한 바디감과 긴 여운</div>
+        </div>
+        <div class="type-row">
+          <div class="type-meta">
+            <span class="type-role">Body Medium</span>
+            <span class="type-specs">Sans Regular · 13sp / 19sp</span>
+          </div>
+          <div class="typo-body-medium">2026.08.15 기록 · 셰리 캐스크 만족도 평균 4.7점 (3잔 기록됨)</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. Figma 6-State Interactive Matrix -->
+    <section>
+      <div class="section-header">
+        <h2>5. Figma UX 6대 상태 매트릭스 (Interactive State Matrix)</h2>
+        <p>Figma Variables 및 컴포넌트 필수 상태 규격</p>
+      </div>
+      <div class="state-matrix-grid">
+        <div class="state-cell">
+          <span class="state-title">1. Default</span>
+          <button class="dd-btn-primary" style="min-height:40px; padding:8px 16px;">저장하기</button>
+        </div>
+        <div class="state-cell">
+          <span class="state-title">2. Hover / Focus</span>
+          <button class="dd-btn-primary" style="min-height:40px; padding:8px 16px; outline:2px solid var(--primary); outline-offset:2px;">포커스 링</button>
+        </div>
+        <div class="state-cell">
+          <span class="state-title">3. Pressed (Active)</span>
+          <button class="dd-btn-primary" style="min-height:40px; padding:8px 16px; transform:scale(0.96); filter:brightness(0.9);">눌림 상태</button>
+        </div>
+        <div class="state-cell">
+          <span class="state-title">4. Selected</span>
+          <span class="dd-badge-repurchase" style="padding:8px 14px;">✓ 선택됨</span>
+        </div>
+        <div class="state-cell">
+          <span class="state-title">5. Disabled</span>
+          <button class="dd-btn-disabled" style="min-height:40px; padding:8px 16px;">비활성</button>
+        </div>
+        <div class="state-cell">
+          <span class="state-title">6. Error State</span>
+          <input type="text" value="필수 입력값 누락" style="border:1.5px solid var(--destructive); background:var(--surface); color:var(--destructive); border-radius:var(--radius-sm); padding:6px; font-size:12px; width:100%; text-align:center;" readonly />
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+    }
+
+    function setViewport(mode, btn) {
+      document.querySelectorAll('.sim-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const frame = document.getElementById('deviceFrame');
+      const navRail = document.getElementById('navRail');
+      const bottomNav = document.getElementById('bottomNav');
+      const layout = document.getElementById('layoutContainer');
+
+      frame.className = 'device-viewport-frame viewport-' + mode;
+
+      if (mode === 'compact') {
+        navRail.style.display = 'none';
+        bottomNav.style.display = 'flex';
+        layout.innerHTML = `
+          <div style="background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-family:var(--serif); font-size:24px; font-weight:700; color:var(--primary);">SFRE</span>
+              <span class="dd-badge-wine">🍷 와인</span>
+            </div>
+            <p style="font-size:15px; font-weight:600; margin-top:8px;">"묵직하며 향이 진하고 단맛이 적은 와인을 좋아하시는군요."</p>
+          </div>
+          <div style="background:var(--surface-sunk); border-radius:12px; padding:12px; font-size:13px; color:var(--ink-soft);">
+            최근 기록: 샤또 마고 2018 (★ 4.8)
+          </div>
+        `;
+      } else {
+        navRail.style.display = 'flex';
+        bottomNav.style.display = 'none';
+        layout.innerHTML = `
+          <div class="split-layout-medium">
+            <div class="split-col-1" style="background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:18px;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-family:var(--serif); font-size:28px; font-weight:700; color:var(--primary);">SFRE</span>
+                <span class="dd-badge-wine">🍷 와인 81유형</span>
+              </div>
+              <p style="font-size:16px; font-weight:600; margin-top:12px; line-height:1.45;">"묵직하며 향이 진하고 단맛이 적은 와인을 좋아하시는군요."</p>
+              <div style="margin-top:14px; font-size:12px; color:var(--ink-soft);">• 셰리 캐스크 만족도 평균 4.7점 (3잔)</div>
+            </div>
+            <div class="split-col-2" style="display:flex; flex-direction:column; gap:10px;">
+              <div style="background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:12px; font-size:13px; font-weight:600;">
+                📊 감각 축 상관분석 (Body: High, Sweet: Low)
+              </div>
+              <div style="background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:12px; font-size:13px;">
+                최근 테이스팅 컬렉션 (총 8개 기록됨)
+              </div>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    function toggleDepth() {
+      document.getElementById('depthStage').classList.toggle('active');
+    }
+
+    let selectionMode = false;
+    function toggleSelectionMode() {
+      selectionMode = !selectionMode;
+      const box = document.getElementById('selectionBox');
+      const text = document.getElementById('selectedCountText');
+      if (selectionMode) {
+        box.classList.add('selection-active');
+        text.textContent = '선택 모드 활성화됨';
+      } else {
+        box.classList.remove('selection-active');
+        document.querySelectorAll('.select-item-row').forEach(r => r.classList.remove('checked'));
+        text.textContent = '일반 모드';
+      }
+    }
+
+    function toggleItemCheck(el) {
+      if (!selectionMode) {
+        toggleSelectionMode();
+      }
+      el.classList.toggle('checked');
+      const count = document.querySelectorAll('.select-item-row.checked').length;
+      document.getElementById('selectedCountText').textContent = count + '개 항목 선택됨';
+    }
+
+    // Init
+    setViewport('compact', document.querySelector('.sim-btn'));
+  </script>
+</body>
+</html>

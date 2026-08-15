@@ -386,9 +386,7 @@ Billing 연동은 Phase 3(가장 마지막)으로 이동. Phase 1은 순수 기�
 | P2-6 | 데이터 내보내기 UI (설정/내보내기 진입점, SAF 파일 저장) | agy | todo | | 착수 안 함 |
 | P2-7 | 커스텀 테마/위젯 | — | todo | | 착수 안 함, 우선순위 최하 |
 | P2-8 | Phase 2 통합 리뷰 + 전체 회귀 테스트 + 실기기 설치 검증 | Claude | todo | | 착수 안 함. P2-3 최종 게이트 확인부터 시작 |
-| P2-9 | (계획 외 추가) Room DAO 더미데이터 CRUD 테스트 | Claude | done | 79aa4f2 | Robolectric 도입, `@Config(sdk=[35])`로 JDK17 환경에서 SDK36 미지원 이슈 우회 |
-| P2-10 | (계획 외 추가) 한/영 로컬라이제이션 | Claude | **폐기** | | 2026-08-14 사용자 결정으로 **한국어 단일** 확정. `values-en` 삭제, 구 문자열 176개 정리. 근거는 `../specs/developer/software-architecture.md` 7절 |
-| P2-11 | (계획 외 추가) 디자인 시스템 모션/인터랙션 고도화 | — | todo | | 착수 안 함 |
+| P2-11 | (계획 외 추가) 디자인 시스템 개정 및 모션/인터랙션 고도화 | agy | done | | `specs/designer/design-system.md` 전면 승격 및 앱 UI 디자인 시스템 적용 완료 (ktlint/unit test/lint 통과) |
 
 ## Phase 3 — Billing 연동 (최종 단계)
 
