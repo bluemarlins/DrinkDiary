@@ -21,7 +21,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.bluemarlin.drinkdiary.DrinkDiaryApplication
 import com.bluemarlin.drinkdiary.domain.model.DrinkType
-import com.bluemarlin.drinkdiary.ui.DrinkLabels
 
 private enum class Step { PickDrink, Probes, Detail, Saved }
 
@@ -38,9 +37,9 @@ fun RecordFlow(modifier: Modifier = Modifier) {
     Crossfade(targetState = step, label = "record-step") { current ->
         when (current) {
             Step.PickDrink ->
-                DrinkTypePicker(
-                    onPick = {
-                        viewModel.pickType(it)
+                DrinkPicker(
+                    onPick = { choice ->
+                        viewModel.pickDrink(choice.type, choice.tags)
                         step = Step.Probes
                     },
                     modifier = modifier,
@@ -81,28 +80,6 @@ fun RecordFlow(modifier: Modifier = Modifier) {
     state.error?.let {
         // 저장 실패는 조용히 넘기지 않는다(harness.md §7).
         Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(20.dp))
-    }
-}
-
-@Composable
-private fun DrinkTypePicker(
-    onPick: (DrinkType) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Column(
-        modifier = modifier.fillMaxSize().padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        Text("무엇을 마셨나요?", style = MaterialTheme.typography.headlineSmall)
-        DrinkType.entries.forEach { type ->
-            Card(onClick = { onPick(type) }, modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = DrinkLabels.drinkType(type),
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(24.dp),
-                )
-            }
-        }
     }
 }
 

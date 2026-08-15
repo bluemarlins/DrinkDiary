@@ -127,6 +127,7 @@ object DrinkLabels {
                 when (value) {
                     WineColor.Red.name -> "레드"
                     WineColor.White.name -> "화이트"
+                    WineColor.Sparkling.name -> "스파클링"
                     WineColor.Other.name -> "그 외"
                     else -> value
                 }

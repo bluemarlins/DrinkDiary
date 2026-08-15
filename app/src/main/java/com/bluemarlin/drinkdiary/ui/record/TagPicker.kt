@@ -34,7 +34,8 @@ fun TagPicker(
     Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("라벨에 있는 것들 (선택)", style = MaterialTheme.typography.titleSmall)
 
-        TagCategory.of(type).forEach { category ->
+        // 첫 화면에서 이미 물은 것은 빼고 보여준다.
+        TagCategory.of(type).filterNot { it in promotedTags(type) }.forEach { category ->
             TagRow(
                 label = DrinkLabels.tagCategory(category),
                 options = optionsOf(category),

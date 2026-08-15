@@ -51,10 +51,19 @@ class RecordViewModel(
     private val _uiState = MutableStateFlow(RecordUiState())
     val uiState: StateFlow<RecordUiState> = _uiState.asStateFlow()
 
-    fun pickType(type: DrinkType) =
-        _uiState.update {
-            it.copy(type = type, taste = TasteInput(), taps = it.taps + 1)
-        }
+    // 첫 화면이 주종과 분류를 함께 받는다. 분류는 그대로 태그가 되고,
+    // TagPicker는 이 태그를 다시 묻지 않는다(DrinkPicker.promotedTags).
+    fun pickDrink(
+        type: DrinkType,
+        tags: DrinkTags,
+    ) = _uiState.update {
+        it.copy(
+            type = type,
+            taste = TasteInput(),
+            form = it.form.copy(tags = tags),
+            taps = it.taps + 1,
+        )
+    }
 
     fun answer(
         trait: Trait,
