@@ -381,7 +381,7 @@ ui/
 
 1번은 순수 Kotlin이라 Android 없이 테스트 가능하다. **`agy` 위임 가능**(명세 확정 + 기계 검증
 가능 + 서브트리 격리 가능): `gemini-3.1-pro-high`(다단계 계산 로직). 3번은 시각 판단이 필요하므로
-`gemini-3.6-flash-high` 또는 Claude 직접.
+`gemini-3.7-flash-high` 또는 Claude 직접.
 
 ## 9. 열린 질문
 

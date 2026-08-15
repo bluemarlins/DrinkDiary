@@ -103,10 +103,17 @@ verify its own output would be marking its own homework.
 
 | Model | Role |
 | --- | --- |
-| `gemini-3.5-flash-medium` | Structured, repetitive work (pattern-copy CRUD use cases, mappers, formatted reports) |
-| `gemini-3.6-flash-high` | Visual, subjective, generative work (UI polish, copy, naming, `generate_image` assets) |
+| `gemini-3.7-flash-medium` | Structured, repetitive work (pattern-copy CRUD use cases, mappers, formatted reports) |
+| `gemini-3.7-flash-high` | Visual, subjective, generative work (UI polish, copy, naming, research, `generate_image` assets) |
 | `gemini-3.1-pro-high` | Heavy implementation of an already-specified multi-step algorithm |
 | `claude-sonnet-4-6` | Final escalation tier when the Gemini models repeatedly fail |
+
+The flash tier moved from 3.5/3.6 to **3.7** on 2026-08-16 at the user's instruction. The roster keeps
+the same four roles — only the flash generation changed. Do not read the older models' track record as
+belonging to 3.7: the recorded gate results were earned by 3.5/3.6 and say nothing about the new
+generation. **A stronger model does not relax verification** — every rule in `delegate-research` and
+the QA-is-Claude-only rule below still applies unchanged, because agy's failure modes (fabricated
+sources, omissions, writing outside `--add-dir`) were never model-specific.
 
 Every other model `agy models` lists is out of roster — see `harness.md` §6-2 for why, and change that
 table first if the roster needs to change. Two consecutive Definition-of-Done failures escalate to the

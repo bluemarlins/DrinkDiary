@@ -104,10 +104,10 @@
 
 | 부서 | 주 담당 | 기본 모델 | 비고 |
 | --- | --- | --- | --- |
-| 1. Product Planner | `agy`(초안) → Claude/사용자(결정) | `gemini-3.6-flash-high` | 채택은 위임 불가 |
-| 2. Market Researcher | `agy` | `gemini-3.6-flash-high` | 정형 요약만 필요하면 `gemini-3.5-flash-medium` |
-| 3. Product Designer | `agy`(시스템 내) / Claude(시스템 변경) | `gemini-3.6-flash-high` | `generate_image` 에셋 생성 포함 |
-| 4. Senior Developer | `agy` | `gemini-3.5-flash-medium` (기본) / `gemini-3.1-pro-high` (계산 로직) | 승급 시 `claude-sonnet-4-6` |
+| 1. Product Planner | `agy`(초안) → Claude/사용자(결정) | `gemini-3.7-flash-high` | 채택은 위임 불가 |
+| 2. Market Researcher | `agy` | `gemini-3.7-flash-high` | 정형 요약만 필요하면 `gemini-3.7-flash-medium` |
+| 3. Product Designer | `agy`(시스템 내) / Claude(시스템 변경) | `gemini-3.7-flash-high` | `generate_image`는 3.7에서 미검증 — §6-2의 예외 조항 참조 |
+| 4. Senior Developer | `agy` | `gemini-3.7-flash-medium` (기본) / `gemini-3.1-pro-high` (계산 로직) | 승급 시 `claude-sonnet-4-6` |
 | 5. QA / Verification | **Claude 전담** | — | `agy` 위임 금지 |
 | 6. Release / Compliance | Claude(문서) + **사용자**(계정·키·제출) | — | 항목별 담당 명시 필수 |
 

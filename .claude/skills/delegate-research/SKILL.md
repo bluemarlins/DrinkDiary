@@ -29,8 +29,13 @@ description: Delegate a research or drafting task to the agy CLI and verify the 
 3. 파일 수정이 필요 없거나 `--add-dir`로 범위를 좁힐 수 있는가
 4. 결과가 나빠도 버리고 다시 하면 되는가
 
-모델은 로스터 4개 중에서만 고른다(`harness.md` §6-2). 리서치는 보통 `gemini-3.6-flash-high`,
-정형 요약만 필요하면 `gemini-3.5-flash-medium`.
+모델은 로스터 4개 중에서만 고른다(`harness.md` §6-2). 리서치는 보통 `gemini-3.7-flash-high`,
+정형 요약만 필요하면 `gemini-3.7-flash-medium`.
+
+**모델이 새것이라고 검증을 줄이지 않는다.** 위 세 실패 양상은 모델의 성능 문제가 아니라 위임
+구조의 문제라 세대가 올라가도 그대로 남는다. 실제로 2026-08-15 병 사전 구축에서 agy가 처음으로
+깨끗한 결과를 낸 것은 모델을 바꿔서가 아니라 **채울 필드를 둘로 좁혀서 검증이 가능해졌기
+때문이다** — 100줄짜리 사실 데이터를 통째로 받으면 어느 세대의 모델이든 검증할 수 없다.
 
 ## 2단계 — 프롬프트에 반드시 넣을 것
 
@@ -57,7 +62,7 @@ description: Delegate a research or drafting task to the agy CLI and verify the 
 agy -p "$(cat <<'PROMPT'
 <위 템플릿>
 PROMPT
-)" --model gemini-3.6-flash-high --output-format json
+)" --model gemini-3.7-flash-high --output-format json
 ```
 
 **한 번에 하나만 실행한다.** 동시 호출 금지(`harness.md` §5 사고 이력).

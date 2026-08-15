@@ -9,9 +9,10 @@ Claude Code와 유사하게 비대화형 `-p/--print` 모드로 단발성 프롬
 
 ```powershell
 agy --version        # 1.1.9
-agy models           # gemini-3.6-flash-{high,medium,low}, gemini-3.5-flash-{high,medium,low},
-                      # gemini-3.1-pro-{high,low}, claude-sonnet-4-6, claude-opus-4-6-thinking,
-                      # gpt-oss-120b-medium
+agy models           # gemini-3.7-flash-{high,medium,low}, gemini-3.6-flash-{high,medium,low},
+                      # gemini-3.5-flash-{high,medium,low}, gemini-3.1-pro-{high,low},
+                      # claude-sonnet-4-6, claude-opus-4-6-thinking, gpt-oss-120b-medium
+                      # (2026-08-16 확인 — 3.7 계열이 추가됐다)
 agy agents           # (현재 비어 있음 — 사전 정의된 에이전트 프로필 없음)
 ```
 
@@ -40,8 +41,12 @@ agy agents           # (현재 비어 있음 — 사전 정의된 에이전트 �
 ## 태스크 유형별 템플릿
 
 **로스터 제약**: `--model`에는 `harness.md` §6-2의 4개 모델만 쓴다 —
-`gemini-3.5-flash-medium`, `gemini-3.6-flash-high`, `gemini-3.1-pro-high`, `claude-sonnet-4-6`.
+`gemini-3.7-flash-medium`, `gemini-3.7-flash-high`, `gemini-3.1-pro-high`, `claude-sonnet-4-6`.
 `agy models`가 보여주는 나머지 모델은 이 저장소에서 사용하지 않는다.
+
+**2026-08-16 세대 교체**: 플래시 계열이 3.5/3.6 → **3.7**로 올라갔다. 이 문서의 옛 호출 예시를
+어딘가에서 복사해 쓰지 않도록 주의한다 — 구세대 모델 ID는 여전히 유효해서 **에러 없이 조용히
+구모델로 실행된다.** 근거는 `harness.md` §6-2의 전환 절이다.
 
 아래 각 템플릿의 `--model` 값은 **그 태스크 유형에서 가장 흔한 경우의 기본값**이다. 실제 태스크의
 난이도/성격이 전형적인 경우와 다르면(예: "반복 코드"인데 로직이 복잡함) §6-2 로스터 표의 역할
@@ -58,7 +63,7 @@ agy -p "$(cat <<'EOF'
 [조사 대상] Google Play Store에 있는 개인 음주/취향 기록 앱 3~5개
 [정리 항목] 앱 이름, 핵심 기능, 무료/프리미엄 기능 구분, 가격 정책, DrinkDiary 대비 차별점 제안
 EOF
-)" --model gemini-3.5-flash-medium --output-format json
+)" --model gemini-3.7-flash-medium --output-format json
 ```
 
 Claude는 반환된 텍스트를 검수해 `app/docs/departments/researcher/`에 리포트로 남긴다. 검증 절차는
@@ -73,7 +78,7 @@ agy -p "$(cat <<'EOF'
 [요청] <구체적 UI 개선 내용>. 기존 DD* 공용 컴포넌트를 재사용하고, 새 하드코딩 색상/치수를
 추가하지 마라. 이 태스크와 무관한 파일은 건드리지 마라.
 EOF
-)" --model gemini-3.6-flash-high --mode accept-edits \
+)" --model gemini-3.7-flash-high --mode accept-edits \
    --add-dir app/src/main/java/com/bluemarlin/drinkdiary/ui/<feature> \
    --output-format json --dangerously-skip-permissions
 ```
@@ -93,7 +98,7 @@ agy -p "$(cat <<'EOF'
 을 반드시 따른다.
 [요청] <구체적 UseCase/Mapper/DAO 작업 내용 + 대응 단위 테스트 작성 요청>
 EOF
-)" --model gemini-3.5-flash-medium --mode accept-edits \
+)" --model gemini-3.7-flash-medium --mode accept-edits \
    --add-dir app/src/main/java/com/bluemarlin/drinkdiary/domain \
    --add-dir app/src/main/java/com/bluemarlin/drinkdiary/data \
    --add-dir app/src/test/java/com/bluemarlin/drinkdiary \
@@ -137,8 +142,10 @@ EOF
 
 ### 4. 이미지 생성 (아이콘/에셋 컨셉)
 
-`agy`는 `generate_image`라는 실제 래스터 이미지 생성 도구를 갖고 있다(확인됨 — 512x512 PNG,
-투명 배경(RGBA alpha=0) 생성 가능). **단, 실행 시 결과 파일을 `--add-dir`로 지정한 폴더가 아니라
+`agy`는 `generate_image`라는 실제 래스터 이미지 생성 도구를 갖고 있다(512x512 PNG, 투명 배경
+(RGBA alpha=0) 생성 가능). **이 확인은 `gemini-3.6-flash-high`에서 한 것이고 3.7에서는 아직
+검증하지 않았다.** 3.7이 도구를 못 쓰면 이미지 태스크에 한해 3.6으로 되돌리고 그 사실을
+`harness.md` §6-2에 적는다(그 절이 허용하는 유일한 예외다). **단, 실행 시 결과 파일을 `--add-dir`로 지정한 폴더가 아니라
 agy 자신의 기본 스크래치 폴더(`C:\Users\wooga\.gemini\antigravity-cli\scratch`)에 쓰는 것을
 확인했다.** 따라서 이미지 생성 태스크 후에는 항상 그 경로를 확인해 파일을 리포지토리의 의도한
 위치로 직접 복사해야 한다.
@@ -148,7 +155,7 @@ agy -p "$(cat <<'EOF'
 [역할] 너는 Android 앱 아이콘 디자이너다. generate_image 도구로 실제 PNG 이미지를 생성해라.
 [요청] <구체적 아이콘/에셋 스펙 — 모티프, 색상(브랜드 팔레트 hex 명시), 크기, 배경 투명 여부>
 EOF
-)" --model gemini-3.6-flash-high --mode accept-edits --add-dir <스테이징 폴더> \
+)" --model gemini-3.7-flash-high --mode accept-edits --add-dir <스테이징 폴더> \
    --output-format json --dangerously-skip-permissions
 # 실행 후 반드시 확인:
 ls "$HOME/.gemini/antigravity-cli/scratch"
@@ -177,7 +184,7 @@ agy -p "$(cat <<'EOF'
 [요청] <구체적 리서치 요청>
 [출력 형식] markdown 보고서 형식으로 출력하고, 관련 데이터는 표로 정리해라.
 EOF
-)" --model gemini-3.6-flash-high --output-format json
+)" --model gemini-3.7-flash-high --output-format json
 ```
 
 #### [Planner] 제품 전략 및 기획
