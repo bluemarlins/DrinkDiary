@@ -120,6 +120,27 @@ class DrinkRecordRepositoryTest {
             assertEquals(TraitAnswer.Low, reloaded.taste[Trait.Body])
         }
 
+    // 편집 화면이 붙기 전에 저장 경로가 편집을 견디는지 먼저 본다. 편집이 새 행을 만들면
+    // 목록에 같은 술이 둘로 보이고, 취향 판정은 한 잔을 두 잔으로 센다.
+    @Test
+    fun `editing a record updates it in place instead of adding a second row`() =
+        runBlocking {
+            val id = saveId(wine(name = "Barolo", taste = TasteInput().with(Trait.Body, TraitAnswer.High)))
+
+            val edited = repository.observeRecord(id).first()!!.copy(name = "Barolo Riserva", rating = 5.0)
+            val savedId = (repository.save(edited) as AppResult.Success).value
+
+            assertEquals(id, savedId)
+            assertEquals(1, repository.observeRecords().first().size)
+
+            val reloaded = repository.observeRecord(id).first()!!
+            assertEquals("Barolo Riserva", reloaded.name)
+            assertEquals(5.0, reloaded.rating, 0.0)
+            // 손대지 않은 것은 그대로 남아야 한다.
+            assertEquals(2019, reloaded.vintage)
+            assertEquals(TraitAnswer.High, reloaded.taste[Trait.Body])
+        }
+
     @Test
     fun `tags survive a round trip`() =
         runBlocking {
