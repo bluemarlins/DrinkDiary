@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.bluemarlin.drinkdiary.domain.model.TagCategory
 import com.bluemarlin.drinkdiary.ui.DrinkLabels
+import com.bluemarlin.drinkdiary.ui.navigation.LocalDDScreenMargin
 import com.bluemarlin.drinkdiary.ui.record.promotableTags
 import com.bluemarlin.drinkdiary.ui.theme.DrinkDiarySpacing
 
@@ -34,7 +35,7 @@ fun SettingsScreen(
                 .fillMaxWidth()
                 .padding(contentPadding)
                 .verticalScroll(rememberScrollState())
-                .padding(DrinkDiarySpacing.lg),
+                .padding(LocalDDScreenMargin.current),
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(DrinkDiarySpacing.xs)) {

@@ -27,6 +27,7 @@ import com.bluemarlin.drinkdiary.domain.model.DrinkType
 import com.bluemarlin.drinkdiary.ui.DrinkLabels
 import com.bluemarlin.drinkdiary.ui.component.DDSemanticBadge
 import com.bluemarlin.drinkdiary.ui.component.DDUriImage
+import com.bluemarlin.drinkdiary.ui.navigation.LocalDDScreenMargin
 import com.bluemarlin.drinkdiary.ui.theme.DrinkDiarySpacing
 
 @Composable
@@ -39,7 +40,7 @@ fun CollectionScreen(
 ) {
     Column(modifier = modifier.fillMaxSize().padding(contentPadding)) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = DrinkDiarySpacing.lg, vertical = 12.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = LocalDDScreenMargin.current, vertical = 12.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             listOf(null to "전체", DrinkType.Wine to "와인", DrinkType.Whiskey to "위스키")
@@ -62,8 +63,8 @@ fun CollectionScreen(
             modifier = Modifier.fillMaxSize(),
             contentPadding =
                 PaddingValues(
-                    start = DrinkDiarySpacing.lg,
-                    end = DrinkDiarySpacing.lg,
+                    start = LocalDDScreenMargin.current,
+                    end = LocalDDScreenMargin.current,
                     bottom = 96.dp,
                 ),
             verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -94,7 +95,7 @@ private fun statusContentColor(status: CollectionStatus) =
 @Composable
 private fun EmptyCollection(filtered: Boolean) {
     Column(
-        modifier = Modifier.fillMaxSize().padding(horizontal = DrinkDiarySpacing.lg),
+        modifier = Modifier.fillMaxSize().padding(horizontal = LocalDDScreenMargin.current),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text(

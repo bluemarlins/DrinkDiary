@@ -37,7 +37,7 @@ import com.bluemarlin.drinkdiary.domain.model.TagCategory
 import com.bluemarlin.drinkdiary.ui.DrinkLabels
 import com.bluemarlin.drinkdiary.ui.component.DDPrimaryButton
 import com.bluemarlin.drinkdiary.ui.component.DDUriImage
-import com.bluemarlin.drinkdiary.ui.theme.DrinkDiarySpacing
+import com.bluemarlin.drinkdiary.ui.navigation.LocalDDScreenMargin
 
 // 취향 입력 이후 단계. 이름과 만족도만 필수이고 나머지는 접어둔다 —
 // 기본 경로를 무겁게 만들면 F2에서 지킨 마찰 예산이 여기서 무너진다.
@@ -69,7 +69,7 @@ fun RecordDetailStep(
             modifier
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
-                .padding(DrinkDiarySpacing.lg),
+                .padding(LocalDDScreenMargin.current),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         Text("무엇이었나요?", style = MaterialTheme.typography.titleLarge)

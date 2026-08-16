@@ -14,13 +14,19 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
+import androidx.compose.material3.NavigationRailItemDefaults
+import androidx.compose.material3.PermanentDrawerSheet
+import androidx.compose.material3.PermanentNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -28,7 +34,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -54,6 +63,18 @@ enum class DDTopLevelTab {
     Search,
 }
 
+// 명세 4절의 세 구간이다. 이전에는 `maxWidth >= 840.dp` 하나뿐이라 600~839dp가 통째로
+// 빠져 있었고, Expanded에 와야 할 영구 드로어 대신 Rail이 왔다.
+private enum class DDWindowSize {
+    Compact,
+    Medium,
+    Expanded,
+}
+
+// 화면이 자기 가장자리 여백을 직접 정하지 않는다. 명세 4절이 브레이크포인트별로 정한 값이라
+// 화면마다 따로 쓰면 창 크기가 바뀔 때 한 화면만 남는다.
+val LocalDDScreenMargin = staticCompositionLocalOf { 16.dp }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DDScreenScaffold(
@@ -72,48 +93,72 @@ fun DDScreenScaffold(
     val defaultSnackbarHostState = remember { SnackbarHostState() }
     val hazeState = remember { HazeState() }
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-        val showTopLevelNavigation = screenType == DDScreenType.TopLevel
-        val useNavigationRail = showTopLevelNavigation && maxWidth >= 840.dp
-        val host = snackbarHost ?: { SnackbarHost(hostState = defaultSnackbarHostState) }
+        val windowSize =
+            when {
+                maxWidth < 600.dp -> DDWindowSize.Compact
+                maxWidth < 840.dp -> DDWindowSize.Medium
+                else -> DDWindowSize.Expanded
+            }
+        val screenMargin =
+            when (windowSize) {
+                DDWindowSize.Compact -> DrinkDiarySpacing.md
+                DDWindowSize.Medium -> DrinkDiarySpacing.xl
+                DDWindowSize.Expanded -> DrinkDiarySpacing.xxl
+            }
 
-        if (useNavigationRail) {
-            Row(modifier = Modifier.fillMaxSize()) {
-                AppNavigationRail(
-                    selectedTab = selectedTab,
-                    onDashboardClick = onDashboardClick,
-                    onCollectionClick = onCollectionClick,
-                    onSearchClick = onSearchClick,
-                )
+        CompositionLocalProvider(LocalDDScreenMargin provides screenMargin) {
+            val host = snackbarHost ?: { SnackbarHost(hostState = defaultSnackbarHostState) }
+            val scaffold: @Composable (Boolean, HazeState?) -> Unit = { showBottomBar, haze ->
                 AppScaffold(
                     title = title,
-                    showBottomBar = false,
+                    showBottomBar = showBottomBar,
+                    constrainContentWidth = windowSize == DDWindowSize.Expanded,
                     selectedTab = selectedTab,
                     onDashboardClick = onDashboardClick,
                     onCollectionClick = onCollectionClick,
                     onSearchClick = onSearchClick,
                     onBackClick = onBackClick,
-                    hazeState = null,
+                    hazeState = haze,
                     floatingActionButton = floatingActionButton,
                     toolbarActions = toolbarActions,
                     snackbarHost = host,
                     content = content,
                 )
             }
-        } else {
-            AppScaffold(
-                title = title,
-                showBottomBar = showTopLevelNavigation,
-                selectedTab = selectedTab,
-                onDashboardClick = onDashboardClick,
-                onCollectionClick = onCollectionClick,
-                onSearchClick = onSearchClick,
-                onBackClick = onBackClick,
-                hazeState = if (showTopLevelNavigation) hazeState else null,
-                floatingActionButton = floatingActionButton,
-                toolbarActions = toolbarActions,
-                snackbarHost = host,
-                content = content,
-            )
+
+            if (screenType != DDScreenType.TopLevel) {
+                scaffold(false, null)
+                return@CompositionLocalProvider
+            }
+
+            when (windowSize) {
+                DDWindowSize.Compact -> scaffold(true, hazeState)
+
+                DDWindowSize.Medium ->
+                    Row(modifier = Modifier.fillMaxSize()) {
+                        AppNavigationRail(
+                            selectedTab = selectedTab,
+                            onDashboardClick = onDashboardClick,
+                            onCollectionClick = onCollectionClick,
+                            onSearchClick = onSearchClick,
+                        )
+                        scaffold(false, null)
+                    }
+
+                DDWindowSize.Expanded ->
+                    PermanentNavigationDrawer(
+                        drawerContent = {
+                            AppNavigationDrawerSheet(
+                                selectedTab = selectedTab,
+                                onDashboardClick = onDashboardClick,
+                                onCollectionClick = onCollectionClick,
+                                onSearchClick = onSearchClick,
+                            )
+                        },
+                    ) {
+                        scaffold(false, null)
+                    }
+            }
         }
     }
 }
@@ -123,6 +168,7 @@ fun DDScreenScaffold(
 private fun AppScaffold(
     title: String,
     showBottomBar: Boolean,
+    constrainContentWidth: Boolean,
     selectedTab: DDTopLevelTab?,
     onDashboardClick: (() -> Unit)?,
     onCollectionClick: (() -> Unit)?,
@@ -179,6 +225,14 @@ private fun AppScaffold(
                             ),
                 ) {
                     content(overlayContentPadding)
+                }
+            } else if (constrainContentWidth) {
+                // 명세 4절: Expanded에서 콘텐츠 최대폭 720dp. 태블릿에서 한 줄이 화면 끝까지
+                // 늘어나면 눈이 줄 끝에서 다음 줄 머리를 못 찾는다.
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
+                    Box(modifier = Modifier.widthIn(max = 720.dp).fillMaxSize()) {
+                        content(padding)
+                    }
                 }
             } else {
                 content(padding)
@@ -267,12 +321,20 @@ private fun AppNavigationRail(
     onCollectionClick: (() -> Unit)?,
     onSearchClick: (() -> Unit)?,
 ) {
+    val itemColors =
+        NavigationRailItemDefaults.colors(
+            selectedIconColor = MaterialTheme.colorScheme.primary,
+            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+        )
+
     NavigationRail {
         onDashboardClick?.let { onClick ->
             NavigationRailItem(
                 selected = selectedTab == DDTopLevelTab.Dashboard,
                 onClick = onClick,
                 icon = { Text(stringResource(R.string.nav_dashboard)) },
+                colors = itemColors,
             )
         }
         onCollectionClick?.let { onClick ->
@@ -280,6 +342,7 @@ private fun AppNavigationRail(
                 selected = selectedTab == DDTopLevelTab.Collection,
                 onClick = onClick,
                 icon = { Text(stringResource(R.string.nav_collection)) },
+                colors = itemColors,
             )
         }
         onSearchClick?.let { onClick ->
@@ -287,6 +350,49 @@ private fun AppNavigationRail(
                 selected = selectedTab == DDTopLevelTab.Search,
                 onClick = onClick,
                 icon = { Text(stringResource(R.string.nav_search)) },
+                colors = itemColors,
+            )
+        }
+    }
+}
+
+@Composable
+private fun AppNavigationDrawerSheet(
+    selectedTab: DDTopLevelTab?,
+    onDashboardClick: (() -> Unit)?,
+    onCollectionClick: (() -> Unit)?,
+    onSearchClick: (() -> Unit)?,
+) {
+    PermanentDrawerSheet {
+        val itemColors =
+            NavigationDrawerItemDefaults.colors(
+                selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                selectedTextColor = MaterialTheme.colorScheme.primary,
+                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+
+        onDashboardClick?.let { onClick ->
+            NavigationDrawerItem(
+                label = { Text(stringResource(R.string.nav_dashboard)) },
+                selected = selectedTab == DDTopLevelTab.Dashboard,
+                onClick = onClick,
+                colors = itemColors,
+            )
+        }
+        onCollectionClick?.let { onClick ->
+            NavigationDrawerItem(
+                label = { Text(stringResource(R.string.nav_collection)) },
+                selected = selectedTab == DDTopLevelTab.Collection,
+                onClick = onClick,
+                colors = itemColors,
+            )
+        }
+        onSearchClick?.let { onClick ->
+            NavigationDrawerItem(
+                label = { Text(stringResource(R.string.nav_search)) },
+                selected = selectedTab == DDTopLevelTab.Search,
+                onClick = onClick,
+                colors = itemColors,
             )
         }
     }

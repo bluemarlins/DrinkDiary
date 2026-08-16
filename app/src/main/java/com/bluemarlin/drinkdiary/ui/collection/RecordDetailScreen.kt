@@ -34,6 +34,7 @@ import com.bluemarlin.drinkdiary.ui.component.DDDrinkBadge
 import com.bluemarlin.drinkdiary.ui.component.DDPrimaryButton
 import com.bluemarlin.drinkdiary.ui.component.DDRepurchaseBadge
 import com.bluemarlin.drinkdiary.ui.component.DDUriImage
+import com.bluemarlin.drinkdiary.ui.navigation.LocalDDScreenMargin
 import com.bluemarlin.drinkdiary.ui.theme.DrinkDiarySpacing
 
 @Composable
@@ -46,7 +47,7 @@ fun RecordDetailScreen(
 ) {
     if (record == null) {
         // 삭제 직후에도 잠깐 지나가는 상태다. "없어졌다"고 단정하지 않는다.
-        Column(modifier = modifier.fillMaxWidth().padding(contentPadding).padding(DrinkDiarySpacing.lg)) {
+        Column(modifier = modifier.fillMaxWidth().padding(contentPadding).padding(LocalDDScreenMargin.current)) {
             Text("기록을 불러오는 중이에요.", style = MaterialTheme.typography.bodyLarge)
         }
         return
@@ -60,7 +61,7 @@ fun RecordDetailScreen(
                 .fillMaxWidth()
                 .padding(contentPadding)
                 .verticalScroll(rememberScrollState())
-                .padding(DrinkDiarySpacing.lg),
+                .padding(LocalDDScreenMargin.current),
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
         record.imageUri?.let {

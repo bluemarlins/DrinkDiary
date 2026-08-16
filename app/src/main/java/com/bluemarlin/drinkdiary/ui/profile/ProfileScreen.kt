@@ -30,6 +30,7 @@ import com.bluemarlin.drinkdiary.ui.DrinkLabels
 import com.bluemarlin.drinkdiary.ui.component.DDProfileProgressCard
 import com.bluemarlin.drinkdiary.ui.component.DDTasteSentenceCard
 import com.bluemarlin.drinkdiary.ui.component.DDTasteTypeBadge
+import com.bluemarlin.drinkdiary.ui.navigation.LocalDDScreenMargin
 import com.bluemarlin.drinkdiary.ui.theme.DrinkDiarySpacing
 
 // F3 — 문장 우선, 차트는 보조(software-architecture.md 6절).
@@ -54,9 +55,9 @@ fun ProfileScreen(
                     .verticalScroll(rememberScrollState())
                     .heightIn(min = maxHeight + fabClearance)
                     .padding(
-                        start = DrinkDiarySpacing.lg,
-                        end = DrinkDiarySpacing.lg,
-                        top = DrinkDiarySpacing.lg,
+                        start = LocalDDScreenMargin.current,
+                        end = LocalDDScreenMargin.current,
+                        top = LocalDDScreenMargin.current,
                         bottom = fabClearance,
                     ),
             verticalArrangement = Arrangement.spacedBy(DrinkDiarySpacing.xl),
