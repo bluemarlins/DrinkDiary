@@ -67,7 +67,7 @@ enum class DDTopLevelTab {
 
 // 명세 4절의 세 구간이다. 이전에는 `maxWidth >= 840.dp` 하나뿐이라 600~839dp가 통째로
 // 빠져 있었고, Expanded에 와야 할 영구 드로어 대신 Rail이 왔다.
-private enum class DDWindowSize {
+enum class DDWindowSize {
     Compact,
     Medium,
     Expanded,
@@ -76,6 +76,10 @@ private enum class DDWindowSize {
 // 화면이 자기 가장자리 여백을 직접 정하지 않는다. 명세 4절이 브레이크포인트별로 정한 값이라
 // 화면마다 따로 쓰면 창 크기가 바뀔 때 한 화면만 남는다.
 val LocalDDScreenMargin = staticCompositionLocalOf { 16.dp }
+
+// T4에서는 읽는 곳이 없어 지웠던 값이다. 명세 4절 마지막 열(화면별 적응형 레이아웃)을 구현하면서
+// 화면이 자기 구간을 알아야 할 이유가 생겨 되살린다.
+val LocalDDWindowSize = staticCompositionLocalOf { DDWindowSize.Compact }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -108,7 +112,10 @@ fun DDScreenScaffold(
                 DDWindowSize.Expanded -> DrinkDiarySpacing.xxl
             }
 
-        CompositionLocalProvider(LocalDDScreenMargin provides screenMargin) {
+        CompositionLocalProvider(
+            LocalDDWindowSize provides windowSize,
+            LocalDDScreenMargin provides screenMargin,
+        ) {
             val host = snackbarHost ?: { SnackbarHost(hostState = defaultSnackbarHostState) }
             val scaffold: @Composable (Boolean, HazeState?) -> Unit = { showBottomBar, haze ->
                 AppScaffold(

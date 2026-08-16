@@ -2,6 +2,7 @@ package com.bluemarlin.drinkdiary.ui.navigation
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
@@ -19,11 +20,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.bluemarlin.drinkdiary.AppContainer
 import com.bluemarlin.drinkdiary.DrinkDiaryApplication
 import com.bluemarlin.drinkdiary.R
 import com.bluemarlin.drinkdiary.ui.DrinkLabels
+import com.bluemarlin.drinkdiary.ui.collection.CollectionListDetail
 import com.bluemarlin.drinkdiary.ui.collection.CollectionScreen
 import com.bluemarlin.drinkdiary.ui.collection.CollectionUiState
 import com.bluemarlin.drinkdiary.ui.collection.CollectionViewModel
@@ -65,6 +68,14 @@ private val Screen.depth: Int
             is Screen.Edit -> 2
         }
 
+// Compact가 아니면 목록과 상세를 한 화면에 놓는다(명세 4절 마지막 열). 그 순간 상세는 더 이상
+// 별도 화면이 아니므로 최상위처럼 취급해야 한다 — 하단 탭이 사라지면 안 되고, 뒤로 화살표가
+// 하단 탭과 나란히 놓이면 안 된다.
+private fun isListDetail(
+    screen: Screen,
+    windowSize: DDWindowSize,
+): Boolean = windowSize != DDWindowSize.Compact && (screen == Screen.Collection || screen is Screen.Detail)
+
 // 재정의 진행 중 — F3(취향 요약)와 F1(컬렉션)이 최상위, 기록은 FAB로 진입한다.
 // lookup/share/settings 는 software-architecture.md 6절에 따라 이어 붙인다.
 //
@@ -92,6 +103,7 @@ fun DrinkDiaryApp(modifier: Modifier = Modifier) {
     // 시스템 뒤로가기로도 앱을 벗어나지 않고 온 곳으로 돌아온다.
     // 편집에서 뒤로가면 대시보드가 아니라 **그 기록의 상세**로 가야 한다 — 고치다 만 사람을
     // 목록 맨 위로 보내면 방금 보던 기록을 다시 찾아야 한다.
+    // 2단 화면에서는 상세가 오른쪽 칸이므로, 뒤로가기는 그 칸을 비우는 일이 된다.
     BackHandler(enabled = screen != Screen.Dashboard) {
         screen =
             when (val current = screen) {
@@ -103,137 +115,163 @@ fun DrinkDiaryApp(modifier: Modifier = Modifier) {
 
     val host: @Composable () -> Unit = { SnackbarHost(snackbar) }
 
-    val title =
-        when (val current = screen) {
-            Screen.Dashboard -> "테이스트 아카이브"
-            Screen.Collection -> "컬렉션"
-            Screen.Record -> "기록하기"
-            is Screen.Detail ->
-                collection.records.firstOrNull { it.id == current.id }?.let { DrinkLabels.drinkType(it.type) } ?: "기록"
-            is Screen.Edit -> "기록 고치기"
-            Screen.Settings -> "설정"
-        }
+    // 크롬(제목·탭·FAB)이 구간에 따라 달라지므로 스캐폴드 **바깥**에서 폭을 알아야 한다.
+    // `LocalDDWindowSize`는 스캐폴드 안에서 제공되므로 여기서는 아직 기본값이다.
+    BoxWithConstraints(modifier = modifier) {
+        val windowSize =
+            when {
+                maxWidth < 600.dp -> DDWindowSize.Compact
+                maxWidth < 840.dp -> DDWindowSize.Medium
+                else -> DDWindowSize.Expanded
+            }
+        val listDetail = isListDetail(screen, windowSize)
+        val topLevel = screen.depth == 0 || listDetail
 
-    val screenType =
-        when (screen) {
-            Screen.Dashboard, Screen.Collection -> DDScreenType.TopLevel
-            Screen.Record, is Screen.Edit -> DDScreenType.Editor
-            is Screen.Detail, Screen.Settings -> DDScreenType.Detail
-        }
+        val title =
+            if (listDetail) {
+                "컬렉션"
+            } else {
+                when (val current = screen) {
+                    Screen.Dashboard -> "테이스트 아카이브"
+                    Screen.Collection -> "컬렉션"
+                    Screen.Record -> "기록하기"
+                    is Screen.Detail ->
+                        collection.records
+                            .firstOrNull { it.id == current.id }
+                            ?.let { DrinkLabels.drinkType(it.type) } ?: "기록"
+                    is Screen.Edit -> "기록 고치기"
+                    Screen.Settings -> "설정"
+                }
+            }
 
-    val selectedTab =
-        when (screen) {
-            Screen.Dashboard -> DDTopLevelTab.Dashboard
-            Screen.Collection -> DDTopLevelTab.Collection
-            else -> null
-        }
+        val screenType =
+            when {
+                listDetail -> DDScreenType.TopLevel
+                screen == Screen.Dashboard || screen == Screen.Collection -> DDScreenType.TopLevel
+                screen == Screen.Record || screen is Screen.Edit -> DDScreenType.Editor
+                else -> DDScreenType.Detail
+            }
 
-    // 검색(F5)은 아직 화면이 없어 핸들러를 넘기지 않는다 — 탭도 그려지지 않는다.
-    val onDashboardClick: (() -> Unit)? =
-        if (screen.depth == 0) {
-            { screen = Screen.Dashboard }
-        } else {
-            null
-        }
-    val onCollectionClick: (() -> Unit)? =
-        if (screen.depth == 0) {
-            { screen = Screen.Collection }
-        } else {
-            null
-        }
+        val selectedTab =
+            when {
+                listDetail -> DDTopLevelTab.Collection
+                screen == Screen.Dashboard -> DDTopLevelTab.Dashboard
+                screen == Screen.Collection -> DDTopLevelTab.Collection
+                else -> null
+            }
 
-    val onBackClick: (() -> Unit)? =
-        when (val current = screen) {
-            Screen.Record, Screen.Settings -> {
+        // 검색(F5)은 아직 화면이 없어 핸들러를 넘기지 않는다 — 탭도 그려지지 않는다.
+        val onDashboardClick: (() -> Unit)? =
+            if (topLevel) {
                 { screen = Screen.Dashboard }
+            } else {
+                null
             }
-            is Screen.Detail -> {
+        val onCollectionClick: (() -> Unit)? =
+            if (topLevel) {
                 { screen = Screen.Collection }
+            } else {
+                null
             }
-            is Screen.Edit -> {
-                { screen = Screen.Detail(current.id) }
-            }
-            Screen.Dashboard, Screen.Collection -> null
-        }
 
-    val floatingActionButton: (@Composable () -> Unit)? =
-        if (screen.depth == 0) {
-            {
-                FloatingActionButton(onClick = { screen = Screen.Record }) {
-                    Icon(painter = painterResource(R.drawable.ic_add), contentDescription = "기록 추가")
+        val onBackClick: (() -> Unit)? =
+            if (listDetail) {
+                null
+            } else {
+                when (val current = screen) {
+                    Screen.Record, Screen.Settings -> {
+                        { screen = Screen.Dashboard }
+                    }
+                    is Screen.Detail -> {
+                        { screen = Screen.Collection }
+                    }
+                    is Screen.Edit -> {
+                        { screen = Screen.Detail(current.id) }
+                    }
+                    Screen.Dashboard, Screen.Collection -> null
                 }
             }
-        } else {
-            null
-        }
 
-    val toolbarActions: @Composable RowScope.() -> Unit = {
-        if (screen == Screen.Dashboard) {
-            // 설정은 하단 탭이 아니라 툴바에 둔다. 탭은 매일 오가는 곳이고
-            // 설정은 한 번 정하면 다시 안 오는 곳이다.
-            DDIconButton(
-                onClick = { screen = Screen.Settings },
-                contentDescription = "설정",
-            ) {
-                Icon(painter = painterResource(R.drawable.ic_settings), contentDescription = null)
+        val floatingActionButton: (@Composable () -> Unit)? =
+            if (topLevel) {
+                {
+                    FloatingActionButton(onClick = { screen = Screen.Record }) {
+                        Icon(painter = painterResource(R.drawable.ic_add), contentDescription = "기록 추가")
+                    }
+                }
+            } else {
+                null
+            }
+
+        val toolbarActions: @Composable RowScope.() -> Unit = {
+            if (screen == Screen.Dashboard) {
+                // 설정은 하단 탭이 아니라 툴바에 둔다. 탭은 매일 오가는 곳이고
+                // 설정은 한 번 정하면 다시 안 오는 곳이다.
+                DDIconButton(
+                    onClick = { screen = Screen.Settings },
+                    contentDescription = "설정",
+                ) {
+                    Icon(painter = painterResource(R.drawable.ic_settings), contentDescription = null)
+                }
             }
         }
-    }
 
-    DDScreenScaffold(
-        title = title,
-        screenType = screenType,
-        selectedTab = selectedTab,
-        onDashboardClick = onDashboardClick,
-        onCollectionClick = onCollectionClick,
-        onBackClick = onBackClick,
-        floatingActionButton = floatingActionButton,
-        toolbarActions = toolbarActions,
-        snackbarHost = host,
-    ) { padding ->
-        AnimatedContent(
-            targetState = screen,
-            transitionSpec = {
-                when {
-                    targetState.depth > initialState.depth -> depthIn()
-                    targetState.depth < initialState.depth -> depthOut()
-                    else -> fadeThrough()
-                }
-            },
-            // 같은 깊이 0의 두 탭은 키가 같다. 그래야 탭을 옮길 때 바깥 스캐폴드가
-            // 다시 만들어지지 않고 안쪽 내용만 바뀐다.
-            contentKey = { if (it.depth == 0) "top" else it },
-            label = "screen",
-        ) { current ->
-            if (current.depth == 0) {
-                // 바깥 전이가 돌지 않는 자리라 탭 모션은 여기서 건다.
-                AnimatedContent(
-                    targetState = current,
-                    transitionSpec = { fadeThrough() },
-                    label = "tab",
-                ) { tabScreen ->
+        DDScreenScaffold(
+            title = title,
+            screenType = screenType,
+            selectedTab = selectedTab,
+            onDashboardClick = onDashboardClick,
+            onCollectionClick = onCollectionClick,
+            onBackClick = onBackClick,
+            floatingActionButton = floatingActionButton,
+            toolbarActions = toolbarActions,
+            snackbarHost = host,
+        ) { padding ->
+            AnimatedContent(
+                targetState = screen,
+                transitionSpec = {
+                    when {
+                        targetState.depth > initialState.depth -> depthIn()
+                        targetState.depth < initialState.depth -> depthOut()
+                        else -> fadeThrough()
+                    }
+                },
+                // 같은 깊이 0의 두 탭은 키가 같다. 그래야 탭을 옮길 때 바깥 스캐폴드가
+                // 다시 만들어지지 않고 안쪽 내용만 바뀐다. 2단 화면에서는 목록과 상세가
+                // **같은 화면**이므로 그 둘도 키가 같아야 한다 — 사이에서 깊이 전이가 돌면 안 된다.
+                contentKey = { if (it.depth == 0 || isListDetail(it, windowSize)) "top" else it },
+                label = "screen",
+            ) { current ->
+                if (current.depth == 0 || isListDetail(current, windowSize)) {
+                    // 바깥 전이가 돌지 않는 자리라 탭 모션은 여기서 건다.
+                    AnimatedContent(
+                        targetState = current,
+                        transitionSpec = { fadeThrough() },
+                        label = "tab",
+                    ) { tabScreen ->
+                        ScreenContent(
+                            screen = tabScreen,
+                            padding = padding,
+                            appContainer = appContainer,
+                            collection = collection,
+                            collectionViewModel = collectionViewModel,
+                            snackbar = snackbar,
+                            onNavigate = { screen = it },
+                            listDetail = isListDetail(tabScreen, windowSize),
+                        )
+                    }
+                } else {
                     ScreenContent(
-                        screen = tabScreen,
+                        screen = current,
                         padding = padding,
                         appContainer = appContainer,
                         collection = collection,
                         collectionViewModel = collectionViewModel,
                         snackbar = snackbar,
                         onNavigate = { screen = it },
-                        modifier = modifier,
+                        listDetail = false,
                     )
                 }
-            } else {
-                ScreenContent(
-                    screen = current,
-                    padding = padding,
-                    appContainer = appContainer,
-                    collection = collection,
-                    collectionViewModel = collectionViewModel,
-                    snackbar = snackbar,
-                    onNavigate = { screen = it },
-                    modifier = modifier,
-                )
             }
         }
     }
@@ -248,6 +286,7 @@ private fun ScreenContent(
     collectionViewModel: CollectionViewModel,
     snackbar: SnackbarHostState,
     onNavigate: (Screen) -> Unit,
+    listDetail: Boolean,
     modifier: Modifier = Modifier,
 ) {
     when (screen) {
@@ -271,27 +310,59 @@ private fun ScreenContent(
         }
 
         Screen.Collection ->
-            CollectionScreen(
-                state = collection,
-                onFilterChange = collectionViewModel::selectFilter,
-                onOpen = { onNavigate(Screen.Detail(it)) },
-                contentPadding = padding,
-                modifier = modifier,
-            )
+            if (listDetail) {
+                CollectionListDetail(
+                    state = collection,
+                    selectedId = null,
+                    onFilterChange = collectionViewModel::selectFilter,
+                    onSelect = { onNavigate(Screen.Detail(it)) },
+                    onEdit = { onNavigate(Screen.Edit(it)) },
+                    onDelete = {
+                        collectionViewModel.delete(it)
+                        onNavigate(Screen.Collection)
+                    },
+                    contentPadding = padding,
+                    modifier = modifier,
+                )
+            } else {
+                CollectionScreen(
+                    state = collection,
+                    onFilterChange = collectionViewModel::selectFilter,
+                    onOpen = { onNavigate(Screen.Detail(it)) },
+                    contentPadding = padding,
+                    modifier = modifier,
+                )
+            }
 
         Screen.Record -> RecordFlow(modifier = modifier.padding(padding))
 
         is Screen.Detail ->
-            RecordDetailScreen(
-                record = collection.records.firstOrNull { it.id == screen.id },
-                onEdit = { onNavigate(Screen.Edit(screen.id)) },
-                onDelete = {
-                    collectionViewModel.delete(screen.id)
-                    onNavigate(Screen.Collection)
-                },
-                contentPadding = padding,
-                modifier = modifier,
-            )
+            if (listDetail) {
+                CollectionListDetail(
+                    state = collection,
+                    selectedId = screen.id,
+                    onFilterChange = collectionViewModel::selectFilter,
+                    onSelect = { onNavigate(Screen.Detail(it)) },
+                    onEdit = { onNavigate(Screen.Edit(it)) },
+                    onDelete = {
+                        collectionViewModel.delete(it)
+                        onNavigate(Screen.Collection)
+                    },
+                    contentPadding = padding,
+                    modifier = modifier,
+                )
+            } else {
+                RecordDetailScreen(
+                    record = collection.records.firstOrNull { it.id == screen.id },
+                    onEdit = { onNavigate(Screen.Edit(screen.id)) },
+                    onDelete = {
+                        collectionViewModel.delete(screen.id)
+                        onNavigate(Screen.Collection)
+                    },
+                    contentPadding = padding,
+                    modifier = modifier,
+                )
+            }
 
         is Screen.Edit -> {
             // key로 id를 넘겨야 다른 기록을 편집할 때 앞 기록의 폼이 남지 않는다.

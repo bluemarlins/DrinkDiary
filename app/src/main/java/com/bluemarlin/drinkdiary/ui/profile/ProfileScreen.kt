@@ -29,7 +29,9 @@ import com.bluemarlin.drinkdiary.ui.component.DDProfileProgressCard
 import com.bluemarlin.drinkdiary.ui.component.DDSemanticBadge
 import com.bluemarlin.drinkdiary.ui.component.DDTasteSentenceCard
 import com.bluemarlin.drinkdiary.ui.component.DDTasteTypeBadge
+import com.bluemarlin.drinkdiary.ui.navigation.DDWindowSize
 import com.bluemarlin.drinkdiary.ui.navigation.LocalDDScreenMargin
+import com.bluemarlin.drinkdiary.ui.navigation.LocalDDWindowSize
 import com.bluemarlin.drinkdiary.ui.theme.DrinkDiarySpacing
 
 // F3 — 문장 우선, 차트는 보조(software-architecture.md 6절).
@@ -40,66 +42,125 @@ fun ProfileScreen(
     onScopeChange: (TypeScope) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // FAB는 내용 위에 떠 있다. 아래 여백만 주면 부족한데, **내용이 화면보다 짧으면 스크롤이
-    // 아예 생기지 않아** FAB 밑에 깔린 줄을 걷어낼 방법이 없기 때문이다 —
-    // 실제로 "버번 캐스크 2.3점"이 통째로 가려졌다(에뮬레이터에서 확인된 결함).
-    // 최소 높이를 화면보다 FAB만큼 크게 잡아 **항상 그만큼은 스크롤되도록** 보장한다.
-    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
-        val fabClearance = 96.dp
+    val twoPane = LocalDDWindowSize.current != DDWindowSize.Compact
+    val fabClearance = 96.dp
 
-        Column(
+    if (!twoPane) {
+        // FAB는 내용 위에 떠 있다. 아래 여백만 주면 부족한데, **내용이 화면보다 짧으면 스크롤이
+        // 아예 생기지 않아** FAB 밑에 깔린 줄을 걷어낼 방법이 없기 때문이다 —
+        // 실제로 "버번 캐스크 2.3점"이 통째로 가려졌다(에뮬레이터에서 확인된 결함).
+        // 최소 높이를 화면보다 FAB만큼 크게 잡아 **항상 그만큼은 스크롤되도록** 보장한다.
+        BoxWithConstraints(modifier = modifier.fillMaxSize()) {
+            Column(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
+                        .heightIn(min = maxHeight + fabClearance)
+                        .padding(
+                            start = LocalDDScreenMargin.current,
+                            end = LocalDDScreenMargin.current,
+                            top = LocalDDScreenMargin.current,
+                            bottom = fabClearance,
+                        ),
+                verticalArrangement = Arrangement.spacedBy(DrinkDiarySpacing.xl),
+            ) {
+                SummarySection(state = state, onScopeChange = onScopeChange)
+                TraitSections(state = state)
+            }
+        }
+        return
+    }
+
+    // 명세 4절: 2단에서는 요약(좌 40%)과 축 목록(우 60%)을 나눈다. 요약은 짧고 축 목록은 길어서
+    // 한 스크롤에 묶으면 왼쪽에 빈 스크롤이 생긴다 — 칸마다 따로 스크롤한다.
+    Row(
+        modifier =
+            modifier
+                .fillMaxSize()
+                .padding(
+                    start = LocalDDScreenMargin.current,
+                    end = LocalDDScreenMargin.current,
+                    top = LocalDDScreenMargin.current,
+                ),
+        horizontalArrangement = Arrangement.spacedBy(DrinkDiarySpacing.xl),
+    ) {
+        SummarySection(
+            state = state,
+            onScopeChange = onScopeChange,
+            modifier = Modifier.weight(0.4f).verticalScroll(rememberScrollState()),
+        )
+        // FAB는 오른쪽 아래에 뜬다. 가릴 내용이 있는 쪽은 이 칸뿐이다.
+        TraitSections(
+            state = state,
             modifier =
                 Modifier
-                    .fillMaxWidth()
+                    .weight(0.6f)
                     .verticalScroll(rememberScrollState())
-                    .heightIn(min = maxHeight + fabClearance)
-                    .padding(
-                        start = LocalDDScreenMargin.current,
-                        end = LocalDDScreenMargin.current,
-                        top = LocalDDScreenMargin.current,
-                        bottom = fabClearance,
-                    ),
-            verticalArrangement = Arrangement.spacedBy(DrinkDiarySpacing.xl),
-        ) {
-            ScopeSelector(selected = state.scope, onSelect = onScopeChange)
-            SummaryHeadline(readiness = state.readiness, profile = state.profile)
+                    .padding(bottom = fabClearance),
+        )
+    }
+}
 
-            val preferences = state.profile?.preferences.orEmpty()
+@Composable
+private fun SummarySection(
+    state: ProfileUiState,
+    onScopeChange: (TypeScope) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(DrinkDiarySpacing.xl),
+    ) {
+        ScopeSelector(selected = state.scope, onSelect = onScopeChange)
+        SummaryHeadline(readiness = state.readiness, profile = state.profile)
+    }
+}
 
-            // 유형은 공통 축만으로 성립한다. 주종 고유 축을 같은 목록에 섞으면 유형까지의 거리가
-            // 실제보다 멀어 보이고, 기본 입력 경로가 묻지도 않는 축에 "더 기록하면 된다"고
-            // 약속하게 된다(실기기에서 확인된 결함).
-            val (shared, specific) = preferences.partition { it.trait.shared }
+@Composable
+private fun TraitSections(
+    state: ProfileUiState,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(DrinkDiarySpacing.xl),
+    ) {
+        val preferences = state.profile?.preferences.orEmpty()
 
-            if (shared.isNotEmpty()) {
-                Column(verticalArrangement = Arrangement.spacedBy(DrinkDiarySpacing.sm)) {
-                    Text("유형을 만드는 축", style = MaterialTheme.typography.titleMedium)
-                    shared.forEach { pref -> TraitStatusRow(pref) }
-                }
+        // 유형은 공통 축만으로 성립한다. 주종 고유 축을 같은 목록에 섞으면 유형까지의 거리가
+        // 실제보다 멀어 보이고, 기본 입력 경로가 묻지도 않는 축에 "더 기록하면 된다"고
+        // 약속하게 된다(실기기에서 확인된 결함).
+        val (shared, specific) = preferences.partition { it.trait.shared }
+
+        if (shared.isNotEmpty()) {
+            Column(verticalArrangement = Arrangement.spacedBy(DrinkDiarySpacing.sm)) {
+                Text("유형을 만드는 축", style = MaterialTheme.typography.titleMedium)
+                shared.forEach { pref -> TraitStatusRow(pref) }
             }
+        }
 
-            // 고유 축은 확장 입력 경로로만 채워진다. 답이 하나도 없으면 아예 보여주지 않는다 —
-            // 채울 방법이 없는 항목을 미완성으로 걸어두지 않는다.
-            val answeredSpecific = specific.filter { it.samples > 0 }
-            if (answeredSpecific.isNotEmpty()) {
-                Column(verticalArrangement = Arrangement.spacedBy(DrinkDiarySpacing.sm)) {
-                    Text("추가로 기록한 축", style = MaterialTheme.typography.titleMedium)
-                    answeredSpecific.forEach { pref -> TraitStatusRow(pref) }
-                }
+        // 고유 축은 확장 입력 경로로만 채워진다. 답이 하나도 없으면 아예 보여주지 않는다 —
+        // 채울 방법이 없는 항목을 미완성으로 걸어두지 않는다.
+        val answeredSpecific = specific.filter { it.samples > 0 }
+        if (answeredSpecific.isNotEmpty()) {
+            Column(verticalArrangement = Arrangement.spacedBy(DrinkDiarySpacing.sm)) {
+                Text("추가로 기록한 축", style = MaterialTheme.typography.titleMedium)
+                answeredSpecific.forEach { pref -> TraitStatusRow(pref) }
             }
+        }
 
-            if (state.tagPreferences.isNotEmpty()) {
-                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Text("라벨로 본 취향", style = MaterialTheme.typography.titleMedium)
-                    Text(
-                        // 이쪽 결과는 가져갈 수 있다는 점이 감각 축과 다르다.
-                        text = "매장에서 라벨만 보고도 쓸 수 있는 기준이에요.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    state.tagPreferences.forEach { pref ->
-                        TagPreferenceBlock(pref, state.scope)
-                    }
+        if (state.tagPreferences.isNotEmpty()) {
+            Column(verticalArrangement = Arrangement.spacedBy(DrinkDiarySpacing.md)) {
+                Text("라벨로 본 취향", style = MaterialTheme.typography.titleMedium)
+                Text(
+                    // 이쪽 결과는 가져갈 수 있다는 점이 감각 축과 다르다.
+                    text = "매장에서 라벨만 보고도 쓸 수 있는 기준이에요.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                state.tagPreferences.forEach { pref ->
+                    TagPreferenceBlock(pref, state.scope)
                 }
             }
         }
