@@ -48,6 +48,11 @@ interface DrinkRecordDao {
     @Query("DELETE FROM drink_records WHERE id = :id")
     suspend fun deleteRecord(id: Long): Int
 
+    // **한 문장으로 지운다.** 반복해서 `deleteRecord`를 부르면 중간에 실패했을 때 일부만 지워진
+    // 상태가 남는데, 되돌리기가 없는 기능이라 그 상태를 사용자가 되돌릴 방법이 없다(prd.md F1-2).
+    @Query("DELETE FROM drink_records WHERE id IN (:ids)")
+    suspend fun deleteRecords(ids: Set<Long>): Int
+
     // 답과 태그를 지우고 다시 넣는다. 수정 시 옛 값이 남아 쌓이면 판정이 오염된다.
     //
     // **`upsertRecord`의 반환값은 새로 넣었을 때만 쓸 수 있다.** UPDATE 경로에서는 Room이 `-1`을

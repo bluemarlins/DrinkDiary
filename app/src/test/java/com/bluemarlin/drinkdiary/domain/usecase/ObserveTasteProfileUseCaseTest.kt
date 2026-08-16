@@ -207,5 +207,7 @@ class ObserveTasteProfileUseCaseTest {
         override suspend fun save(record: DrinkRecord): AppResult<Long> = AppResult.Success(record.id)
 
         override suspend fun deleteById(id: Long): AppResult<Unit> = AppResult.Success(Unit)
+
+        override suspend fun deleteByIds(ids: Set<Long>): AppResult<Int> = AppResult.Success(ids.size)
     }
 }

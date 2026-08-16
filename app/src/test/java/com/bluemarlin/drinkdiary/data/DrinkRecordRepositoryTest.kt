@@ -252,4 +252,73 @@ class DrinkRecordRepositoryTest {
             assertTrue(result is AppResult.Failure)
             assertEquals(AppError.NotFound, (result as AppResult.Failure).error)
         }
+
+    // --- 다건 삭제 (prd.md F1-2) ---
+    //
+    // **되돌리기가 없는 기능이라 부분 삭제가 남으면 사용자가 되돌릴 방법이 없다.** 그래서
+    // 이 경로는 한 문장으로 지우고, 답·태그가 CASCADE로 함께 사라지는지를 여기서 고정한다.
+
+    @Test
+    fun `deleting several records takes their answers with them`() =
+        runBlocking {
+            val kept = saveId(wine(name = "kept", taste = TasteInput().with(Trait.Body, TraitAnswer.High)))
+            val doomedA = saveId(wine(name = "doomed A", taste = TasteInput().with(Trait.Body, TraitAnswer.Low)))
+            val doomedB = saveId(wine(name = "doomed B", taste = TasteInput().with(Trait.Sweetness, TraitAnswer.Mid)))
+
+            val result = repository.deleteByIds(setOf(doomedA, doomedB))
+
+            assertEquals(2, (result as AppResult.Success).value)
+            assertNull(repository.observeRecord(doomedA).first())
+            assertNull(repository.observeRecord(doomedB).first())
+
+            // 고르지 않은 것은 답까지 그대로 남아야 한다.
+            val survivor = repository.observeRecord(kept).first()!!
+            assertEquals(TraitAnswer.High, survivor.taste[Trait.Body])
+            assertEquals(listOf("kept"), repository.observeRecords().first().map { it.name })
+
+            // 답이 함께 지워지지 않으면 같은 id 재사용 시 유령 답이 붙는다(단건 삭제와 같은 위험).
+            val reused = saveId(wine(name = "reused"))
+            assertTrue(
+                repository
+                    .observeRecord(reused)
+                    .first()!!
+                    .taste.answers
+                    .isEmpty(),
+            )
+        }
+
+    // 사용자가 원한 최종 상태는 "그 기록들이 없는 것"이다. 다른 경로에서 이미 지워진 id가
+    // 섞였다고 실패로 돌리면, 화면은 이미 사라진 기록을 두고 오류를 띄우게 된다.
+    @Test
+    fun `deleting a mix of live and already-gone records still succeeds`() =
+        runBlocking {
+            val live = saveId(wine(name = "live"))
+
+            val result = repository.deleteByIds(setOf(live, 9_999L))
+
+            assertEquals(1, (result as AppResult.Success).value)
+            assertTrue(repository.observeRecords().first().isEmpty())
+        }
+
+    @Test
+    fun `deleting only records that are not there reports not found`() =
+        runBlocking {
+            val result = repository.deleteByIds(setOf(9_998L, 9_999L))
+
+            assertTrue(result is AppResult.Failure)
+            assertEquals(AppError.NotFound, (result as AppResult.Failure).error)
+        }
+
+    // 빈 선택으로 DB를 건드리지 않는다. 선택 모드에서 아무것도 안 고르고 지우기를 누르는 경로가
+    // UI에 없더라도, 저장소가 그 호출에 무해해야 화면 쪽 조건이 하나 줄어든다.
+    @Test
+    fun `deleting an empty selection touches nothing`() =
+        runBlocking {
+            saveId(wine(name = "untouched"))
+
+            val result = repository.deleteByIds(emptySet())
+
+            assertEquals(0, (result as AppResult.Success).value)
+            assertEquals(1, repository.observeRecords().first().size)
+        }
 }

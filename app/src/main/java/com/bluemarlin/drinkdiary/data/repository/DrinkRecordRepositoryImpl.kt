@@ -56,4 +56,19 @@ class DrinkRecordRepositoryImpl(
                 AppResult.Success(Unit)
             }
         }.getOrElse { AppResult.Failure(AppError.Storage) }
+
+    override suspend fun deleteByIds(ids: Set<Long>): AppResult<Int> {
+        if (ids.isEmpty()) return AppResult.Success(0)
+
+        return runCatching {
+            val deletedCount = dao.deleteRecords(ids)
+            if (deletedCount == 0) {
+                AppResult.Failure(AppError.NotFound)
+            } else {
+                // 요청 건수보다 적게 지워진 것은 실패가 아니다. 다른 경로에서 이미 지워진 기록이
+                // 섞여 있을 수 있고, 사용자가 원한 최종 상태(그 기록들이 없는 상태)는 달성됐다.
+                AppResult.Success(deletedCount)
+            }
+        }.getOrElse { AppResult.Failure(AppError.Storage) }
+    }
 }

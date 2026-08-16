@@ -15,4 +15,7 @@ interface DrinkRecordRepository {
     suspend fun save(record: DrinkRecord): AppResult<Long>
 
     suspend fun deleteById(id: Long): AppResult<Unit>
+
+    // 반환값은 **실제로 지워진 건수**다. 요청 건수와 다를 수 있다.
+    suspend fun deleteByIds(ids: Set<Long>): AppResult<Int>
 }
