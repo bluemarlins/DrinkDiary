@@ -55,7 +55,7 @@
 | `Destructive` | `#BA1A1A` | `#FFB4AB` | 삭제, 위험 액션 |
 
 > [!NOTE]
-> **`Malt` Light 정정 (2026-08-16)**: `#9C6722` → `#8A5A1B`. 원래 값은 `MaltContainer`(`#F8ECDA`) 위에서
+> **`Malt` Light 정정 (2026-08-16, 2026-08-17 사용자 확정)**: `#9C6722` → `#8A5A1B`. 원래 값은 `MaltContainer`(`#F8ECDA`) 위에서
 > **4.11:1로 2절이 요구하는 보조 4.5:1(AA)에 미달**했다 — 주종 뱃지 레이블(`LabelSmall` 11sp)이
 > 이 조합을 쓴다. AA를 넘기는 데 필요한 최소 변경만 했다(**5.06:1**). Dark는 6.58:1로 이미 통과라
 > 그대로 둔다. 근거: `../../departments/designer/design-system-audit-2026-08.md` 3절.
