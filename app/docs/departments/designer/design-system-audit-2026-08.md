@@ -42,7 +42,7 @@
 | 항목 | 근거 |
 | --- | --- |
 | 서체 2종 제한 (§2-3) | `FontFamily.Serif`는 `DisplayTasteCode` 한 곳뿐 |
-| 타입 8종의 크기·행간·굵기 (§3.2) | 표와 전부 일치 |
+| 타입 롤의 크기·행간·굵기 (§3.2) | 8종 중 7종 일치 — **`LabelSmall`만 어긋났다**(명세 11/14sp, 코드 12/16sp). T1에서 정정 |
 | Shape 토큰 6/12/18dp (§3.3) | 정의도 일치하고 화면은 `shapes.small/medium/large`로만 쓴다 |
 | 간격 토큰 이름 (§3.3) | 2판에서 맞춤 |
 | 버튼 48dp (§2-5) | `DDButtons.kt` 4종 모두 `defaultMinSize(minHeight = 48.dp)` |
@@ -164,9 +164,10 @@ Brush.verticalGradient(listOf(Color.White.copy(0.58f), Color.White.copy(0.12f)))
 
 - **토큰 밖 dp 산재** (§2-5): `10dp`(DDCards 뱃지 패딩·DrinkPicker 3곳·내비), `14dp`(3곳),
   `18dp`(2곳), `28dp`(2곳), `6dp` 간격 용도 3곳, `2dp` 2곳.
-- **타입 스케일 밖 롤 16곳**: `bodySmall` 11회, `titleSmall` 3회, `labelMedium` 2회.
-  `Typography`에서 재정의하지 않아 **Material 기본값(Roboto, 다른 행간·자간)이 그대로 나온다.**
-  §3.2에 대응 롤이 없다.
+- **타입 스케일 밖 롤 21곳**: `bodySmall` 11회, `headlineSmall` 5회, `titleSmall` 3회,
+  `labelMedium` 2회. `bodySmall`/`titleSmall`/`labelMedium`은 `Typography`에서 재정의하지 않아
+  **Material 기본값(Roboto, 다른 행간·자간)이 그대로 나오고**, `headlineSmall`은 명세에 없는
+  **9번째 스타일**(`CompactTitle` 20/26sp)을 코드가 따로 만들어 쓰고 있었다. §3.2에 대응 롤이 없다.
 - **모션 §1-3 미적용**: Depth In/Out(Z-axis), 탭 전환 모핑, Selection Mode 전부 없음.
   있는 것은 `Crossfade` 2곳.
 - **문구 불일치 잔존**: `DDRepurchaseBadge` 기본값 `"★ 다시 살래요"` vs `DrinkLabels` `"또 살래요"`.

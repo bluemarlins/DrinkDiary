@@ -43,7 +43,7 @@ fun TagPreferencePrompt(
         Text(
             // 설정 화면이 생겼으므로 이제 이 약속을 지킬 수 있다. 없는 화면을 약속하지 않는다.
             text = "고르지 않으면 지금처럼 '더 남기기' 안에 그대로 있어요. 설정에서 언제든 바꿀 수 있어요.",
-            style = MaterialTheme.typography.bodySmall,
+            style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
@@ -58,7 +58,7 @@ fun TagPreferencePrompt(
                 )
                 Text(
                     text = hint,
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }

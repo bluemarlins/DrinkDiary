@@ -80,7 +80,7 @@ fun DrinkPicker(
         modifier = modifier.fillMaxSize().padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp),
     ) {
-        Text("무엇을 마셨나요?", style = MaterialTheme.typography.headlineSmall)
+        Text("무엇을 마셨나요?", style = MaterialTheme.typography.titleLarge)
 
         ChoiceGroup(title = "와인", choices = wineChoices, onPick = onPick)
         ChoiceGroup(title = "위스키", choices = whiskeyChoices, onPick = onPick)
@@ -96,7 +96,7 @@ private fun ChoiceGroup(
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Text(
             text = title,
-            style = MaterialTheme.typography.titleSmall,
+            style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         FlowRow(

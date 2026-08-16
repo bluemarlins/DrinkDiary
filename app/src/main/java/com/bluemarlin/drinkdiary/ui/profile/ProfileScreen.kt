@@ -94,7 +94,7 @@ fun ProfileScreen(
                     Text(
                         // 이쪽 결과는 가져갈 수 있다는 점이 감각 축과 다르다.
                         text = "매장에서 라벨만 보고도 쓸 수 있는 기준이에요.",
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     state.tagPreferences.forEach { pref ->
@@ -189,7 +189,7 @@ private fun TagPreferenceBlock(
                 // 차이가 없으면 없다고 말한다. 순위만 보여주면 없는 선호가 있는 것처럼 읽힌다.
                 Text(
                     text = "아직 차이가 뚜렷하지 않아요",
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
@@ -241,7 +241,7 @@ private fun TraitStatusRow(pref: TraitPreference) {
             TraitStatus.Neutral ->
                 Text(
                     text = "크게 가리지 않으세요",
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.End,
                 )
@@ -249,7 +249,7 @@ private fun TraitStatusRow(pref: TraitPreference) {
             TraitStatus.NeedsRecords ->
                 Text(
                     text = "${recordsNeeded(pref)}개 더 필요해요",
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.End,
                 )

@@ -34,7 +34,7 @@ fun DDProbeQuestion(
     ) {
         Text(
             text = copy.question,
-            style = MaterialTheme.typography.headlineSmall,
+            style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.fillMaxWidth(),
         )

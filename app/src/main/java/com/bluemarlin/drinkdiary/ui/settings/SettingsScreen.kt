@@ -41,7 +41,7 @@ fun SettingsScreen(
             Text("기록할 때 물어볼 것", style = MaterialTheme.typography.titleMedium)
             Text(
                 text = "켜면 기록할 때마다 바로 보이고, 끄면 '더 남기기' 안으로 들어가요.",
-                style = MaterialTheme.typography.bodySmall,
+                style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
@@ -59,7 +59,7 @@ fun SettingsScreen(
                     Text(DrinkLabels.tagCategory(category), style = MaterialTheme.typography.bodyLarge)
                     Text(
                         text = hint,
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
@@ -77,7 +77,7 @@ fun SettingsScreen(
             // 이 항목의 취향 판정은 앞으로 쌓이는 기록부터 시작한다 — 숨기면 사용자는
             // "왜 아직 아무것도 안 나오지"에서 앱이 고장난 줄 안다.
             text = "지금 켜도 이미 저장한 기록에는 그 답이 없어요. 이 항목의 취향은 앞으로 남기는 기록부터 쌓여요.",
-            style = MaterialTheme.typography.bodySmall,
+            style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }

@@ -148,7 +148,7 @@ private fun RecordRow(
                 )
                 Text(
                     text = DrinkLabels.subtitle(record),
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                 )

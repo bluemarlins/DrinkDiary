@@ -34,7 +34,7 @@ fun TasteEditor(
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
                     text = DrinkLabels.trait(trait),
-                    style = MaterialTheme.typography.labelMedium,
+                    style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

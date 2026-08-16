@@ -39,7 +39,7 @@ fun TagPicker(
     if (categories.isEmpty()) return
 
     Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        title?.let { Text(it, style = MaterialTheme.typography.titleSmall) }
+        title?.let { Text(it, style = MaterialTheme.typography.titleMedium) }
 
         categories.forEach { category ->
             TagRow(
@@ -66,7 +66,7 @@ private fun TagRow(
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(
             text = label,
-            style = MaterialTheme.typography.labelMedium,
+            style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

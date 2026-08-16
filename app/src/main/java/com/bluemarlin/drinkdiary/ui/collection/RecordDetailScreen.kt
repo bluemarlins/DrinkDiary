@@ -81,7 +81,7 @@ fun RecordDetailScreen(
                     DDRepurchaseBadge()
                 }
             }
-            Text(record.name, style = MaterialTheme.typography.headlineSmall)
+            Text(record.name, style = MaterialTheme.typography.titleLarge)
             Text(
                 text = DrinkLabels.subtitle(record),
                 style = MaterialTheme.typography.bodyMedium,

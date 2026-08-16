@@ -72,7 +72,7 @@ fun RecordDetailStep(
                 .padding(DrinkDiarySpacing.lg),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        Text("무엇이었나요?", style = MaterialTheme.typography.headlineSmall)
+        Text("무엇이었나요?", style = MaterialTheme.typography.titleLarge)
 
         OutlinedTextField(
             value = form.name,
@@ -230,7 +230,7 @@ private fun OptionalFields(
                 modifier = Modifier.fillMaxWidth(),
             )
         } else {
-            Text("어떻게 마셨나요?", style = MaterialTheme.typography.titleSmall)
+            Text("어떻게 마셨나요?", style = MaterialTheme.typography.titleMedium)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 ServingStyle.entries.forEach { style ->
                     FilterChip(

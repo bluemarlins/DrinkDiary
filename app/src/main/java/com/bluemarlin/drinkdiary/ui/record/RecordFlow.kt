@@ -113,7 +113,7 @@ private fun RecordSaved(
                 .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Text("기록했습니다.", style = MaterialTheme.typography.headlineSmall)
+        Text("기록했습니다.", style = MaterialTheme.typography.titleLarge)
         Text("취향 입력은 탭 ${taps}번으로 끝났습니다.", style = MaterialTheme.typography.bodyLarge)
         Text(
             // '보통'을 뺀 개수를 말하되 그것이 버려졌다는 인상을 주지 않는다 — 판정에는 다 쓰인다.
@@ -123,7 +123,7 @@ private fun RecordSaved(
         )
         Text(
             text = "유형은 한 잔으로 나오지 않습니다. 기록이 쌓여 대비가 생겨야 판정됩니다.",
-            style = MaterialTheme.typography.bodySmall,
+            style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         // 첫 기록 직후 한 번만. 이미 가치를 받은 뒤라 마찰로 느껴지지 않고,
