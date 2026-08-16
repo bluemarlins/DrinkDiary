@@ -58,7 +58,7 @@
 > **`Malt` Light 정정 (2026-08-16, 2026-08-17 사용자 확정)**: `#9C6722` → `#8A5A1B`. 원래 값은 `MaltContainer`(`#F8ECDA`) 위에서
 > **4.11:1로 2절이 요구하는 보조 4.5:1(AA)에 미달**했다 — 주종 뱃지 레이블(`LabelSmall` 11sp)이
 > 이 조합을 쓴다. AA를 넘기는 데 필요한 최소 변경만 했다(**5.06:1**). Dark는 6.58:1로 이미 통과라
-> 그대로 둔다. 근거: `../../departments/designer/design-system-audit-2026-08.md` 3절.
+> 그대로 둔다. 근거: `design-system-audit-2026-08.md` 3절.
 >
 > **명도 대비는 이제 테스트가 지킨다** — `app/src/test/.../ui/theme/DesignTokenTest.kt`가 이 표의
 > hex와 대비 비율을 검사하므로, 표를 고치면 테스트도 함께 고쳐야 한다.
