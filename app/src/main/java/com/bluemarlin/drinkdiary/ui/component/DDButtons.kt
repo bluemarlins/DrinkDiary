@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import com.bluemarlin.drinkdiary.ui.theme.DrinkDiaryThemeTokens
 
 @Composable
 fun DDPrimaryButton(
@@ -34,7 +35,9 @@ fun DDPrimaryButton(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
                 disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                disabledContentColor = MaterialTheme.colorScheme.outline,
+                // `outline`은 이제 LineStrong(테두리 색)이라 비활성 '텍스트' 색이 아니다.
+                // 명세 3.1절이 InkFaint를 "비활성 텍스트, 플레이스홀더"로 정의한다.
+                disabledContentColor = DrinkDiaryThemeTokens.inkFaint,
             ),
     ) {
         if (icon != null) {

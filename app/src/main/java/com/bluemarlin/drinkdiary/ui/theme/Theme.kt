@@ -1,116 +1,97 @@
 package com.bluemarlin.drinkdiary.ui.theme
 
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 
+// M3 ColorScheme에는 명세 3.1절의 `InkFaint`(비활성 텍스트, 플레이스홀더)에 해당하는 슬롯이 없다.
+// `outline`은 이제 `LineStrong`(테두리)이므로 비활성 '텍스트' 색으로 쓸 수 없다.
 @Immutable
-data class DrinkDiaryChartColors(
-    val wine: Color,
-    val whiskey: Color,
+data class DrinkDiaryExtendedColors(
+    val inkFaint: Color,
 )
 
 private val DarkColorScheme =
     darkColorScheme(
-        primary = BottleGreenDark,
-        onPrimary = CellarInkDark,
-        primaryContainer = BottleGreenContainerDark,
-        onPrimaryContainer = CellarOnSurfaceDark,
-        secondary = MaltAmberDark,
-        onSecondary = CellarInkDark,
-        secondaryContainer = MaltAmberContainerDark,
-        onSecondaryContainer = CellarOnSurfaceDark,
-        tertiary = WineBerryDark,
-        onTertiary = CellarInkDark,
-        tertiaryContainer = WineBerryContainerDark,
-        onTertiaryContainer = CellarOnSurfaceDark,
-        background = CellarInkDark,
-        onBackground = CellarOnSurfaceDark,
-        surface = CellarSurfaceDark,
-        onSurface = CellarOnSurfaceDark,
-        surfaceVariant = CellarSurfaceVariantDark,
-        onSurfaceVariant = CellarOnSurfaceVariantDark,
-        outline = CellarOutlineDark,
-        outlineVariant = CellarOutlineVariantDark,
-        error = CorkErrorDark,
+        primary = PrimaryDark,
+        onPrimary = PaperDark,
+        primaryContainer = PrimaryContainerDark,
+        onPrimaryContainer = InkDark,
+        secondary = MaltDark,
+        onSecondary = PaperDark,
+        secondaryContainer = MaltContainerDark,
+        onSecondaryContainer = InkDark,
+        tertiary = WineDark,
+        onTertiary = PaperDark,
+        tertiaryContainer = WineContainerDark,
+        onTertiaryContainer = InkDark,
+        background = PaperDark,
+        onBackground = InkDark,
+        surface = SurfaceDark,
+        onSurface = InkDark,
+        surfaceVariant = SurfaceSunkDark,
+        onSurfaceVariant = InkSoftDark,
+        outline = LineStrongDark,
+        outlineVariant = LineDark,
+        error = DestructiveDark,
+        onError = PaperDark,
     )
 
 private val LightColorScheme =
     lightColorScheme(
-        primary = BottleGreenLight,
-        onPrimary = DrinkSurfaceLight,
-        primaryContainer = BottleGreenContainerLight,
-        onPrimaryContainer = DrinkOnSurfaceLight,
-        secondary = MaltAmberLight,
-        onSecondary = DrinkSurfaceLight,
-        secondaryContainer = MaltAmberContainerLight,
-        onSecondaryContainer = DrinkOnSurfaceLight,
-        tertiary = WineBerryLight,
-        onTertiary = DrinkSurfaceLight,
-        tertiaryContainer = WineBerryContainerLight,
-        onTertiaryContainer = DrinkOnSurfaceLight,
-        background = DrinkPaperLight,
-        onBackground = DrinkOnSurfaceLight,
-        surface = DrinkSurfaceLight,
-        onSurface = DrinkOnSurfaceLight,
-        surfaceVariant = DrinkSurfaceVariantLight,
-        onSurfaceVariant = DrinkOnSurfaceVariantLight,
-        outline = DrinkOutlineLight,
-        outlineVariant = DrinkOutlineVariantLight,
-        error = CorkErrorLight,
+        primary = PrimaryLight,
+        onPrimary = PaperLight,
+        primaryContainer = PrimaryContainerLight,
+        onPrimaryContainer = InkLight,
+        secondary = MaltLight,
+        onSecondary = PaperLight,
+        secondaryContainer = MaltContainerLight,
+        onSecondaryContainer = InkLight,
+        tertiary = WineLight,
+        onTertiary = PaperLight,
+        tertiaryContainer = WineContainerLight,
+        onTertiaryContainer = InkLight,
+        background = PaperLight,
+        onBackground = InkLight,
+        surface = SurfaceLight,
+        onSurface = InkLight,
+        surfaceVariant = SurfaceSunkLight,
+        onSurfaceVariant = InkSoftLight,
+        outline = LineStrongLight,
+        outlineVariant = LineLight,
+        error = DestructiveLight,
+        onError = PaperLight,
     )
 
-private val LightChartColors =
-    DrinkDiaryChartColors(
-        wine = ChartWineLight,
-        whiskey = ChartWhiskeyLight,
-    )
+private val LightExtendedColors = DrinkDiaryExtendedColors(inkFaint = InkFaintLight)
 
-private val DarkChartColors =
-    DrinkDiaryChartColors(
-        wine = ChartWineDark,
-        whiskey = ChartWhiskeyDark,
-    )
+private val DarkExtendedColors = DrinkDiaryExtendedColors(inkFaint = InkFaintDark)
 
-val LocalDrinkDiaryChartColors = staticCompositionLocalOf { LightChartColors }
+val LocalDrinkDiaryExtendedColors = staticCompositionLocalOf { LightExtendedColors }
 
 object DrinkDiaryThemeTokens {
-    val chartColors: DrinkDiaryChartColors
+    val inkFaint: Color
         @Composable
-        get() = LocalDrinkDiaryChartColors.current
+        get() = LocalDrinkDiaryExtendedColors.current.inkFaint
 }
 
+// 다이내믹 컬러는 두지 않는다. 켜지는 순간 명세 3.1절 팔레트가 통째로 무시되므로
+// 디자인 시스템과 양립하지 않는다 — 쓰지 않는 스위치라도 남겨두면 언젠가 켜진다.
 @Composable
 fun DrinkDiaryTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = false,
     content: @Composable () -> Unit,
 ) {
-    val colorScheme =
-        when {
-            dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-                val context = LocalContext.current
-                if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-            }
+    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+    val extendedColors = if (darkTheme) DarkExtendedColors else LightExtendedColors
 
-            darkTheme -> DarkColorScheme
-            else -> LightColorScheme
-        }
-
-    val chartColors = if (darkTheme) DarkChartColors else LightChartColors
-
-    CompositionLocalProvider(LocalDrinkDiaryChartColors provides chartColors) {
+    CompositionLocalProvider(LocalDrinkDiaryExtendedColors provides extendedColors) {
         MaterialTheme(
             colorScheme = colorScheme,
             typography = Typography,

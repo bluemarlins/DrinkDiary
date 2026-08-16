@@ -173,6 +173,11 @@ Brush.verticalGradient(listOf(Color.White.copy(0.58f), Color.White.copy(0.12f)))
 - **문구 불일치 잔존**: `DDRepurchaseBadge` 기본값 `"★ 다시 살래요"` vs `DrinkLabels` `"또 살래요"`.
   2판의 미해결 항목이 그대로다.
 - **누를 수 없는 칩**: `AssistChip(onClick = {})` 2곳. 눌리게 생겼는데 아무 일도 없다.
+- **선택 상태가 명세와 다른 색을 쓴다** (T2 작업 중 화면에서 발견): §3.1은 `PrimaryContainer`를
+  "선택된 칩 배경", `SurfaceSunk`를 "칩 미선택 상태"로 정의하는데, M3의 `FilterChip`과
+  `NavigationBarItem`은 선택 표시에 **`secondaryContainer`(= 우리 매핑에서 `MaltContainer`)**를
+  기본값으로 쓴다. 팔레트만 맞추면 선택 칩이 위스키 앰버로 칠해진다. 색을 명시하지 않는 한
+  M3 기본값이 명세를 이긴다 — T3(내비)·T5(칩)에서 잡는다.
 
 ---
 
