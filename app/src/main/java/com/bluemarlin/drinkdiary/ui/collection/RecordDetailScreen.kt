@@ -9,11 +9,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,6 +26,7 @@ import com.bluemarlin.drinkdiary.domain.model.CollectionStatus
 import com.bluemarlin.drinkdiary.domain.model.DrinkRecord
 import com.bluemarlin.drinkdiary.domain.model.Trait
 import com.bluemarlin.drinkdiary.ui.DrinkLabels
+import com.bluemarlin.drinkdiary.ui.component.DDConfirmDialog
 import com.bluemarlin.drinkdiary.ui.component.DDDestructiveButton
 import com.bluemarlin.drinkdiary.ui.component.DDDrinkBadge
 import com.bluemarlin.drinkdiary.ui.component.DDPrimaryButton
@@ -150,20 +149,17 @@ fun RecordDetailScreen(
     }
 
     if (confirming) {
-        AlertDialog(
-            onDismissRequest = { confirming = false },
-            title = { Text("${record.name} 기록을 지울까요?") },
+        DDConfirmDialog(
+            title = "${record.name} 기록을 지울까요?",
             // 되돌릴 수 없다는 사실을 누르기 전에 말한다.
-            text = { Text("취향 답까지 함께 지워지고, 되돌릴 수 없어요. 취향 유형도 이 기록만큼 다시 계산됩니다.") },
-            confirmButton = {
-                TextButton(onClick = {
-                    confirming = false
-                    onDelete()
-                }) { Text("지우기", color = MaterialTheme.colorScheme.error) }
+            message = "취향 답까지 함께 지워지고, 되돌릴 수 없어요. 취향 유형도 이 기록만큼 다시 계산됩니다.",
+            confirmLabel = "지우기",
+            dismissLabel = "그대로 두기",
+            onConfirm = {
+                confirming = false
+                onDelete()
             },
-            dismissButton = {
-                TextButton(onClick = { confirming = false }) { Text("그대로 두기") }
-            },
+            onDismiss = { confirming = false },
         )
     }
 }

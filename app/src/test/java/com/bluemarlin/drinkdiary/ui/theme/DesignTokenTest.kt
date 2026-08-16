@@ -1,6 +1,7 @@
 package com.bluemarlin.drinkdiary.ui.theme
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -108,6 +109,56 @@ class DesignTokenTest {
             "InkFaint가 AA를 넘으면 보조 텍스트와 구분되지 않아 비활성 표시가 사라진다",
             contrast(InkFaintDark, SurfaceSunkDark) < AA,
         )
+    }
+
+    // **이 테스트가 있는 이유는 실제로 앱이 죽었기 때문이다.**
+    // 명세 3.2절의 Tracking이 em이라 `.em`으로 적었더니 `OutlinedTextField`의 라벨이
+    // `bodyLarge`(우리 것, Em)와 `bodySmall`(Material 기본값, Sp) 사이를 보간하면서
+    // `IllegalArgumentException: Cannot perform operation for Em and Sp`로 터졌다.
+    // ktlint·lint·유닛테스트는 전부 통과했고 화면을 열어야 드러났다.
+    @Test
+    fun `every letter spacing stays in sp so it never mixes with Material defaults`() {
+        val styles =
+            mapOf(
+                "displayLarge" to Typography.displayLarge,
+                "headlineMedium" to Typography.headlineMedium,
+                "titleLarge" to Typography.titleLarge,
+                "titleMedium" to Typography.titleMedium,
+                "bodyLarge" to Typography.bodyLarge,
+                "bodyMedium" to Typography.bodyMedium,
+                "labelLarge" to Typography.labelLarge,
+                "labelSmall" to Typography.labelSmall,
+            )
+        styles.forEach { (name, style) ->
+            assertTrue(
+                "${name}의 letterSpacing이 Em이다 — Material 기본 슬롯(Sp)과 보간되는 순간 앱이 죽는다",
+                style.letterSpacing.isSp,
+            )
+        }
+    }
+
+    // 환산이 맞는지도 본다. sp로 적는 대가로 값이 폰트 크기에 묶이므로, 크기를 바꾸면
+    // 자간도 함께 고쳐야 한다는 사실을 여기서 붙잡는다.
+    @Test
+    fun `tracking matches the spec em values converted at each font size`() {
+        assertTracking("displayLarge", Typography.displayLarge, sizeSp = 32f, em = 0.05f)
+        assertTracking("headlineMedium", Typography.headlineMedium, sizeSp = 20f, em = -0.02f)
+        assertTracking("titleLarge", Typography.titleLarge, sizeSp = 18f, em = -0.01f)
+        assertTracking("titleMedium", Typography.titleMedium, sizeSp = 16f, em = 0f)
+        assertTracking("bodyLarge", Typography.bodyLarge, sizeSp = 15f, em = 0f)
+        assertTracking("bodyMedium", Typography.bodyMedium, sizeSp = 13f, em = 0.01f)
+        assertTracking("labelLarge", Typography.labelLarge, sizeSp = 14f, em = 0.01f)
+        assertTracking("labelSmall", Typography.labelSmall, sizeSp = 11f, em = 0.03f)
+    }
+
+    private fun assertTracking(
+        name: String,
+        style: TextStyle,
+        sizeSp: Float,
+        em: Float,
+    ) {
+        assertEquals("${name}의 fontSize", sizeSp, style.fontSize.value, 0.001f)
+        assertEquals("${name}의 자간(명세 ${em}em)", sizeSp * em, style.letterSpacing.value, 0.001f)
     }
 
     private fun assertContrast(

@@ -7,12 +7,20 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 
-// 명세 `../../../../../../docs/specs/designer/design-system.md` 3.2절의 Tracking 열은 `em`이다.
-// `.sp`로 적으면 절대값이 되어 폰트 크기에 비례하지 않는다 — 32sp에 0.05.sp는 0.0016em이라
-// 사실상 자간이 없는 것과 같았다. 롤은 명세대로 8종이며, 여기 없는 롤은 만들지 않는다.
+// 명세 `../../../../../../docs/specs/designer/design-system.md` 3.2절의 Tracking 열은 `em`인데
+// 코드는 그 숫자를 그대로 `.sp`로 적고 있었다 — 32sp에 `0.05.sp`는 0.0016em이라 자간이 사실상 없었다.
+//
+// **그렇다고 `.em`을 쓸 수는 없다.** Compose는 letterSpacing을 보간할 때 Em과 Sp를 섞지 못하고
+// `IllegalArgumentException: Cannot perform operation for Em and Sp`로 죽는다. `OutlinedTextField`의
+// 라벨이 `bodyLarge`(우리 것)와 `bodySmall`(Material 기본값, `.sp`) 사이를 오가면서 실제로 그렇게 됐다 —
+// 컴파일·lint·유닛테스트는 전부 통과하고 화면을 열어야 터진다.
+//
+// 그래서 em 값을 **폰트 크기로 환산해 sp로 적는다.** 곱셈을 소스에 남겨 두는 것은 명세의 em 값이
+// 코드에서 그대로 읽히게 하기 위해서다 — fontSize를 바꾸면 이 식도 함께 고쳐야 한다.
+//
+// 롤은 명세대로 8종이며, 여기 없는 롤은 만들지 않는다.
 
 // 81가지 취향 유형 코드 (Serif Bold)
 val DisplayTasteCode =
@@ -21,7 +29,7 @@ val DisplayTasteCode =
         fontWeight = FontWeight.Bold,
         fontSize = 32.sp,
         lineHeight = 40.sp,
-        letterSpacing = 0.05.em,
+        letterSpacing = (32 * 0.05).sp,
     )
 
 // 취향 요약 핵심 문장 (Sans SemiBold)
@@ -31,7 +39,7 @@ val HeadlineSentence =
         fontWeight = FontWeight.SemiBold,
         fontSize = 20.sp,
         lineHeight = 28.sp,
-        letterSpacing = (-0.02).em,
+        letterSpacing = (20 * -0.02).sp,
     )
 
 val Typography =
@@ -44,7 +52,7 @@ val Typography =
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp,
                 lineHeight = 24.sp,
-                letterSpacing = (-0.01).em,
+                letterSpacing = (18 * -0.01).sp,
             ),
         titleMedium =
             TextStyle(
@@ -52,7 +60,7 @@ val Typography =
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 16.sp,
                 lineHeight = 22.sp,
-                letterSpacing = 0.em,
+                letterSpacing = 0.sp,
             ),
         bodyLarge =
             TextStyle(
@@ -60,7 +68,7 @@ val Typography =
                 fontWeight = FontWeight.Normal,
                 fontSize = 15.sp,
                 lineHeight = 22.sp,
-                letterSpacing = 0.em,
+                letterSpacing = 0.sp,
             ),
         bodyMedium =
             TextStyle(
@@ -68,7 +76,7 @@ val Typography =
                 fontWeight = FontWeight.Normal,
                 fontSize = 13.sp,
                 lineHeight = 18.sp,
-                letterSpacing = 0.01.em,
+                letterSpacing = (13 * 0.01).sp,
             ),
         labelLarge =
             TextStyle(
@@ -76,7 +84,7 @@ val Typography =
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 14.sp,
                 lineHeight = 20.sp,
-                letterSpacing = 0.01.em,
+                letterSpacing = (14 * 0.01).sp,
             ),
         labelSmall =
             TextStyle(
@@ -84,7 +92,7 @@ val Typography =
                 fontWeight = FontWeight.Medium,
                 fontSize = 11.sp,
                 lineHeight = 14.sp,
-                letterSpacing = 0.03.em,
+                letterSpacing = (11 * 0.03).sp,
             ),
     )
 

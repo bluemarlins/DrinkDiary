@@ -223,3 +223,25 @@ Brush.verticalGradient(listOf(Color.White.copy(0.58f), Color.White.copy(0.12f)))
 각 단계의 Definition of Done은 `harness.md` §4 그대로다. 추가로 **`DesignTokenTest`(Claude 작성)**를
 T2에서 도입해 팔레트 hex와 명도 대비를 테스트로 고정한다 — 이번 감사에서 손으로 계산한 것을
 다음 회귀 때 또 손으로 계산하지 않기 위해서다.
+
+### 5-1. 이번 작업에서 배운 것 — **게이트가 통과해도 앱은 죽을 수 있다**
+
+T1에서 명세 3.2절의 Tracking을 `.em`으로 옮겼다. 명세가 em이라고 썼으니 맞는 판단처럼 보였고,
+`ktlintCheck` · `lint` · 112개 유닛테스트가 전부 통과했다. **그런데 텍스트 필드가 있는 화면은 전부
+죽었다** — `java.lang.IllegalArgumentException: Cannot perform operation for Em and Sp`.
+
+`OutlinedTextField`의 라벨은 `bodyLarge`(우리 것)와 `bodySmall`(재정의하지 않아 Material 기본값)
+사이를 애니메이션으로 보간하는데, Compose는 letterSpacing의 Em과 Sp를 섞어 보간하지 못한다.
+**우리 토큰만 보면 일관되고, Material 기본값과 만나는 경계에서만 터진다.**
+
+T5까지 넉 단계 동안 이걸 못 봤다. 에뮬레이터 확인을 매번 했지만 DB가 비어 있어 **기록 상세 단계에
+도달한 적이 없었고**, 그 화면이 이 앱의 유일한 텍스트 필드 화면이다. T6에서 기록을 하나 만들어
+보고 나서야 드러났다.
+
+세 가지를 남긴다.
+
+1. **em 값은 폰트 크기로 환산해 sp로 적는다.** 명세의 의도(크기 비례 자간)는 지키면서 단위 혼합을
+   피한다. 곱셈식(`(32 * 0.05).sp`)을 소스에 남겨 명세의 em 값이 코드에서 읽히게 했다.
+2. **`DesignTokenTest`에 단위 검사를 추가했다.** 어떤 롤이든 letterSpacing이 Em이면 실패한다.
+3. **에뮬레이터 확인은 "화면이 뜨는지"가 아니라 "그 변경이 닿는 화면에 실제로 가는지"여야 한다.**
+   데이터가 없으면 절반의 화면에 도달할 수 없다.

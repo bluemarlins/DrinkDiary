@@ -3,9 +3,7 @@ package com.bluemarlin.drinkdiary.ui.record
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,8 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -36,6 +32,7 @@ import com.bluemarlin.drinkdiary.domain.model.TagCategory
 import com.bluemarlin.drinkdiary.ui.DrinkLabels
 import com.bluemarlin.drinkdiary.ui.component.DDChip
 import com.bluemarlin.drinkdiary.ui.component.DDPrimaryButton
+import com.bluemarlin.drinkdiary.ui.component.DDRatingInput
 import com.bluemarlin.drinkdiary.ui.component.DDUriImage
 import com.bluemarlin.drinkdiary.ui.navigation.LocalDDScreenMargin
 
@@ -84,7 +81,7 @@ fun RecordDetailStep(
         )
 
         Text("얼마나 좋았나요?", style = MaterialTheme.typography.titleMedium)
-        RatingPicker(
+        DDRatingInput(
             rating = form.rating,
             onRatingChange = { onFormChange(form.copy(rating = it)) },
         )
@@ -147,58 +144,6 @@ fun RecordDetailStep(
             enabled = form.isSavable && !saving,
             modifier = Modifier.fillMaxWidth(),
         )
-    }
-}
-
-@Composable
-private fun RatingPicker(
-    rating: Double,
-    onRatingChange: (Double) -> Unit,
-) {
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        (1..5).forEach { value ->
-            val selected = rating >= value
-            val containerColor =
-                if (selected) {
-                    MaterialTheme.colorScheme.primaryContainer
-                } else {
-                    MaterialTheme.colorScheme.surface
-                }
-            val contentColor =
-                if (selected) {
-                    MaterialTheme.colorScheme.onPrimaryContainer
-                } else {
-                    MaterialTheme.colorScheme.onSurface
-                }
-            val borderColor =
-                if (selected) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.outlineVariant
-                }
-
-            Card(
-                onClick = { onRatingChange(value.toDouble()) },
-                modifier = Modifier.size(56.dp),
-                shape = MaterialTheme.shapes.medium,
-                colors =
-                    CardDefaults.cardColors(
-                        containerColor = containerColor,
-                        contentColor = contentColor,
-                    ),
-                border = BorderStroke(1.dp, borderColor),
-            ) {
-                Box(
-                    modifier = Modifier.size(56.dp),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        text = value.toString(),
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                }
-            }
-        }
     }
 }
 

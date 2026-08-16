@@ -10,7 +10,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.bluemarlin.drinkdiary.domain.model.CollectionStatus
 import com.bluemarlin.drinkdiary.domain.model.DrinkType
+import com.bluemarlin.drinkdiary.ui.DrinkLabels
 
 @Composable
 fun DDDrinkBadge(
@@ -44,13 +46,13 @@ fun DDDrinkBadge(
     )
 }
 
+// 문구를 파라미터로 받지 않는다. 기본값이 `"★ 다시 살래요"`였는데 `DrinkLabels`는 같은 상태를
+// `"또 살래요"`라고 불러서, 목록과 상세가 한 상태를 두 이름으로 말했다. `★`도 뺐다 —
+// 명세 2-4의 아이콘 규격(24×24dp 벡터) 밖에 있는 문자 아이콘이다.
 @Composable
-fun DDRepurchaseBadge(
-    modifier: Modifier = Modifier,
-    text: String = "★ 다시 살래요",
-) {
+fun DDRepurchaseBadge(modifier: Modifier = Modifier) {
     DDSemanticBadge(
-        text = text,
+        text = DrinkLabels.collectionStatus(CollectionStatus.Repurchase),
         containerColor = MaterialTheme.colorScheme.primaryContainer,
         contentColor = MaterialTheme.colorScheme.primary,
         modifier = modifier,
