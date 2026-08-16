@@ -24,6 +24,7 @@ fun CollectionListDetail(
     selectedId: Long?,
     onFilterChange: (DrinkType?) -> Unit,
     onSelect: (Long) -> Unit,
+    onToggleSelect: (Long) -> Unit,
     onEdit: (Long) -> Unit,
     onDelete: (Long) -> Unit,
     contentPadding: PaddingValues,
@@ -34,6 +35,7 @@ fun CollectionListDetail(
             state = state,
             onFilterChange = onFilterChange,
             onOpen = onSelect,
+            onToggleSelect = onToggleSelect,
             contentPadding = contentPadding,
             modifier = Modifier.weight(0.4f),
         )

@@ -23,6 +23,7 @@ fun CollectionScreen(
     state: CollectionUiState,
     onFilterChange: (DrinkType?) -> Unit,
     onOpen: (Long) -> Unit,
+    onToggleSelect: (Long) -> Unit,
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
 ) {
@@ -63,7 +64,15 @@ fun CollectionScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             items(state.records, key = { it.id }) { record ->
-                DDDrinkRecordCard(record = record, onClick = { onOpen(record.id) })
+                DDDrinkRecordCard(
+                    record = record,
+                    // 선택 모드에서 탭은 선택 토글이다 — 상세로 나가면 고르던 것을 잃는다.
+                    onClick = {
+                        if (state.selectionMode) onToggleSelect(record.id) else onOpen(record.id)
+                    },
+                    selected = record.id in state.selected,
+                    onLongClick = { onToggleSelect(record.id) },
+                )
             }
         }
     }

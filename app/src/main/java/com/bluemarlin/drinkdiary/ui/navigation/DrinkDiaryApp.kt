@@ -2,9 +2,15 @@ package com.bluemarlin.drinkdiary.ui.navigation
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -17,6 +23,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -31,6 +38,8 @@ import com.bluemarlin.drinkdiary.ui.collection.CollectionScreen
 import com.bluemarlin.drinkdiary.ui.collection.CollectionUiState
 import com.bluemarlin.drinkdiary.ui.collection.CollectionViewModel
 import com.bluemarlin.drinkdiary.ui.collection.RecordDetailScreen
+import com.bluemarlin.drinkdiary.ui.component.DDBatchActionBar
+import com.bluemarlin.drinkdiary.ui.component.DDConfirmDialog
 import com.bluemarlin.drinkdiary.ui.component.DDIconButton
 import com.bluemarlin.drinkdiary.ui.profile.ProfileScreen
 import com.bluemarlin.drinkdiary.ui.profile.ProfileViewModel
@@ -104,7 +113,11 @@ fun DrinkDiaryApp(modifier: Modifier = Modifier) {
     // 편집에서 뒤로가면 대시보드가 아니라 **그 기록의 상세**로 가야 한다 — 고치다 만 사람을
     // 목록 맨 위로 보내면 방금 보던 기록을 다시 찾아야 한다.
     // 2단 화면에서는 상세가 오른쪽 칸이므로, 뒤로가기는 그 칸을 비우는 일이 된다.
-    BackHandler(enabled = screen != Screen.Dashboard) {
+    // 선택 모드가 켜져 있으면 뒤로가기는 **먼저 그것을 끈다.** 지우려고 고르던 중에 화면이
+    // 통째로 바뀌면 고른 것을 잃고, 무엇을 되돌린 것인지도 알 수 없다.
+    BackHandler(enabled = collection.selectionMode) { collectionViewModel.clearSelection() }
+
+    BackHandler(enabled = !collection.selectionMode && screen != Screen.Dashboard) {
         screen =
             when (val current = screen) {
                 is Screen.Detail -> Screen.Collection
@@ -112,6 +125,10 @@ fun DrinkDiaryApp(modifier: Modifier = Modifier) {
                 else -> Screen.Dashboard
             }
     }
+
+    // prd.md F1-2. 선택 모드는 컬렉션 계열 화면에서만 성립한다 — 대시보드에 있는 동안
+    // 목록의 선택이 상단 바를 점유하면 사용자는 자기가 어디에 있는지 잃는다.
+    var confirmingBulkDelete by remember { mutableStateOf(false) }
 
     val host: @Composable () -> Unit = { SnackbarHost(snackbar) }
 
@@ -126,9 +143,14 @@ fun DrinkDiaryApp(modifier: Modifier = Modifier) {
             }
         val listDetail = isListDetail(screen, windowSize)
         val topLevel = screen.depth == 0 || listDetail
+        // 선택 모드는 컬렉션 목록이 보이는 동안에만 화면을 지배한다.
+        val inCollection = screen == Screen.Collection || listDetail
+        val selecting = collection.selectionMode && inCollection
 
         val title =
-            if (listDetail) {
+            if (selecting) {
+                "${collection.selected.size}개 선택"
+            } else if (listDetail) {
                 "컬렉션"
             } else {
                 when (val current = screen) {
@@ -192,8 +214,9 @@ fun DrinkDiaryApp(modifier: Modifier = Modifier) {
                 }
             }
 
+        // 지우러 들어온 사람에게 더하기를 권하지 않는다(prd.md F1-2).
         val floatingActionButton: (@Composable () -> Unit)? =
-            if (topLevel) {
+            if (topLevel && !selecting) {
                 {
                     FloatingActionButton(onClick = { screen = Screen.Record }) {
                         Icon(painter = painterResource(R.drawable.ic_add), contentDescription = "기록 추가")
@@ -204,7 +227,14 @@ fun DrinkDiaryApp(modifier: Modifier = Modifier) {
             }
 
         val toolbarActions: @Composable RowScope.() -> Unit = {
-            if (screen == Screen.Dashboard) {
+            if (selecting) {
+                DDIconButton(
+                    onClick = collectionViewModel::clearSelection,
+                    contentDescription = "선택 해제",
+                ) {
+                    Icon(painter = painterResource(R.drawable.ic_close), contentDescription = null)
+                }
+            } else if (screen == Screen.Dashboard) {
                 // 설정은 하단 탭이 아니라 툴바에 둔다. 탭은 매일 오가는 곳이고
                 // 설정은 한 번 정하면 다시 안 오는 곳이다.
                 DDIconButton(
@@ -227,52 +257,93 @@ fun DrinkDiaryApp(modifier: Modifier = Modifier) {
             toolbarActions = toolbarActions,
             snackbarHost = host,
         ) { padding ->
-            AnimatedContent(
-                targetState = screen,
-                transitionSpec = {
-                    when {
-                        targetState.depth > initialState.depth -> depthIn()
-                        targetState.depth < initialState.depth -> depthOut()
-                        else -> fadeThrough()
-                    }
-                },
-                // 같은 깊이 0의 두 탭은 키가 같다. 그래야 탭을 옮길 때 바깥 스캐폴드가
-                // 다시 만들어지지 않고 안쪽 내용만 바뀐다. 2단 화면에서는 목록과 상세가
-                // **같은 화면**이므로 그 둘도 키가 같아야 한다 — 사이에서 깊이 전이가 돌면 안 된다.
-                contentKey = { if (it.depth == 0 || isListDetail(it, windowSize)) "top" else it },
-                label = "screen",
-            ) { current ->
-                if (current.depth == 0 || isListDetail(current, windowSize)) {
-                    // 바깥 전이가 돌지 않는 자리라 탭 모션은 여기서 건다.
-                    AnimatedContent(
-                        targetState = current,
-                        transitionSpec = { fadeThrough() },
-                        label = "tab",
-                    ) { tabScreen ->
+            Box(modifier = Modifier.fillMaxSize()) {
+                AnimatedContent(
+                    targetState = screen,
+                    transitionSpec = {
+                        when {
+                            targetState.depth > initialState.depth -> depthIn()
+                            targetState.depth < initialState.depth -> depthOut()
+                            else -> fadeThrough()
+                        }
+                    },
+                    // 같은 깊이 0의 두 탭은 키가 같다. 그래야 탭을 옮길 때 바깥 스캐폴드가
+                    // 다시 만들어지지 않고 안쪽 내용만 바뀐다. 2단 화면에서는 목록과 상세가
+                    // **같은 화면**이므로 그 둘도 키가 같아야 한다 — 사이에서 깊이 전이가 돌면 안 된다.
+                    contentKey = { if (it.depth == 0 || isListDetail(it, windowSize)) "top" else it },
+                    label = "screen",
+                ) { current ->
+                    if (current.depth == 0 || isListDetail(current, windowSize)) {
+                        // 바깥 전이가 돌지 않는 자리라 탭 모션은 여기서 건다.
+                        AnimatedContent(
+                            targetState = current,
+                            transitionSpec = { fadeThrough() },
+                            label = "tab",
+                        ) { tabScreen ->
+                            ScreenContent(
+                                screen = tabScreen,
+                                padding = padding,
+                                appContainer = appContainer,
+                                collection = collection,
+                                collectionViewModel = collectionViewModel,
+                                snackbar = snackbar,
+                                onNavigate = { screen = it },
+                                listDetail = isListDetail(tabScreen, windowSize),
+                            )
+                        }
+                    } else {
                         ScreenContent(
-                            screen = tabScreen,
+                            screen = current,
                             padding = padding,
                             appContainer = appContainer,
                             collection = collection,
                             collectionViewModel = collectionViewModel,
                             snackbar = snackbar,
                             onNavigate = { screen = it },
-                            listDetail = isListDetail(tabScreen, windowSize),
+                            listDetail = false,
                         )
                     }
-                } else {
-                    ScreenContent(
-                        screen = current,
-                        padding = padding,
-                        appContainer = appContainer,
-                        collection = collection,
-                        collectionViewModel = collectionViewModel,
-                        snackbar = snackbar,
-                        onNavigate = { screen = it },
-                        listDetail = false,
+                }
+
+                // 근거 초안(design-system-ux-research.md 4.2절 3번)이 말하는 "하단 일괄 작업바 Slide-in".
+                // 하단 바 위에 얹는다 — 스캐폴드의 bottomBar 자리를 뺏으면 탭이 사라진다.
+                AnimatedVisibility(
+                    visible = selecting,
+                    enter = slideInVertically { it },
+                    exit = slideOutVertically { it },
+                    modifier =
+                        Modifier
+                            .align(Alignment.BottomCenter)
+                            .navigationBarsPadding()
+                            // Compact에서만 하단 바가 있다. 그 위로 올린다.
+                            .padding(
+                                bottom =
+                                    if (windowSize == DDWindowSize.Compact) DDBottomNavigationBarHeight else 0.dp,
+                            ).padding(LocalDDScreenMargin.current),
+                ) {
+                    DDBatchActionBar(
+                        selectedCount = collection.selected.size,
+                        onDelete = { confirmingBulkDelete = true },
                     )
                 }
             }
+        }
+
+        // **되돌리기가 없으므로 이 팝업이 유일한 방어선이다**(prd.md F1-2).
+        // 그래서 몇 건인지와 무엇이 함께 사라지는지를 정확히 적는다.
+        if (confirmingBulkDelete) {
+            val count = collection.selected.size
+            DDConfirmDialog(
+                title = "${count}개 기록을 지울까요?",
+                message = "취향 답까지 함께 지워지고, 되돌릴 수 없어요. 취향 유형도 이 ${count}개만큼 다시 계산됩니다.",
+                confirmLabel = "지우기",
+                dismissLabel = "그대로 두기",
+                onConfirm = {
+                    confirmingBulkDelete = false
+                    collectionViewModel.deleteSelected()
+                },
+                onDismiss = { confirmingBulkDelete = false },
+            )
         }
     }
 }
@@ -316,6 +387,7 @@ private fun ScreenContent(
                     selectedId = null,
                     onFilterChange = collectionViewModel::selectFilter,
                     onSelect = { onNavigate(Screen.Detail(it)) },
+                    onToggleSelect = collectionViewModel::toggleSelection,
                     onEdit = { onNavigate(Screen.Edit(it)) },
                     onDelete = {
                         collectionViewModel.delete(it)
@@ -329,6 +401,7 @@ private fun ScreenContent(
                     state = collection,
                     onFilterChange = collectionViewModel::selectFilter,
                     onOpen = { onNavigate(Screen.Detail(it)) },
+                    onToggleSelect = collectionViewModel::toggleSelection,
                     contentPadding = padding,
                     modifier = modifier,
                 )
@@ -343,6 +416,7 @@ private fun ScreenContent(
                     selectedId = screen.id,
                     onFilterChange = collectionViewModel::selectFilter,
                     onSelect = { onNavigate(Screen.Detail(it)) },
+                    onToggleSelect = collectionViewModel::toggleSelection,
                     onEdit = { onNavigate(Screen.Edit(it)) },
                     onDelete = {
                         collectionViewModel.delete(it)

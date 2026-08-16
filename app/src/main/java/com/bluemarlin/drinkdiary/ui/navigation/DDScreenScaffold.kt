@@ -77,6 +77,11 @@ enum class DDWindowSize {
 // 화면마다 따로 쓰면 창 크기가 바뀔 때 한 화면만 남는다.
 val LocalDDScreenMargin = staticCompositionLocalOf { 16.dp }
 
+// 하단 내비 바가 차지하는 높이(막대 64dp + 위아래 여백 8dp씩). Compact에서 `AppScaffold`는
+// 내용이 반투명 바 밑으로 흐르도록 bottom 인셋을 0으로 넘기므로, 바 위에 무언가를 얹으려면
+// 이 값을 직접 비켜야 한다. 바와 소비자가 같은 상수를 보게 해서 둘이 갈라지지 않게 한다.
+val DDBottomNavigationBarHeight = 80.dp
+
 // T4에서는 읽는 곳이 없어 지웠던 값이다. 명세 4절 마지막 열(화면별 적응형 레이아웃)을 구현하면서
 // 화면이 자기 구간을 알아야 할 이유가 생겨 되살린다.
 val LocalDDWindowSize = staticCompositionLocalOf { DDWindowSize.Compact }
@@ -290,7 +295,7 @@ fun DDBottomNavigationBar(
                 .fillMaxWidth()
                 .navigationBarsPadding()
                 .padding(horizontal = DrinkDiarySpacing.md, vertical = DrinkDiarySpacing.xs)
-                .height(64.dp)
+                .height(DDBottomNavigationBarHeight - DrinkDiarySpacing.xs * 2)
                 .clip(shape)
                 .then(
                     if (hazeState != null) {

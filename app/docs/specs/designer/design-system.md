@@ -113,7 +113,8 @@
 | :--- | :--- |
 | `DDProbeQuestion` | 1개 감각 축 질문 문항 + 3개 선택지 버튼(`Low`/`Mid`/`High`). 탭 1회 즉시 선택 (높이 52dp) |
 | `DDProbeProgress` | 4문항 중 현재 진행 단계 표시 바 (부드러운 진행도 보간) |
-| `DDTagChipGroup` | 선택 태그(와인 색, 위스키 분류, 피트 등) 칩 목록 |
+| `DDChip` | 단일 선택 칩. **최소 48dp 터치 영역을 보장하는 자리** — M3 기본 칩은 32dp다 |
+| `DDTagChipGroup` | 선택 태그(와인 색, 위스키 분류, 피트 등) 칩 목록. `DDChip`을 FlowRow로 |
 | `DDRatingInput` | 5점 척도 만족도 선택 (터치 및 드래그) |
 | `DDToggleRow` | 재구매 의향 ("다시 살래요") 원터치 스위치/토글 |
 | `DDTextField` | 술 이름, 장소, 가격 등 단정한 텍스트 필드 |
@@ -136,6 +137,7 @@
 | `DDEmptyContent` | 기록 없음 또는 필터 결과 없음 시 등록 유도 CTA |
 | `DDConfirmDialog` | 삭제 확인 다이얼로그 (ShapeLarge 18dp) |
 | `DDSnackbar` | 피드백 메시지 표시 |
+| `DDBatchActionBar` | 선택 모드의 하단 일괄 작업 바(1절 3번). 선택 개수 + 삭제. `prd.md` F1-2 |
 
 ---
 

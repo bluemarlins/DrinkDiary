@@ -1,6 +1,8 @@
 package com.bluemarlin.drinkdiary.ui.component
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,13 +11,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.bluemarlin.drinkdiary.R
 import com.bluemarlin.drinkdiary.domain.model.CollectionStatus
 import com.bluemarlin.drinkdiary.domain.model.DrinkRecord
 import com.bluemarlin.drinkdiary.ui.DrinkLabels
@@ -38,21 +45,51 @@ private fun statusContentColor(status: CollectionStatus) =
     }
 
 // 명세 5.3절 `DDDrinkRecordCard`.
+//
+// M3의 `Card(onClick = ...)`은 롱프레스를 노출하지 않는다. 그래서 클릭 없는 Card에
+// `combinedClickable`을 건다 — 선택 모드 진입이 롱프레스이기 때문이다(prd.md F1-2).
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DDDrinkRecordCard(
     record: DrinkRecord,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    selected: Boolean = false,
+    onLongClick: (() -> Unit)? = null,
 ) {
+    val haptic = LocalHapticFeedback.current
+
     Card(
-        onClick = onClick,
-        modifier = modifier.fillMaxWidth(),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .clip(MaterialTheme.shapes.medium)
+                .combinedClickable(
+                    onClick = onClick,
+                    onLongClick =
+                        onLongClick?.let { action ->
+                            {
+                                // 선택 모드로 들어간 것을 화면을 보지 않고도 알아야 한다.
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                action()
+                            }
+                        },
+                ),
         shape = MaterialTheme.shapes.medium,
         colors =
             CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface,
+                containerColor =
+                    if (selected) {
+                        MaterialTheme.colorScheme.primaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.surface
+                    },
             ),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        border =
+            BorderStroke(
+                1.dp,
+                if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
+            ),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(DrinkDiarySpacing.md),
@@ -71,11 +108,25 @@ fun DDDrinkRecordCard(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(DrinkDiarySpacing.xxs),
             ) {
-                Text(
-                    text = record.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    maxLines = 1,
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(DrinkDiarySpacing.xxs),
+                ) {
+                    // 선택을 색으로만 표시하지 않는다. 배경색 차이는 명도 대비가 낮고,
+                    // 색만으로 상태를 말하면 색각 이상에서 무엇이 선택됐는지 알 수 없다.
+                    if (selected) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_check),
+                            contentDescription = "선택됨",
+                            tint = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+                    Text(
+                        text = record.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        maxLines = 1,
+                    )
+                }
                 Text(
                     text = DrinkLabels.subtitle(record),
                     style = MaterialTheme.typography.bodyMedium,
