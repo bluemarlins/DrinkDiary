@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.bluemarlin.drinkdiary.ui.theme.DisplayTasteCode
+import com.bluemarlin.drinkdiary.ui.theme.DrinkDiarySpacing
 import com.bluemarlin.drinkdiary.ui.theme.HeadlineSentence
 
 @Composable
@@ -42,7 +43,7 @@ fun DDTasteTypeBadge(
                 Modifier
                     .clip(MaterialTheme.shapes.small)
                     .background(MaterialTheme.colorScheme.surfaceVariant)
-                    .padding(horizontal = 10.dp, vertical = 4.dp),
+                    .padding(horizontal = DrinkDiarySpacing.sm, vertical = DrinkDiarySpacing.xxs),
         ) {
             Text(
                 text = name,

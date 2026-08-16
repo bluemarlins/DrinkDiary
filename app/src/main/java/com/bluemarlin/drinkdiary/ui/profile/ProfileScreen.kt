@@ -59,7 +59,7 @@ fun ProfileScreen(
                         top = DrinkDiarySpacing.lg,
                         bottom = fabClearance,
                     ),
-            verticalArrangement = Arrangement.spacedBy(28.dp),
+            verticalArrangement = Arrangement.spacedBy(DrinkDiarySpacing.xl),
         ) {
             ScopeSelector(selected = state.scope, onSelect = onScopeChange)
             SummaryHeadline(readiness = state.readiness, profile = state.profile)
@@ -72,7 +72,7 @@ fun ProfileScreen(
             val (shared, specific) = preferences.partition { it.trait.shared }
 
             if (shared.isNotEmpty()) {
-                Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(DrinkDiarySpacing.sm)) {
                     Text("유형을 만드는 축", style = MaterialTheme.typography.titleMedium)
                     shared.forEach { pref -> TraitStatusRow(pref) }
                 }
@@ -82,7 +82,7 @@ fun ProfileScreen(
             // 채울 방법이 없는 항목을 미완성으로 걸어두지 않는다.
             val answeredSpecific = specific.filter { it.samples > 0 }
             if (answeredSpecific.isNotEmpty()) {
-                Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(DrinkDiarySpacing.sm)) {
                     Text("추가로 기록한 축", style = MaterialTheme.typography.titleMedium)
                     answeredSpecific.forEach { pref -> TraitStatusRow(pref) }
                 }
@@ -178,7 +178,7 @@ private fun TagPreferenceBlock(
             TypeScope.Combined -> null
         }
 
-    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(DrinkDiarySpacing.xs)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,

@@ -37,7 +37,7 @@ fun SettingsScreen(
                 .padding(DrinkDiarySpacing.lg),
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(DrinkDiarySpacing.xs)) {
             Text("기록할 때 물어볼 것", style = MaterialTheme.typography.titleMedium)
             Text(
                 text = "켜면 기록할 때마다 바로 보이고, 끄면 '더 남기기' 안으로 들어가요.",
@@ -54,7 +54,7 @@ fun SettingsScreen(
             ) {
                 Column(
                     modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(2.dp),
+                    verticalArrangement = Arrangement.spacedBy(DrinkDiarySpacing.xxs),
                 ) {
                     Text(DrinkLabels.tagCategory(category), style = MaterialTheme.typography.bodyLarge)
                     Text(

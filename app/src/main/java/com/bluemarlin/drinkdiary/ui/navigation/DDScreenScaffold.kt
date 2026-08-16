@@ -14,11 +14,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Scaffold
@@ -31,13 +31,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.bluemarlin.drinkdiary.R
+import com.bluemarlin.drinkdiary.ui.theme.DrinkDiarySpacing
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.haze
@@ -214,13 +213,13 @@ fun DDBottomNavigationBar(
     onSearchClick: (() -> Unit)?,
     hazeState: HazeState? = null,
 ) {
-    val shape = RoundedCornerShape(28.dp)
+    val shape = MaterialTheme.shapes.large
     Box(
         modifier =
             Modifier
                 .fillMaxWidth()
                 .navigationBarsPadding()
-                .padding(horizontal = 18.dp, vertical = 10.dp)
+                .padding(horizontal = DrinkDiarySpacing.md, vertical = DrinkDiarySpacing.xs)
                 .height(64.dp)
                 .clip(shape)
                 .then(
@@ -238,15 +237,11 @@ fun DDBottomNavigationBar(
                         Modifier.background(MaterialTheme.colorScheme.surface.copy(alpha = 0.88f), shape)
                     },
                 ).border(
-                    width = Dp.Hairline,
-                    brush =
-                        Brush.verticalGradient(
-                            colors =
-                                listOf(
-                                    Color.White.copy(alpha = 0.58f),
-                                    Color.White.copy(alpha = 0.12f),
-                                ),
-                        ),
+                    // 흰색 그라데이션 테두리를 걷어냈다. 하드코딩 색이라 테마에 반응하지 않아
+                    // 다크에서 흰 테두리가 그대로 빛났고(명세 2-6 "빛나는 네온 테두리 금지"),
+                    // 명세 2-1의 "임의 Hex 하드코딩 금지"에도 걸렸다.
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.outlineVariant,
                     shape = shape,
                 ),
     ) {
@@ -309,11 +304,23 @@ private fun RowScope.AppNavigationItems(
     onCollectionClick: (() -> Unit)?,
     onSearchClick: (() -> Unit)?,
 ) {
+    // 색을 명시하지 않으면 M3 기본값이 명세를 이긴다 — 선택 표시가 `secondaryContainer`,
+    // 즉 우리 매핑에서는 위스키 앰버로 칠해진다. 명세 3.1절은 선택 상태를 `PrimaryContainer`로 정한다.
+    val itemColors =
+        NavigationBarItemDefaults.colors(
+            selectedIconColor = MaterialTheme.colorScheme.primary,
+            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            selectedTextColor = MaterialTheme.colorScheme.primary,
+            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+        )
+
     onDashboardClick?.let { onClick ->
         NavigationBarItem(
             selected = selectedTab == DDTopLevelTab.Dashboard,
             onClick = onClick,
             icon = { Text(stringResource(R.string.nav_dashboard)) },
+            colors = itemColors,
         )
     }
     onCollectionClick?.let { onClick ->
@@ -321,6 +328,7 @@ private fun RowScope.AppNavigationItems(
             selected = selectedTab == DDTopLevelTab.Collection,
             onClick = onClick,
             icon = { Text(stringResource(R.string.nav_collection)) },
+            colors = itemColors,
         )
     }
     onSearchClick?.let { onClick ->
@@ -328,6 +336,7 @@ private fun RowScope.AppNavigationItems(
             selected = selectedTab == DDTopLevelTab.Search,
             onClick = onClick,
             icon = { Text(stringResource(R.string.nav_search)) },
+            colors = itemColors,
         )
     }
 }

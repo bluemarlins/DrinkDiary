@@ -19,6 +19,7 @@ import com.bluemarlin.drinkdiary.domain.model.DrinkType
 import com.bluemarlin.drinkdiary.domain.model.TagCategory
 import com.bluemarlin.drinkdiary.domain.model.WhiskyStyle
 import com.bluemarlin.drinkdiary.domain.model.WineColor
+import com.bluemarlin.drinkdiary.ui.theme.DrinkDiarySpacing
 
 // 첫 질문 하나로 주종과 분류를 함께 받는다.
 //
@@ -93,7 +94,7 @@ private fun ChoiceGroup(
     choices: List<DrinkChoice>,
     onPick: (DrinkChoice) -> Unit,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(DrinkDiarySpacing.sm)) {
         Text(
             text = title,
             style = MaterialTheme.typography.titleMedium,
@@ -101,8 +102,8 @@ private fun ChoiceGroup(
         )
         FlowRow(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
+            horizontalArrangement = Arrangement.spacedBy(DrinkDiarySpacing.sm),
+            verticalArrangement = Arrangement.spacedBy(DrinkDiarySpacing.sm),
         ) {
             choices.forEach { choice ->
                 Card(
@@ -117,7 +118,7 @@ private fun ChoiceGroup(
                     Text(
                         text = choice.label,
                         style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 18.dp),
+                        modifier = Modifier.padding(horizontal = DrinkDiarySpacing.xl, vertical = DrinkDiarySpacing.md),
                     )
                 }
             }

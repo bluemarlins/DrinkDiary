@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.bluemarlin.drinkdiary.domain.model.TagCategory
 import com.bluemarlin.drinkdiary.ui.DrinkLabels
+import com.bluemarlin.drinkdiary.ui.theme.DrinkDiarySpacing
 
 // 첫 기록 **직후**에 한 번만 묻는다.
 //
@@ -48,7 +49,7 @@ fun TagPreferencePrompt(
         )
 
         promotableTags.forEach { (category, hint) ->
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(DrinkDiarySpacing.xxs)) {
                 FilterChip(
                     selected = category in selected,
                     onClick = {

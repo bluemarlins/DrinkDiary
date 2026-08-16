@@ -126,7 +126,7 @@ private fun RecordRow(
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(14.dp),
+            horizontalArrangement = Arrangement.spacedBy(DrinkDiarySpacing.sm),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             record.imageUri?.let {
