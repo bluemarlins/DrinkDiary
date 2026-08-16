@@ -15,7 +15,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -35,6 +34,7 @@ import com.bluemarlin.drinkdiary.domain.model.DrinkType
 import com.bluemarlin.drinkdiary.domain.model.ServingStyle
 import com.bluemarlin.drinkdiary.domain.model.TagCategory
 import com.bluemarlin.drinkdiary.ui.DrinkLabels
+import com.bluemarlin.drinkdiary.ui.component.DDChip
 import com.bluemarlin.drinkdiary.ui.component.DDPrimaryButton
 import com.bluemarlin.drinkdiary.ui.component.DDUriImage
 import com.bluemarlin.drinkdiary.ui.navigation.LocalDDScreenMargin
@@ -92,10 +92,10 @@ fun RecordDetailStep(
         Text("다시 살 건가요?", style = MaterialTheme.typography.titleMedium)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             CollectionStatus.entries.forEach { status ->
-                FilterChip(
+                DDChip(
+                    label = DrinkLabels.collectionStatus(status),
                     selected = form.collectionStatus == status,
                     onClick = { onFormChange(form.copy(collectionStatus = status)) },
-                    label = { Text(DrinkLabels.collectionStatus(status)) },
                 )
             }
         }
@@ -233,10 +233,10 @@ private fun OptionalFields(
             Text("어떻게 마셨나요?", style = MaterialTheme.typography.titleMedium)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 ServingStyle.entries.forEach { style ->
-                    FilterChip(
+                    DDChip(
+                        label = DrinkLabels.servingStyle(style),
                         selected = form.servingStyle == style,
                         onClick = { onFormChange(form.copy(servingStyle = style)) },
-                        label = { Text(DrinkLabels.servingStyle(style)) },
                     )
                 }
             }

@@ -10,9 +10,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.AssistChipDefaults
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,7 +24,9 @@ import com.bluemarlin.drinkdiary.domain.model.TasteProfile
 import com.bluemarlin.drinkdiary.domain.model.TraitPreference
 import com.bluemarlin.drinkdiary.domain.model.TypeScope
 import com.bluemarlin.drinkdiary.ui.DrinkLabels
+import com.bluemarlin.drinkdiary.ui.component.DDChip
 import com.bluemarlin.drinkdiary.ui.component.DDProfileProgressCard
+import com.bluemarlin.drinkdiary.ui.component.DDSemanticBadge
 import com.bluemarlin.drinkdiary.ui.component.DDTasteSentenceCard
 import com.bluemarlin.drinkdiary.ui.component.DDTasteTypeBadge
 import com.bluemarlin.drinkdiary.ui.navigation.LocalDDScreenMargin
@@ -118,10 +117,10 @@ private fun ScopeSelector(
             TypeScope.Whiskey to "위스키",
             TypeScope.Combined to "통합",
         ).forEach { (scope, label) ->
-            FilterChip(
+            DDChip(
+                label = label,
                 selected = selected == scope,
                 onClick = { onSelect(scope) },
-                label = { Text(label) },
             )
         }
     }
@@ -227,15 +226,13 @@ private fun TraitStatusRow(pref: TraitPreference) {
         Text(DrinkLabels.trait(pref.trait), style = MaterialTheme.typography.bodyLarge)
 
         when (traitStatus(pref)) {
+            // 칩이 아니라 뱃지다. `AssistChip(onClick = {})`은 누를 수 있게 생겼는데
+            // 아무 일도 하지 않는다 — 읽을 값이면 읽을 것처럼 생겨야 한다.
             TraitStatus.Resolved ->
-                AssistChip(
-                    onClick = {},
-                    label = { Text(DrinkLabels.preference(pref.trait, pref.preference!!)) },
-                    colors =
-                        AssistChipDefaults.assistChipColors(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer,
-                            labelColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                        ),
+                DDSemanticBadge(
+                    text = DrinkLabels.preference(pref.trait, pref.preference!!),
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.primary,
                 )
 
             // 결핍이 아니라 결론이다. "아직"이라고 말하지 않는다.

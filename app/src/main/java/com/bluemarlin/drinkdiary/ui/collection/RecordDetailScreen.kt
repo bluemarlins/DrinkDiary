@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.AssistChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -33,6 +32,7 @@ import com.bluemarlin.drinkdiary.ui.component.DDDestructiveButton
 import com.bluemarlin.drinkdiary.ui.component.DDDrinkBadge
 import com.bluemarlin.drinkdiary.ui.component.DDPrimaryButton
 import com.bluemarlin.drinkdiary.ui.component.DDRepurchaseBadge
+import com.bluemarlin.drinkdiary.ui.component.DDSemanticBadge
 import com.bluemarlin.drinkdiary.ui.component.DDUriImage
 import com.bluemarlin.drinkdiary.ui.navigation.LocalDDScreenMargin
 import com.bluemarlin.drinkdiary.ui.theme.DrinkDiarySpacing
@@ -121,7 +121,12 @@ fun RecordDetailScreen(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(DrinkLabels.trait(trait), style = MaterialTheme.typography.bodyLarge)
-                        AssistChip(onClick = {}, label = { Text(DrinkLabels.answer(trait, answer)) })
+                        // 읽을 값이므로 뱃지다. 칩은 누를 수 있게 생겼는데 여기엔 누를 것이 없다.
+                        DDSemanticBadge(
+                            text = DrinkLabels.answer(trait, answer),
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.primary,
+                        )
                     }
                 }
             }

@@ -13,7 +13,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,6 +24,7 @@ import com.bluemarlin.drinkdiary.domain.model.CollectionStatus
 import com.bluemarlin.drinkdiary.domain.model.DrinkRecord
 import com.bluemarlin.drinkdiary.domain.model.DrinkType
 import com.bluemarlin.drinkdiary.ui.DrinkLabels
+import com.bluemarlin.drinkdiary.ui.component.DDChip
 import com.bluemarlin.drinkdiary.ui.component.DDSemanticBadge
 import com.bluemarlin.drinkdiary.ui.component.DDUriImage
 import com.bluemarlin.drinkdiary.ui.navigation.LocalDDScreenMargin
@@ -45,10 +45,10 @@ fun CollectionScreen(
         ) {
             listOf(null to "전체", DrinkType.Wine to "와인", DrinkType.Whiskey to "위스키")
                 .forEach { (type, label) ->
-                    FilterChip(
+                    DDChip(
+                        label = label,
                         selected = state.filter == type,
                         onClick = { onFilterChange(type) },
-                        label = { Text(label) },
                     )
                 }
         }
