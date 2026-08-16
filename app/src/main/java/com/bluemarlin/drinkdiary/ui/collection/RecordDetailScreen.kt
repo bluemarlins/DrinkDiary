@@ -34,6 +34,7 @@ import com.bluemarlin.drinkdiary.ui.component.DDDrinkBadge
 import com.bluemarlin.drinkdiary.ui.component.DDPrimaryButton
 import com.bluemarlin.drinkdiary.ui.component.DDRepurchaseBadge
 import com.bluemarlin.drinkdiary.ui.component.DDUriImage
+import com.bluemarlin.drinkdiary.ui.theme.DrinkDiarySpacing
 
 @Composable
 fun RecordDetailScreen(
@@ -45,7 +46,7 @@ fun RecordDetailScreen(
 ) {
     if (record == null) {
         // 삭제 직후에도 잠깐 지나가는 상태다. "없어졌다"고 단정하지 않는다.
-        Column(modifier = modifier.fillMaxWidth().padding(contentPadding).padding(20.dp)) {
+        Column(modifier = modifier.fillMaxWidth().padding(contentPadding).padding(DrinkDiarySpacing.lg)) {
             Text("기록을 불러오는 중이에요.", style = MaterialTheme.typography.bodyLarge)
         }
         return
@@ -59,7 +60,7 @@ fun RecordDetailScreen(
                 .fillMaxWidth()
                 .padding(contentPadding)
                 .verticalScroll(rememberScrollState())
-                .padding(20.dp),
+                .padding(DrinkDiarySpacing.lg),
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
         record.imageUri?.let {
@@ -88,7 +89,7 @@ fun RecordDetailScreen(
             )
         }
 
-        DetailRow("만족도", "%.0f / 5".format(record.rating))
+        DetailRow("만족도", DrinkLabels.rating(record.rating))
         DetailRow("다시 살까", DrinkLabels.collectionStatus(record.collectionStatus))
         record.price?.let { DetailRow("가격", DrinkLabels.price(it)) }
         record.place?.let { DetailRow("어디에서", it) }

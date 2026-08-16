@@ -214,4 +214,19 @@ object DrinkLabels {
             .format(dateFormat)
 
     fun price(won: Long): String = "%,d원".format(Locale.KOREA, won)
+
+    // 만족도 형식은 여기서만 정한다. 같은 5점 척도가 목록에서는 "3", 상세에서는 "3 / 5",
+    // 취향 요약에서는 "4.7점"으로 나오고 있었다 — 한 지표가 세 얼굴을 하면 사용자는 그것을
+    // 서로 다른 지표로 읽는다.
+    //
+    // 기록의 만족도는 정수라 소수점이 붙으면 없는 정밀도를 있는 것처럼 보이게 한다.
+    // 평균은 소수점이 의미를 가지므로 한 자리까지 남긴다. 규칙은 하나다 — 값이 말하는 만큼만 적는다.
+    fun rating(value: Double): String {
+        val rounded = Math.round(value * 10.0) / 10.0
+        return if (rounded == Math.floor(rounded)) {
+            "${rounded.toLong()}점"
+        } else {
+            "%.1f점".format(Locale.KOREA, rounded)
+        }
+    }
 }

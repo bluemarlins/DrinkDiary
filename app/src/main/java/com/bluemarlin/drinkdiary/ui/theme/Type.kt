@@ -102,11 +102,18 @@ val DrinkDiaryShapes =
         large = RoundedCornerShape(18.dp),
     )
 
+// 확정 명세 `../../../../../../docs/specs/designer/design-system.md` 3.3절의 간격 스케일과
+// **이름까지 일치시킨다.** 이전 코드는 20dp가 아예 없고 `lg`가 24dp였는데, 명세의 `lg`는 20dp다.
+// 이름이 어긋난 토큰은 안 쓰는 것만 못하다 — 문서를 보고 `lg`를 쓴 사람이 다른 값을 얻는다.
+//
+// (명세 2절 표는 토큰 목록을 `4·8·12·16·24·32`로 적어 20dp가 빠져 있다. 3.3절이 간격을 정의하는
+//  절이므로 그쪽을 따랐다. 두 절의 불일치는 디자인 부서에 남겨 둔다.)
 object DrinkDiarySpacing {
     val xxs = 4.dp
     val xs = 8.dp
     val sm = 12.dp
     val md = 16.dp
-    val lg = 24.dp
-    val xl = 32.dp
+    val lg = 20.dp
+    val xl = 24.dp
+    val xxl = 32.dp
 }

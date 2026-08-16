@@ -25,7 +25,9 @@ import com.bluemarlin.drinkdiary.domain.model.CollectionStatus
 import com.bluemarlin.drinkdiary.domain.model.DrinkRecord
 import com.bluemarlin.drinkdiary.domain.model.DrinkType
 import com.bluemarlin.drinkdiary.ui.DrinkLabels
+import com.bluemarlin.drinkdiary.ui.component.DDSemanticBadge
 import com.bluemarlin.drinkdiary.ui.component.DDUriImage
+import com.bluemarlin.drinkdiary.ui.theme.DrinkDiarySpacing
 
 @Composable
 fun CollectionScreen(
@@ -37,7 +39,7 @@ fun CollectionScreen(
 ) {
     Column(modifier = modifier.fillMaxSize().padding(contentPadding)) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 12.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = DrinkDiarySpacing.lg, vertical = 12.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             listOf(null to "전체", DrinkType.Wine to "와인", DrinkType.Whiskey to "위스키")
@@ -58,7 +60,12 @@ fun CollectionScreen(
 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 96.dp),
+            contentPadding =
+                PaddingValues(
+                    start = DrinkDiarySpacing.lg,
+                    end = DrinkDiarySpacing.lg,
+                    bottom = 96.dp,
+                ),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             items(state.records, key = { it.id }) { record ->
@@ -68,10 +75,26 @@ fun CollectionScreen(
     }
 }
 
+// 비선호를 오류 색으로 칠하지 않는다. 잘못된 상태가 아니라 **취향이 아니었다**는 뜻이고,
+// 부정 신호는 눈에 띄기만 하면 되지 소리칠 필요가 없다.
+@Composable
+private fun statusContainerColor(status: CollectionStatus) =
+    when (status) {
+        CollectionStatus.Repurchase -> MaterialTheme.colorScheme.primaryContainer
+        else -> MaterialTheme.colorScheme.surfaceVariant
+    }
+
+@Composable
+private fun statusContentColor(status: CollectionStatus) =
+    when (status) {
+        CollectionStatus.Repurchase -> MaterialTheme.colorScheme.primary
+        else -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
+
 @Composable
 private fun EmptyCollection(filtered: Boolean) {
     Column(
-        modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp),
+        modifier = Modifier.fillMaxSize().padding(horizontal = DrinkDiarySpacing.lg),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text(
@@ -118,34 +141,37 @@ private fun RecordRow(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = record.name,
-                        style = MaterialTheme.typography.titleMedium,
-                        maxLines = 1,
-                        modifier = Modifier.weight(1f, fill = false),
-                    )
-                    if (record.collectionStatus == CollectionStatus.Repurchase) {
-                        Text(
-                            text = "★",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.primary,
-                        )
-                    }
-                }
+                Text(
+                    text = record.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    maxLines = 1,
+                )
                 Text(
                     text = DrinkLabels.subtitle(record),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                 )
+
+                // 이 줄이 있어야 목록을 훑어서 "다음에 뭘 살까"를 판단할 수 있다.
+                //
+                // 이전에는 재구매만 `★` 한 글자로 표시하고 비선호는 **아무것도 그리지 않았다.**
+                // 그러면 빈칸이 "그냥 그래요"와 "안 맞아요"를 같은 것으로 만든다 — 구매 판단에서
+                // 가장 중요한 신호가 사라진다. 같은 축은 같은 방식으로 적는다.
+                //
+                // '그냥 그래요'는 여전히 안 그린다. 모든 행에 붙으면 소음이고, 아무 표시가 없는 것이
+                // 그 자체로 "특별할 것 없었다"는 뜻으로 읽힌다.
+                if (record.collectionStatus != CollectionStatus.Normal) {
+                    DDSemanticBadge(
+                        text = DrinkLabels.collectionStatus(record.collectionStatus),
+                        containerColor = statusContainerColor(record.collectionStatus),
+                        contentColor = statusContentColor(record.collectionStatus),
+                    )
+                }
             }
 
             Text(
-                text = "%.0f".format(record.rating),
+                text = DrinkLabels.rating(record.rating),
                 style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.primary,
             )

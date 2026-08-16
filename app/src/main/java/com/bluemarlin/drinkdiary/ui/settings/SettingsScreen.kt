@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import com.bluemarlin.drinkdiary.domain.model.TagCategory
 import com.bluemarlin.drinkdiary.ui.DrinkLabels
 import com.bluemarlin.drinkdiary.ui.record.promotableTags
+import com.bluemarlin.drinkdiary.ui.theme.DrinkDiarySpacing
 
 @Composable
 fun SettingsScreen(
@@ -33,7 +34,7 @@ fun SettingsScreen(
                 .fillMaxWidth()
                 .padding(contentPadding)
                 .verticalScroll(rememberScrollState())
-                .padding(20.dp),
+                .padding(DrinkDiarySpacing.lg),
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
