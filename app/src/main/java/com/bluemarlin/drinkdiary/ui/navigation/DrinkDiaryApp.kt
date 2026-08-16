@@ -5,10 +5,9 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -18,12 +17,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.bluemarlin.drinkdiary.DrinkDiaryApplication
+import com.bluemarlin.drinkdiary.R
 import com.bluemarlin.drinkdiary.ui.DrinkLabels
 import com.bluemarlin.drinkdiary.ui.collection.CollectionScreen
 import com.bluemarlin.drinkdiary.ui.collection.CollectionViewModel
 import com.bluemarlin.drinkdiary.ui.collection.RecordDetailScreen
+import com.bluemarlin.drinkdiary.ui.component.DDIconButton
 import com.bluemarlin.drinkdiary.ui.profile.ProfileScreen
 import com.bluemarlin.drinkdiary.ui.profile.ProfileViewModel
 import com.bluemarlin.drinkdiary.ui.record.EditRecordScreen
@@ -106,7 +108,12 @@ fun DrinkDiaryApp(modifier: Modifier = Modifier) {
                 // 설정은 하단 탭이 아니라 툴바에 둔다. 탭은 매일 오가는 곳이고
                 // 설정은 한 번 정하면 다시 안 오는 곳이다.
                 toolbarActions = {
-                    TextButton(onClick = { screen = Screen.Settings }) { Text("설정") }
+                    DDIconButton(
+                        onClick = { screen = Screen.Settings },
+                        contentDescription = "설정",
+                    ) {
+                        Icon(painter = painterResource(R.drawable.ic_settings), contentDescription = null)
+                    }
                 },
             ) { padding ->
                 ProfileScreen(
@@ -247,7 +254,9 @@ private fun TopLevel(
         onDashboardClick = { onTabChange(Screen.Dashboard) },
         onCollectionClick = { onTabChange(Screen.Collection) },
         floatingActionButton = {
-            FloatingActionButton(onClick = onAdd) { Text("+") }
+            FloatingActionButton(onClick = onAdd) {
+                Icon(painter = painterResource(R.drawable.ic_add), contentDescription = "기록 추가")
+            }
         },
         toolbarActions = toolbarActions,
         snackbarHost = snackbarHost,

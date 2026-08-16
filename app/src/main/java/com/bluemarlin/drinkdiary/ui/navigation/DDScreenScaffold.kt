@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -31,7 +32,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -42,9 +42,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.bluemarlin.drinkdiary.R
+import com.bluemarlin.drinkdiary.ui.component.DDIconButton
 import com.bluemarlin.drinkdiary.ui.theme.DrinkDiarySpacing
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
@@ -252,7 +254,14 @@ fun DDTopAppBar(
         title = { Text(title) },
         navigationIcon = {
             if (onBackClick != null) {
-                TextButton(onClick = onBackClick) { Text(stringResource(R.string.back)) }
+                DDIconButton(
+                    onClick = onBackClick,
+                    contentDescription = stringResource(R.string.back),
+                ) {
+                    // DDIconButton이 semantics로 설명을 걸므로 여기서 또 걸지 않는다 —
+                    // 스크린 리더가 같은 말을 두 번 읽는다.
+                    Icon(painter = painterResource(R.drawable.ic_back), contentDescription = null)
+                }
             }
         },
         actions = actions,
@@ -333,7 +342,8 @@ private fun AppNavigationRail(
             NavigationRailItem(
                 selected = selectedTab == DDTopLevelTab.Dashboard,
                 onClick = onClick,
-                icon = { Text(stringResource(R.string.nav_dashboard)) },
+                icon = { Icon(painter = painterResource(R.drawable.ic_nav_dashboard), contentDescription = null) },
+                label = { Text(stringResource(R.string.nav_dashboard)) },
                 colors = itemColors,
             )
         }
@@ -341,7 +351,8 @@ private fun AppNavigationRail(
             NavigationRailItem(
                 selected = selectedTab == DDTopLevelTab.Collection,
                 onClick = onClick,
-                icon = { Text(stringResource(R.string.nav_collection)) },
+                icon = { Icon(painter = painterResource(R.drawable.ic_nav_collection), contentDescription = null) },
+                label = { Text(stringResource(R.string.nav_collection)) },
                 colors = itemColors,
             )
         }
@@ -349,7 +360,8 @@ private fun AppNavigationRail(
             NavigationRailItem(
                 selected = selectedTab == DDTopLevelTab.Search,
                 onClick = onClick,
-                icon = { Text(stringResource(R.string.nav_search)) },
+                icon = { Icon(painter = painterResource(R.drawable.ic_nav_search), contentDescription = null) },
+                label = { Text(stringResource(R.string.nav_search)) },
                 colors = itemColors,
             )
         }
@@ -373,6 +385,7 @@ private fun AppNavigationDrawerSheet(
 
         onDashboardClick?.let { onClick ->
             NavigationDrawerItem(
+                icon = { Icon(painter = painterResource(R.drawable.ic_nav_dashboard), contentDescription = null) },
                 label = { Text(stringResource(R.string.nav_dashboard)) },
                 selected = selectedTab == DDTopLevelTab.Dashboard,
                 onClick = onClick,
@@ -381,6 +394,7 @@ private fun AppNavigationDrawerSheet(
         }
         onCollectionClick?.let { onClick ->
             NavigationDrawerItem(
+                icon = { Icon(painter = painterResource(R.drawable.ic_nav_collection), contentDescription = null) },
                 label = { Text(stringResource(R.string.nav_collection)) },
                 selected = selectedTab == DDTopLevelTab.Collection,
                 onClick = onClick,
@@ -389,6 +403,7 @@ private fun AppNavigationDrawerSheet(
         }
         onSearchClick?.let { onClick ->
             NavigationDrawerItem(
+                icon = { Icon(painter = painterResource(R.drawable.ic_nav_search), contentDescription = null) },
                 label = { Text(stringResource(R.string.nav_search)) },
                 selected = selectedTab == DDTopLevelTab.Search,
                 onClick = onClick,
@@ -400,9 +415,6 @@ private fun AppNavigationDrawerSheet(
 
 // 핸들러가 없는 탭은 그리지 않는다. 눌러도 아무 일이 없는 탭을 노출하면 사용자는 앱이
 // 고장난 것으로 읽는다(실기기에서 확인된 결함) — 화면이 생기면 핸들러와 함께 나타난다.
-//
-// 아이콘 에셋이 아직 없다. 아이콘 자리에 텍스트를 넣고 라벨도 함께 두면 같은 말이 두 번
-// 보인다("홈" 위에 "대시보드") — 이름을 한 번만 보여준다. 아이콘이 생기면 label을 되살린다.
 @Composable
 private fun RowScope.AppNavigationItems(
     selectedTab: DDTopLevelTab?,
@@ -425,7 +437,8 @@ private fun RowScope.AppNavigationItems(
         NavigationBarItem(
             selected = selectedTab == DDTopLevelTab.Dashboard,
             onClick = onClick,
-            icon = { Text(stringResource(R.string.nav_dashboard)) },
+            icon = { Icon(painter = painterResource(R.drawable.ic_nav_dashboard), contentDescription = null) },
+            label = { Text(stringResource(R.string.nav_dashboard)) },
             colors = itemColors,
         )
     }
@@ -433,7 +446,8 @@ private fun RowScope.AppNavigationItems(
         NavigationBarItem(
             selected = selectedTab == DDTopLevelTab.Collection,
             onClick = onClick,
-            icon = { Text(stringResource(R.string.nav_collection)) },
+            icon = { Icon(painter = painterResource(R.drawable.ic_nav_collection), contentDescription = null) },
+            label = { Text(stringResource(R.string.nav_collection)) },
             colors = itemColors,
         )
     }
@@ -441,7 +455,8 @@ private fun RowScope.AppNavigationItems(
         NavigationBarItem(
             selected = selectedTab == DDTopLevelTab.Search,
             onClick = onClick,
-            icon = { Text(stringResource(R.string.nav_search)) },
+            icon = { Icon(painter = painterResource(R.drawable.ic_nav_search), contentDescription = null) },
+            label = { Text(stringResource(R.string.nav_search)) },
             colors = itemColors,
         )
     }
