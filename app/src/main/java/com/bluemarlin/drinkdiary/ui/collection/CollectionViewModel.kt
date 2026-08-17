@@ -7,6 +7,7 @@ import com.bluemarlin.drinkdiary.domain.model.AppResult
 import com.bluemarlin.drinkdiary.domain.model.DrinkRecord
 import com.bluemarlin.drinkdiary.domain.model.DrinkType
 import com.bluemarlin.drinkdiary.domain.repository.DrinkRecordRepository
+import com.bluemarlin.drinkdiary.domain.usecase.DeleteDrinkRecordsUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -32,7 +33,11 @@ data class CollectionUiState(
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class CollectionViewModel(
+    // 조회는 아직 Repository를 직접 부른다 — A-1의 빚이고 이번 범위가 아니다.
+    // 다만 **삭제는 UseCase를 지난다.** 기록을 지우는 일이 더 이상 행 하나를 지우는 일이
+    // 아니게 됐기 때문이다(사진 파일도 함께 사라져야 한다).
     private val repository: DrinkRecordRepository,
+    private val deleteRecords: DeleteDrinkRecordsUseCase,
 ) : ViewModel() {
     private val filter = MutableStateFlow<DrinkType?>(null)
     private val selection = MutableStateFlow<Set<Long>>(emptySet())
@@ -75,7 +80,7 @@ class CollectionViewModel(
         val targets = selection.value
         if (targets.isEmpty()) return
         viewModelScope.launch {
-            when (repository.deleteByIds(targets)) {
+            when (deleteRecords(targets)) {
                 is AppResult.Success -> {
                     selection.value = emptySet()
                     error.value = null
@@ -88,7 +93,7 @@ class CollectionViewModel(
     fun delete(id: Long) {
         viewModelScope.launch {
             // 삭제 실패를 조용히 넘기면 목록이 그대로라 사용자는 지워진 줄 안다(harness.md §7).
-            when (repository.deleteById(id)) {
+            when (deleteRecords(id)) {
                 is AppResult.Success -> error.value = null
                 is AppResult.Failure -> error.value = "지우지 못했어요. 다시 시도해 주세요."
             }
@@ -99,8 +104,10 @@ class CollectionViewModel(
 
     class Factory(
         private val repository: DrinkRecordRepository,
+        private val deleteRecords: DeleteDrinkRecordsUseCase,
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel> create(modelClass: Class<T>): T = CollectionViewModel(repository) as T
+        override fun <T : ViewModel> create(modelClass: Class<T>): T =
+            CollectionViewModel(repository, deleteRecords) as T
     }
 }

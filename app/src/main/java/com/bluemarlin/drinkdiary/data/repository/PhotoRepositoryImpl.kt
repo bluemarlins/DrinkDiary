@@ -35,4 +35,28 @@ class PhotoRepositoryImpl(
                 onFailure = { AppResult.Failure(AppError.Storage) },
             )
         }
+
+    override suspend fun delete(uri: String): AppResult<Unit> =
+        withContext(Dispatchers.IO) {
+            runCatching {
+                val target = ownedFile(uri) ?: return@runCatching Unit
+                // 이미 없는 파일은 지울 것이 없는 것이지 실패가 아니다.
+                if (target.exists() && !target.delete()) error("사진을 지우지 못했다: $uri")
+                Unit
+            }.fold(
+                onSuccess = { AppResult.Success(Unit) },
+                onFailure = { AppResult.Failure(AppError.Storage) },
+            )
+        }
+
+    // 우리 디렉터리 안의 `file://`만 우리 것이다. 경로를 정규화한 뒤에 비교하는 이유는
+    // `..`가 섞인 경로가 디렉터리를 빠져나갈 수 있기 때문이다.
+    private fun ownedFile(uri: String): File? {
+        val parsed = Uri.parse(uri)
+        if (parsed.scheme != "file") return null
+        val path = parsed.path ?: return null
+        val file = File(path).canonicalFile
+        val root = directory.canonicalFile
+        return if (file.parentFile == root) file else null
+    }
 }

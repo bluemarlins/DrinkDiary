@@ -98,7 +98,13 @@ fun DrinkDiaryApp(modifier: Modifier = Modifier) {
     val snackbar = remember { SnackbarHostState() }
 
     val collectionViewModel: CollectionViewModel =
-        viewModel(factory = CollectionViewModel.Factory(appContainer.drinkRecordRepository))
+        viewModel(
+            factory =
+                CollectionViewModel.Factory(
+                    appContainer.drinkRecordRepository,
+                    appContainer.deleteDrinkRecordsUseCase,
+                ),
+        )
     val collection by collectionViewModel.uiState.collectAsState()
 
     // 삭제 실패를 조용히 넘기면 목록이 그대로라 사용자는 지워진 줄 안다(harness.md §7).
@@ -454,6 +460,7 @@ private fun ScreenContent(
                             appContainer.drinkRecordRepository,
                             appContainer.userPreferencesRepository,
                             appContainer.importPhotoUseCase,
+                            appContainer.deletePhotoUseCase,
                         ),
                 )
             val edit by editViewModel.uiState.collectAsState()

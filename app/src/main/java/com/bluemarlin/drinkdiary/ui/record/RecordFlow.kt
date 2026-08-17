@@ -38,6 +38,7 @@ fun RecordFlow(modifier: Modifier = Modifier) {
                     appContainer.drinkRecordRepository,
                     appContainer.userPreferencesRepository,
                     appContainer.importPhotoUseCase,
+                    appContainer.deletePhotoUseCase,
                 ),
         )
     val state by viewModel.uiState.collectAsState()

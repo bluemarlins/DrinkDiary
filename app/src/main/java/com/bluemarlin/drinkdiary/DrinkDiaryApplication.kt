@@ -13,6 +13,8 @@ import com.bluemarlin.drinkdiary.domain.repository.BottleMatcher
 import com.bluemarlin.drinkdiary.domain.repository.DrinkRecordRepository
 import com.bluemarlin.drinkdiary.domain.repository.PhotoRepository
 import com.bluemarlin.drinkdiary.domain.repository.UserPreferencesRepository
+import com.bluemarlin.drinkdiary.domain.usecase.DeleteDrinkRecordsUseCase
+import com.bluemarlin.drinkdiary.domain.usecase.DeletePhotoUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ImportPhotoUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveAnswerReflectionUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveDrinkHighlightsUseCase
@@ -55,6 +57,10 @@ class AppContainer(
     // 사진은 앱 안에 복사해 둔다. 갤러리 URI를 그대로 저장하면 재시작에서 사라진다(prd.md F1-3).
     val photoRepository: PhotoRepository = PhotoRepositoryImpl(application)
     val importPhotoUseCase = ImportPhotoUseCase(photoRepository)
+    val deletePhotoUseCase = DeletePhotoUseCase(photoRepository)
+
+    // 기록을 지우는 일이 더 이상 행 하나를 지우는 일이 아니다 — 사진 파일도 함께 사라져야 한다.
+    val deleteDrinkRecordsUseCase = DeleteDrinkRecordsUseCase(drinkRecordRepository, photoRepository)
 
     val observeTasteProfileUseCase = ObserveTasteProfileUseCase(drinkRecordRepository)
 

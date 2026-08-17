@@ -12,6 +12,7 @@ import com.bluemarlin.drinkdiary.domain.model.Trait
 import com.bluemarlin.drinkdiary.domain.model.TraitAnswer
 import com.bluemarlin.drinkdiary.domain.repository.DrinkRecordRepository
 import com.bluemarlin.drinkdiary.domain.repository.UserPreferencesRepository
+import com.bluemarlin.drinkdiary.domain.usecase.DeletePhotoUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ImportPhotoUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -68,6 +69,7 @@ class EditRecordViewModel(
     private val repository: DrinkRecordRepository,
     private val preferences: UserPreferencesRepository,
     private val importPhoto: ImportPhotoUseCase,
+    private val deletePhoto: DeletePhotoUseCase,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(EditUiState())
     val uiState: StateFlow<EditUiState> = _uiState.asStateFlow()
@@ -105,8 +107,16 @@ class EditRecordViewModel(
     // 작성 경로와 같은 규칙이다 — 고른 즉시 앱 안으로 들여온다(prd.md F1-3).
     fun pickPhoto(sourceUri: String) {
         viewModelScope.launch {
+            // **원본의 사진은 여기서 지우지 않는다.** 고치다 말고 나갈 수 있고, 그러면 그 기록은
+            // 여전히 이 사진을 가리킨다. 저장까지 간 뒤에야 참조가 끊긴다.
+            val replaced =
+                _uiState.value.form.imageUri
+                    .takeIf { it != original?.imageUri }
             when (val result = importPhoto(sourceUri)) {
-                is AppResult.Success -> _uiState.update { it.copy(form = it.form.copy(imageUri = result.value)) }
+                is AppResult.Success -> {
+                    _uiState.update { it.copy(form = it.form.copy(imageUri = result.value)) }
+                    replaced?.let { deletePhoto(it) }
+                }
                 is AppResult.Failure ->
                     _uiState.update { it.copy(error = "사진을 가져오지 못했어요. 다시 골라 주세요.") }
             }
@@ -125,8 +135,14 @@ class EditRecordViewModel(
 
         _uiState.update { it.copy(saving = true, error = null) }
         viewModelScope.launch {
+            // 저장이 성공해야 원본 사진의 참조가 끊긴다. 저장 전에 지우면 실패했을 때
+            // 살아 있는 기록의 사진만 사라진다.
+            val dropped = source.imageUri.takeIf { it != state.form.imageUri }
             when (repository.save(source.applying(state.form, state.taste))) {
-                is AppResult.Success -> _uiState.update { it.copy(saving = false, saved = true) }
+                is AppResult.Success -> {
+                    dropped?.let { deletePhoto(it) }
+                    _uiState.update { it.copy(saving = false, saved = true) }
+                }
                 // 저장 실패를 조용히 넘기면 사용자는 고쳐진 줄 안다(harness.md §7).
                 is AppResult.Failure ->
                     _uiState.update { it.copy(saving = false, error = "고치지 못했어요. 다시 시도해 주세요.") }
@@ -141,9 +157,10 @@ class EditRecordViewModel(
         private val repository: DrinkRecordRepository,
         private val preferences: UserPreferencesRepository,
         private val importPhoto: ImportPhotoUseCase,
+        private val deletePhoto: DeletePhotoUseCase,
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            EditRecordViewModel(recordId, repository, preferences, importPhoto) as T
+            EditRecordViewModel(recordId, repository, preferences, importPhoto, deletePhoto) as T
     }
 }

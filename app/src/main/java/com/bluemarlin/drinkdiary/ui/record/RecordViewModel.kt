@@ -15,6 +15,7 @@ import com.bluemarlin.drinkdiary.domain.model.Trait
 import com.bluemarlin.drinkdiary.domain.model.TraitAnswer
 import com.bluemarlin.drinkdiary.domain.repository.DrinkRecordRepository
 import com.bluemarlin.drinkdiary.domain.repository.UserPreferencesRepository
+import com.bluemarlin.drinkdiary.domain.usecase.DeletePhotoUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ImportPhotoUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -75,6 +76,7 @@ class RecordViewModel(
     private val repository: DrinkRecordRepository,
     private val preferences: UserPreferencesRepository,
     private val importPhoto: ImportPhotoUseCase,
+    private val deletePhoto: DeletePhotoUseCase,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(RecordUiState())
     val uiState: StateFlow<RecordUiState> = _uiState.asStateFlow()
@@ -121,8 +123,14 @@ class RecordViewModel(
     // 갤러리 URI는 이미 못 읽는 것이 되어 있다(prd.md F1-3).
     fun pickPhoto(sourceUri: String) {
         viewModelScope.launch {
+            // 작성 경로에서는 앞서 고른 사진이 저장된 적이 없다 — 다시 고르는 순간
+            // 아무도 참조하지 않는 파일이 된다.
+            val replaced = _uiState.value.form.imageUri
             when (val result = importPhoto(sourceUri)) {
-                is AppResult.Success -> _uiState.update { it.copy(form = it.form.copy(imageUri = result.value)) }
+                is AppResult.Success -> {
+                    _uiState.update { it.copy(form = it.form.copy(imageUri = result.value)) }
+                    replaced?.let { deletePhoto(it) }
+                }
                 // 조용히 넘기면 사용자는 사진이 붙은 줄 안다(harness.md §7).
                 is AppResult.Failure ->
                     _uiState.update { it.copy(error = "사진을 가져오지 못했어요. 다시 골라 주세요.") }
@@ -176,9 +184,10 @@ class RecordViewModel(
         private val repository: DrinkRecordRepository,
         private val preferences: UserPreferencesRepository,
         private val importPhoto: ImportPhotoUseCase,
+        private val deletePhoto: DeletePhotoUseCase,
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            RecordViewModel(repository, preferences, importPhoto) as T
+            RecordViewModel(repository, preferences, importPhoto, deletePhoto) as T
     }
 }
