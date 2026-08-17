@@ -62,7 +62,17 @@ fun DDPhotoField(
                 } else {
                     MaterialTheme.colorScheme.surface
                 },
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+            // **사진이 채워지면 테두리를 걷는다**(design-system.md 2절 6번). 테두리는 표면에 긋는
+            // 선이지 내용에 두르는 액자가 아니고, 사진에는 이미 자기 경계가 있다.
+            //
+            // 빈 상태에서는 남긴다 — 그때는 이 선이 "여기 자리가 있다"고 말하는 유일한 신호이고,
+            // 그것이 이 컴포넌트가 폼의 첫 자리에 있는 이유다.
+            border =
+                if (imageUri == null) {
+                    BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+                } else {
+                    null
+                },
         ) {
             if (imageUri == null) {
                 EmptySlot()

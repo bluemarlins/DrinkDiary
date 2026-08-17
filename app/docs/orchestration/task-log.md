@@ -803,6 +803,7 @@ Billing 연동은 Phase 3(가장 마지막)으로 이동. Phase 1은 순수 기�
 | P2-7 | 커스텀 테마/위젯 | — | todo | | 착수 안 함, 우선순위 최하 |
 | P2-8 | Phase 2 통합 리뷰 + 전체 회귀 테스트 + 실기기 설치 검증 | Claude | todo | | 착수 안 함. P2-3 최종 게이트 확인부터 시작 |
 | P2-11 | (계획 외 추가) 디자인 시스템 개정 및 모션/인터랙션 고도화 | agy | done | | `specs/designer/design-system.md` 전면 승격 및 앱 UI 디자인 시스템 적용 완료 (ktlint/unit test/lint 통과) |
+| P2-12 | Pinterest 디자인 시스템 원칙 흡수 — 명세 승격 + 코드 반영 | Claude | done | | **2026-08-17 사용자 승인 → 승격 완료.** 초안 `../departments/designer/pinterest-principle-adoption-2026-08.md`, 시각 비교 `../departments/designer/pinterest-principle-preview.html`. `specs/designer/design-system.md` 2·3.3·5.3절 개정. 코드: `DDPhotoField`(채워지면 테두리 제거), `DDDrinkHighlightRow`(오버레이 필·거터 8dp·반경 12dp·테두리), `DDDrinkRecordCard`(썸네일 4:5 48×60dp, 만족도 액센트 제거). 팔레트·서체·4:5 비율은 변경 없음 → `DesignTokenTest` 그대로 통과. `ktlintCheck`/`testDebugUnitTest`/`lint`/`assembleDebug` 통과, **에뮬레이터 라이트·다크 육안 검증 완료**(6절 참고) |
 
 ## Phase 3 — Billing 연동 (최종 단계)
 

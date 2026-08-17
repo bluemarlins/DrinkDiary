@@ -97,10 +97,17 @@ fun DDDrinkRecordCard(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             record.imageUri?.let {
+                // **기록 폼·대시보드와 같은 4:5다**(design-system.md 5.3).
+                // 여기만 정사각(56dp)이었는데, 컬렉션이 사진을 가장 많이 보는 자리다 —
+                // 기록 하나당 대시보드에서는 많아야 한 번, 목록에서는 스크롤할 때마다 본다.
+                // 세로로 찍은 병을 여기서만 자르면 **라벨 위아래가 사라진다**(prd.md F1-3).
                 DDUriImage(
                     imageUri = it,
                     contentDescription = null,
-                    modifier = Modifier.size(56.dp).clip(MaterialTheme.shapes.small),
+                    modifier =
+                        Modifier
+                            .size(width = 48.dp, height = 60.dp)
+                            .clip(MaterialTheme.shapes.small),
                 )
             }
 
@@ -151,10 +158,17 @@ fun DDDrinkRecordCard(
                 }
             }
 
+            // **만족도 숫자에 액센트를 쓰지 않는다**(design-system.md 2절 1번).
+            // 이 숫자는 **모든 행에** 있어서, 여덟 행이면 브랜드색이 여덟 번 찍힌다 —
+            // 그러면 강조가 강조로 읽히지 않는다. 액센트는 횟수로 센다.
+            //
+            // 크기(`titleLarge`)가 이미 강조를 맡고 있어 색까지 줄 필요가 없다. 이 행에서
+            // 브랜드색을 갖는 것은 재구매 뱃지 하나이며, 그것이 매장에서 3초 만에 확인해야
+            // 하는 신호다(5.3 `DDRepurchaseBadge`).
             Text(
                 text = DrinkLabels.rating(record.rating),
                 style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.primary,
+                color = MaterialTheme.colorScheme.onSurface,
             )
         }
     }

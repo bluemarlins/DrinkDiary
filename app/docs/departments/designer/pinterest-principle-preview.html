@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>테이스트 아카이브 — Pinterest 원칙 흡수 프리뷰 (지금 vs 제안)</title>
+<style>
+  :root {
+    /* specs/designer/design-system.md 3.1절 — Light */
+    --paper: #FFF8F2;
+    --surface: #FFFFFF;
+    --surface-sunk: #F6EDE4;
+    --ink: #241E19;
+    --ink-soft: #6B5F56;
+    --ink-faint: #9C8F84;
+    --line: #E7DACC;
+    --line-strong: #D3C2B0;
+    --primary: #2F6F4E;
+    --primary-container: #E4EFE8;
+    --on-primary: #FFFFFF;
+    --wine: #93425E;
+    --wine-container: #F6E6EC;
+    --malt: #8A5A1B;
+    --malt-container: #F8ECDA;
+    --destructive: #BA1A1A;
+
+    /* 3.3절 — 라운드 토큰 (명세값 6/12/18) */
+    --shape-sm: 6px;
+    --shape-md: 12px;
+    --shape-lg: 18px;
+    --shape-full: 9999px;
+
+    /* 3.3절 — 간격 토큰 */
+    --sp-xxs: 4px;  --sp-xs: 8px;  --sp-sm: 12px;
+    --sp-md: 16px;  --sp-lg: 20px; --sp-xl: 24px; --sp-xxl: 32px;
+
+    --serif: Georgia, "Times New Roman", serif;
+    --sans: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", "Segoe UI", sans-serif;
+
+    --shadow-card: 0 1px 3px rgba(36, 30, 25, 0.08);
+
+    /* 문서 크롬 (앱 토큰 아님) */
+    --doc-bg: #F4EFE9;
+    --doc-panel: #FFFFFF;
+    --doc-line: #E0D6CB;
+    --doc-mute: #6B5F56;
+    --flag-bad: #B3261E;
+    --flag-good: #2F6F4E;
+  }
+
+  html[data-theme="dark"] {
+    --paper: #15110E;
+    --surface: #221C17;
+    --surface-sunk: #1B1612;
+    --ink: #F2E9E0;
+    --ink-soft: #B3A498;
+    --ink-faint: #7D7066;
+    --line: #3A302A;
+    --line-strong: #4E4139;
+    --primary: #6FBF93;
+    --primary-container: #1E3229;
+    --on-primary: #10201A;
+    --wine: #DB90AC;
+    --wine-container: #38222B;
+    --malt: #DFA75B;
+    --malt-container: #38290F;
+    --destructive: #FFB4AB;
+
+    --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.5);
+
+    --doc-bg: #100D0B;
+    --doc-panel: #1C1714;
+    --doc-line: #3A302A;
+    --doc-mute: #B3A498;
+    --flag-bad: #FFB4AB;
+    --flag-good: #6FBF93;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--doc-bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ─────────── 문서 크롬 ─────────── */
+  .wrap { max-width: 1140px; margin: 0 auto; padding: 0 24px 96px; }
+
+  header.doc {
+    position: sticky; top: 0; z-index: 20;
+    background: var(--doc-panel);
+    border-bottom: 1px solid var(--doc-line);
+    padding: 14px 24px;
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  }
+  header.doc h1 { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
+  header.doc .sub { font-size: 12px; color: var(--doc-mute); }
+  header.doc nav { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; }
+  header.doc nav a {
+    font-size: 12px; color: var(--doc-mute); text-decoration: none;
+    padding: 5px 10px; border-radius: var(--shape-full); border: 1px solid transparent;
+  }
+  header.doc nav a:hover { border-color: var(--doc-line); color: var(--ink); }
+  .theme-btn {
+    font: inherit; font-size: 12px; cursor: pointer;
+    background: var(--doc-panel); color: var(--ink);
+    border: 1px solid var(--doc-line); border-radius: var(--shape-full);
+    padding: 5px 12px;
+  }
+
+  .intro { padding: 40px 0 8px; max-width: 760px; }
+  .intro h2 { font-size: 26px; letter-spacing: -0.02em; margin-bottom: 12px; }
+  .intro p { color: var(--doc-mute); font-size: 14px; margin-bottom: 10px; }
+  .intro strong { color: var(--ink); }
+
+  .callout {
+    border: 1px solid var(--doc-line); border-left: 3px solid var(--primary);
+    background: var(--doc-panel); border-radius: var(--shape-md);
+    padding: 14px 16px; font-size: 13px; color: var(--doc-mute);
+    margin: 20px 0; max-width: 760px;
+  }
+  .callout strong { color: var(--ink); }
+
+  section.principle { margin-top: 56px; scroll-margin-top: 76px; }
+  section.principle > h3 {
+    font-size: 19px; letter-spacing: -0.015em; margin-bottom: 6px;
+    display: flex; align-items: baseline; gap: 10px;
+  }
+  section.principle > h3 .num {
+    font-family: var(--serif); font-size: 13px; font-weight: 700;
+    color: var(--on-primary); background: var(--primary);
+    width: 24px; height: 24px; border-radius: var(--shape-full);
+    display: inline-flex; align-items: center; justify-content: center;
+    flex: none; align-self: center;
+  }
+  section.principle > .why { font-size: 13.5px; color: var(--doc-mute); max-width: 780px; margin-bottom: 4px; }
+  section.principle > .why + .why { margin-bottom: 18px; }
+  section.principle > .why code, .callout code, .intro code, td code {
+    font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+    font-size: 0.9em; background: var(--surface-sunk); color: var(--ink);
+    padding: 1px 5px; border-radius: var(--shape-sm);
+  }
+
+  /* 비교 판 */
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; align-items: start; }
+  @media (max-width: 900px) { .compare { grid-template-columns: 1fr; } }
+
+  .pane {
+    background: var(--doc-panel); border: 1px solid var(--doc-line);
+    border-radius: var(--shape-lg); overflow: hidden;
+  }
+  .pane > .pane-head {
+    padding: 11px 16px; border-bottom: 1px solid var(--doc-line);
+    display: flex; align-items: center; gap: 9px; font-size: 12.5px; font-weight: 600;
+  }
+  .dot { width: 8px; height: 8px; border-radius: var(--shape-full); flex: none; }
+  .pane.now .dot { background: var(--flag-bad); }
+  .pane.next .dot { background: var(--flag-good); }
+  .pane .tag { margin-left: auto; font-weight: 400; font-size: 11.5px; color: var(--doc-mute); }
+  .pane-body { padding: 24px; background: var(--paper); display: flex; justify-content: center; }
+  .pane-note {
+    padding: 12px 16px; border-top: 1px solid var(--doc-line);
+    font-size: 12.5px; color: var(--doc-mute); background: var(--doc-panel);
+  }
+  .pane.now .pane-note b { color: var(--flag-bad); }
+  .pane.next .pane-note b { color: var(--flag-good); }
+
+  /* 폰 프레임: 1dp = 1px (360dp 기준) */
+  .phone {
+    width: 360px; background: var(--paper); border-radius: var(--shape-lg);
+    padding: var(--sp-md) 0; overflow: hidden; flex: none;
+  }
+  .phone.pad { padding: var(--sp-md); }
+  .scale-note {
+    text-align: center; font-size: 11px; color: var(--doc-mute);
+    margin-top: 14px; letter-spacing: 0.03em;
+  }
+
+  /* ─────────── 앱 타이포 (3.2절) ─────────── */
+  .t-display { font-family: var(--serif); font-weight: 700; font-size: 32px; line-height: 40px; letter-spacing: 0.05em; }
+  .t-headline { font-weight: 600; font-size: 20px; line-height: 28px; letter-spacing: -0.02em; }
+  .t-title-l { font-weight: 700; font-size: 18px; line-height: 24px; letter-spacing: -0.01em; }
+  .t-title-m { font-weight: 600; font-size: 16px; line-height: 22px; }
+  .t-body-l { font-weight: 400; font-size: 15px; line-height: 22px; }
+  .t-body-m { font-weight: 400; font-size: 13px; line-height: 18px; letter-spacing: 0.01em; }
+  .t-label-l { font-weight: 600; font-size: 14px; line-height: 20px; letter-spacing: 0.01em; }
+  .t-label-s { font-weight: 500; font-size: 11px; line-height: 14px; letter-spacing: 0.03em; }
+
+  /* ─────────── 사진 자리 (플레이스홀더) ─────────── */
+  .photo {
+    position: relative; overflow: hidden; display: block;
+    background: linear-gradient(160deg, #C8AE95 0%, #A98A70 46%, #7E6350 100%);
+  }
+  .photo.v2 { background: linear-gradient(160deg, #B99CA6 0%, #96707E 48%, #6D4C58 100%); }
+  .photo.v3 { background: linear-gradient(160deg, #C6B48A 0%, #A3905F 46%, #766743 100%); }
+  .photo .bottle {
+    position: absolute; left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%; aspect-ratio: 4 / 5; display: block;
+  }
+  .photo.empty { background: var(--surface-sunk); }
+
+  .ratio-4x5 { aspect-ratio: 4 / 5; }
+  .ratio-1x1 { aspect-ratio: 1 / 1; }
+
+  .empty-slot {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 6px; color: var(--ink-soft);
+  }
+  .empty-slot .plus { font-size: 22px; line-height: 1; }
+
+  /* 사진 표면 테두리 — 원칙 1의 비교 대상 */
+  .bordered { border: 1px solid var(--line-strong); }
+
+  /* 오버레이 필 — 원칙 2 */
+  .overlay-pill {
+    position: absolute; left: 8px; bottom: 8px;
+    background: var(--surface); color: var(--ink);
+    border-radius: var(--shape-full);
+    padding: 5px 10px; font-weight: 600; font-size: 11px; line-height: 14px;
+    letter-spacing: 0.03em; max-width: calc(100% - 16px);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .overlay-pill.translucent { background: rgba(255,255,255,0.42); backdrop-filter: blur(2px); }
+
+  /* 하이라이트 카드 (5.3 DDDrinkHighlightRow) */
+  .hl-row { display: flex; overflow: hidden; }
+  .hl-row.gap-12 { gap: var(--sp-sm); }
+  .hl-row.gap-8  { gap: var(--sp-xs); }
+  .hl-card { width: 132px; flex: none; display: flex; flex-direction: column; gap: var(--sp-xs); }
+  .hl-card .frame { border-radius: var(--shape-lg); overflow: hidden; position: relative; }
+  .hl-card .frame.r-md { border-radius: var(--shape-md); }
+  .hl-card .meta { display: flex; flex-direction: column; gap: 2px; }
+  .hl-card .meta .lbl { color: var(--ink-soft); }
+  .hl-card .meta .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .hl-card .meta .det { color: var(--ink-soft); }
+
+  /* 기록 카드 (5.3 DDDrinkRecordCard) */
+  .rec-card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--shape-md); padding: var(--sp-md);
+    display: flex; align-items: center; gap: var(--sp-sm);
+  }
+  .rec-card + .rec-card { margin-top: var(--sp-xs); }
+  .rec-thumb { flex: none; border-radius: var(--shape-sm); overflow: hidden; position: relative; }
+  .rec-thumb.sq { width: 56px; height: 56px; }
+  .rec-thumb.p45 { width: 48px; height: 60px; }
+  .rec-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--sp-xxs); }
+  .rec-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rec-sub { color: var(--ink-soft); }
+  .rec-score { flex: none; }
+  .rec-score.accent { color: var(--primary); }
+  .rec-score.quiet { color: var(--ink); }
+
+  .badge {
+    display: inline-flex; align-self: flex-start; align-items: center;
+    padding: 3px 8px; border-radius: var(--shape-sm);
+    font-weight: 500; font-size: 11px; line-height: 14px; letter-spacing: 0.03em;
+  }
+  .badge.repurchase { background: var(--primary-container); color: var(--primary); }
+  .badge.avoid { background: var(--surface-sunk); color: var(--ink-soft); }
+  .badge.wine { background: var(--wine-container); color: var(--wine); }
+  .badge.malt { background: var(--malt-container); color: var(--malt); }
+
+  /* 액센트 카운터 */
+  .accent-count {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 12px; font-weight: 600; padding: 5px 11px;
+    border-radius: var(--shape-full); border: 1px solid var(--doc-line);
+    background: var(--doc-panel);
+  }
+  .accent-count .swatch { width: 10px; height: 10px; border-radius: var(--shape-full); background: var(--primary); }
+  .pane.now .accent-count { color: var(--flag-bad); }
+  .pane.next .accent-count { color: var(--flag-good); }
+  .count-strip { padding: 10px 16px; border-top: 1px solid var(--doc-line); background: var(--doc-panel); }
+
+  /* 액센트 히트 마커 */
+  .hit { position: relative; }
+  .pane.now .hit::after {
+    content: ""; position: absolute; inset: -3px -5px;
+    border: 1.5px dashed var(--flag-bad); border-radius: var(--shape-sm);
+    pointer-events: none;
+  }
+
+  /* 하단 네비 */
+  .navbar {
+    display: flex; border-top: 1px solid var(--line);
+    margin-top: var(--sp-md); padding-top: var(--sp-xs); background: var(--surface);
+  }
+  .navbar .item {
+    flex: 1; text-align: center; color: var(--ink-faint);
+    font-weight: 500; font-size: 11px; line-height: 14px; letter-spacing: 0.03em;
+    padding: 6px 0 10px;
+  }
+  .navbar .item.on { color: var(--primary); font-weight: 600; }
+
+  /* 팔레트 / 유지 항목 */
+  .keep-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 12px; margin-top: 18px; }
+  .sw { border: 1px solid var(--doc-line); border-radius: var(--shape-md); overflow: hidden; background: var(--doc-panel); }
+  .sw .chip { height: 56px; }
+  .sw .meta { padding: 8px 10px; font-size: 11.5px; }
+  .sw .meta b { display: block; font-size: 12.5px; margin-bottom: 2px; }
+  .sw .meta span { display: block; color: var(--doc-mute); font-family: ui-monospace, Consolas, monospace; font-size: 11px; }
+  .sw.rejected { opacity: 0.55; }
+  .sw.rejected .meta b { text-decoration: line-through; }
+  .sw.rejected .meta em { display: block; margin-top: 3px; font-style: normal; color: var(--flag-bad); font-size: 11px; }
+
+  .type-spec { border: 1px solid var(--doc-line); border-radius: var(--shape-md); background: var(--doc-panel); padding: 16px 18px; margin-top: 14px; }
+  .type-spec .row { display: flex; align-items: baseline; gap: 14px; padding: 7px 0; border-bottom: 1px dashed var(--doc-line); }
+  .type-spec .row:last-child { border-bottom: 0; }
+  .type-spec .row .k { flex: none; width: 132px; font-size: 11px; color: var(--doc-mute); font-family: ui-monospace, Consolas, monospace; }
+
+  /* 표 */
+  table.spec { width: 100%; border-collapse: collapse; margin-top: 18px; font-size: 13px; }
+  table.spec th, table.spec td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--doc-line); vertical-align: top; }
+  table.spec th { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--doc-mute); font-weight: 600; }
+  table.spec td.no { color: var(--flag-bad); }
+  table.spec td.yes { color: var(--flag-good); }
+
+  /* 반경 비교 — 폰 폭(360dp)을 넘는 나란히 배치라 프레임을 쓰지 않는다 */
+  .surface-block { width: 100%; background: var(--paper); border-radius: var(--shape-lg); padding: var(--sp-md); }
+  .radius-demo { display: flex; gap: 24px; align-items: flex-end; flex-wrap: wrap; justify-content: center; }
+  .radius-demo figure { display: flex; flex-direction: column; gap: 8px; align-items: center; }
+  .radius-demo figcaption { font-size: 11.5px; color: var(--doc-mute); text-align: center; }
+  .radius-demo figcaption b { display: block; color: var(--ink); font-size: 12.5px; }
+
+  footer.doc {
+    margin-top: 72px; padding-top: 22px; border-top: 1px solid var(--doc-line);
+    font-size: 12.5px; color: var(--doc-mute);
+  }
+  footer.doc a { color: inherit; }
+</style>
+</head>
+<body>
+
+<!-- 병 실루엣 (사진 플레이스홀더용). 실제 사진이 아니라 비율·크롭을 판단하기 위한 도형이다. -->
+<svg style="position:absolute;width:0;height:0" aria-hidden="true">
+  <symbol id="bottle-wine" viewBox="0 0 100 125">
+    <path d="M44,14 h12 v26 c0,7 14,11 14,25 v50 a5,5 0 0 1 -5,5 h-30 a5,5 0 0 1 -5,-5 v-50 c0,-14 14,-18 14,-25 z"
+          fill="rgba(30,18,14,0.42)"/>
+    <rect x="32" y="76" width="36" height="24" rx="2" fill="rgba(255,248,242,0.82)"/>
+    <rect x="37" y="83" width="26" height="3" rx="1.5" fill="rgba(30,18,14,0.35)"/>
+    <rect x="40" y="90" width="20" height="2.4" rx="1.2" fill="rgba(30,18,14,0.22)"/>
+  </symbol>
+  <symbol id="bottle-whisky" viewBox="0 0 100 125">
+    <path d="M39,18 h22 v14 c0,5 13,9 13,21 v52 a5,5 0 0 1 -5,5 h-38 a5,5 0 0 1 -5,-5 v-52 c0,-12 13,-16 13,-21 z"
+          fill="rgba(30,18,14,0.42)"/>
+    <rect x="30" y="72" width="40" height="26" rx="2" fill="rgba(255,248,242,0.82)"/>
+    <rect x="36" y="79" width="28" height="3" rx="1.5" fill="rgba(30,18,14,0.35)"/>
+    <rect x="39" y="86" width="22" height="2.4" rx="1.2" fill="rgba(30,18,14,0.22)"/>
+  </symbol>
+</svg>
+
+<header class="doc">
+  <div>
+    <h1>Pinterest 원칙 흡수 — 디자인 시스템 프리뷰</h1>
+    <div class="sub">부서 초안 · 승인 대기 · 2026-08-17</div>
+  </div>
+  <nav>
+    <a href="#keep">유지</a>
+    <a href="#p1">1 테두리</a>
+    <a href="#p2">2 오버레이 필</a>
+    <a href="#p3">3 액센트</a>
+    <a href="#p4">4 거터</a>
+    <a href="#p5">5 반경</a>
+    <a href="#p6">4:5 썸네일</a>
+    <a href="#screens">화면 통합</a>
+  </nav>
+  <button class="theme-btn" id="themeBtn" type="button">다크로 보기</button>
+</header>
+
+<div class="wrap">
+
+  <div class="intro">
+    <h2>바뀌는 것은 사진 표면과 액센트의 <em>양</em>이지, 브랜드가 아닙니다</h2>
+    <p>
+      Pinterest 시스템의 지시 원칙 한 줄 — <strong>“사진 앞에서 비켜선다”</strong> — 만 가져왔습니다.
+      팔레트·서체·4:5 고정은 확정값이라 그대로입니다. 아래 여섯 개 판은 모두
+      <strong>왼쪽이 지금 코드, 오른쪽이 제안</strong>입니다.
+    </p>
+    <p>
+      근거 문서: <code>departments/designer/pinterest-principle-adoption-2026-08.md</code> ·
+      대상 명세: <code>specs/designer/design-system.md</code> 2 · 3.3 · 5.3절
+    </p>
+  </div>
+
+  <div class="callout">
+    <strong>축척은 1dp = 1px입니다(360dp 폰 기준).</strong> 이번 제안은 전부 비율과 횟수의 문제라
+    — 132dp 카드의 18dp 반경, 12dp와 8dp 거터, 56dp와 48×60dp 썸네일 —
+    임의 축척으로 그리면 판단 자체가 안 됩니다. 사진 자리는 <strong>도형 플레이스홀더</strong>이며
+    실제 사진이 아닙니다. 병에 그려 넣은 흰 띠는 라벨이고, 6번 판에서 잘리는 것이 그 띠입니다.
+  </div>
+
+  <!-- ══════════ 유지 ══════════ -->
+  <section class="principle" id="keep">
+    <h3><span class="num">0</span> 바뀌지 않는 것</h3>
+    <p class="why">
+      Pinterest Red <code>#e60023</code>와 Pin Sans/Inter는 <b>반려</b>했습니다. 보틀그린은
+      <code>branding.md</code> 2-2 사용자 확정값이고 앱 아이콘 배경까지 같은 값이며,
+      <code>DesignTokenTest</code>가 hex와 대비비를 검사합니다. Serif는 취향 유형 코드를 혼자 지탱합니다.
+    </p>
+
+    <div class="keep-grid">
+      <div class="sw"><div class="chip" style="background:var(--primary)"></div>
+        <div class="meta"><b>Primary · 보틀그린</b><span>L #2F6F4E</span><span>D #6FBF93</span></div></div>
+      <div class="sw"><div class="chip" style="background:var(--wine)"></div>
+        <div class="meta"><b>Wine · 와인베리</b><span>L #93425E</span><span>D #DB90AC</span></div></div>
+      <div class="sw"><div class="chip" style="background:var(--malt)"></div>
+        <div class="meta"><b>Malt · 몰트앰버</b><span>L #8A5A1B</span><span>D #DFA75B</span></div></div>
+      <div class="sw"><div class="chip" style="background:var(--paper);border-bottom:1px solid var(--doc-line)"></div>
+        <div class="meta"><b>Paper · 종이색</b><span>L #FFF8F2</span><span>D #15110E</span></div></div>
+      <div class="sw rejected"><div class="chip" style="background:#e60023"></div>
+        <div class="meta"><b>Pinterest Red</b><span>#e60023</span><em>반려 — 브랜드 확정값 충돌</em></div></div>
+    </div>
+
+    <div class="type-spec">
+      <div class="row"><span class="k">DisplayTasteCode</span><span class="t-display">SFRE</span></div>
+      <div class="row"><span class="k">HeadlineSentence</span><span class="t-headline">묵직하며 향이 진해요</span></div>
+      <div class="row"><span class="k">TitleLarge</span><span class="t-title-l">이번 달 회고</span></div>
+      <div class="row"><span class="k">BodyMedium</span><span class="t-body-m">2026년 8월 · 12,000원</span></div>
+      <div class="row"><span class="k">LabelSmall</span><span class="t-label-s">가장 높게 준</span></div>
+    </div>
+  </section>
+
+  <!-- ══════════ 원칙 1 ══════════ -->
+  <section class="principle" id="p1">
+    <h3><span class="num">1</span> 사진이 채워지면 테두리를 걷는다</h3>
+    <p class="why">
+      테두리는 <b>표면</b>에 긋는 선이지 <b>내용</b>에 두르는 액자가 아닙니다. 사진에는 이미 자기 경계가 있습니다.
+    </p>
+    <p class="why">
+      지금은 <code>DDPhotoField</code>와 <code>DDDrinkHighlightRow</code> 둘 다 사진 유무와 무관하게
+      1px을 두릅니다. <b>빈 상태에서는 남깁니다</b> — 그때는 그 선이 “여기 자리가 있다”고 말하는 유일한 신호입니다.
+    </p>
+
+    <div class="compare">
+      <div class="pane now">
+        <div class="pane-head"><span class="dot"></span>지금<span class="tag">DDPhotoField.kt:65</span></div>
+        <div class="pane-body"><div class="phone pad" style="display:flex;gap:24px;justify-content:center;">
+          <div style="width:132px">
+            <div class="photo ratio-4x5 bordered" style="border-radius:var(--shape-lg)">
+              <svg class="bottle"><use href="#bottle-wine"/></svg>
+            </div>
+            <div class="t-label-s" style="text-align:center;margin-top:8px;color:var(--ink-soft)">채워짐</div>
+          </div>
+          <div style="width:132px">
+            <div class="photo empty ratio-4x5 bordered" style="border-radius:var(--shape-lg)">
+              <div class="empty-slot"><span class="plus">＋</span><span class="t-label-l">사진 넣기</span></div>
+            </div>
+            <div class="t-label-s" style="text-align:center;margin-top:8px;color:var(--ink-soft)">비어 있음</div>
+          </div>
+        </div></div>
+        <div class="pane-note">두 상태가 <b>같은 선</b>을 씁니다. 채워진 쪽의 선은 사진 둘레에 그은 액자일 뿐입니다.</div>
+      </div>
+
+      <div class="pane next">
+        <div class="pane-head"><span class="dot"></span>제안<span class="tag">imageUri 분기 안으로</span></div>
+        <div class="pane-body"><div class="phone pad" style="display:flex;gap:24px;justify-content:center;">
+          <div style="width:132px">
+            <div class="photo ratio-4x5" style="border-radius:var(--shape-lg)">
+              <svg class="bottle"><use href="#bottle-wine"/></svg>
+            </div>
+            <div class="t-label-s" style="text-align:center;margin-top:8px;color:var(--ink-soft)">채워짐 · 선 없음</div>
+          </div>
+          <div style="width:132px">
+            <div class="photo empty ratio-4x5 bordered" style="border-radius:var(--shape-lg)">
+              <div class="empty-slot"><span class="plus">＋</span><span class="t-label-l">사진 넣기</span></div>
+            </div>
+            <div class="t-label-s" style="text-align:center;margin-top:8px;color:var(--ink-soft)">비어 있음 · 선 유지</div>
+          </div>
+        </div></div>
+        <div class="pane-note">선이 <b>일을 하는 곳에만</b> 남습니다. 2절의 “1px 스트로크” 규칙에 사진 예외 한 줄을 답니다.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ 원칙 2 ══════════ -->
+  <section class="principle" id="p2">
+    <h3><span class="num">2</span> 메타데이터 한 조각은 사진 위로</h3>
+    <p class="why">
+      사진 아래에 쌓는 줄 수만큼 사진이 짧아집니다. 지금 <code>HighlightCard</code>는 165dp 사진 아래에
+      <b>세 줄</b>(레이블 / 이름 / 상세)을 쌓아 글자 블록이 카드 높이의 약 1/4입니다.
+    </p>
+    <p class="why">
+      <b>위로 올리는 것은 한 조각뿐입니다.</b> 이름과 상세는 아래 남깁니다 — 술 이름은 이 앱에서 사진보다
+      덜 중요하지 않고, 필을 둘 겹치면 사진을 앞세우려고 사진을 가리는 꼴이 됩니다.
+    </p>
+
+    <div class="compare">
+      <div class="pane now">
+        <div class="pane-head"><span class="dot"></span>지금<span class="tag">텍스트 3줄, 사진 아래</span></div>
+        <div class="pane-body"><div class="phone pad">
+          <div class="hl-row gap-12">
+            <div class="hl-card">
+              <div class="frame"><div class="photo ratio-4x5 bordered"><svg class="bottle"><use href="#bottle-wine"/></svg></div></div>
+              <div class="meta">
+                <div class="t-label-s lbl">가장 높게 준</div>
+                <div class="t-body-m nm">샤토 몽페라 2019</div>
+                <div class="t-label-s det">5.0점</div>
+              </div>
+            </div>
+            <div class="hl-card">
+              <div class="frame"><div class="photo v3 ratio-4x5 bordered"><svg class="bottle"><use href="#bottle-whisky"/></svg></div></div>
+              <div class="meta">
+                <div class="t-label-s lbl">가장 자주 산</div>
+                <div class="t-body-m nm">글렌피딕 12년</div>
+                <div class="t-label-s det">4번</div>
+              </div>
+            </div>
+          </div>
+        </div></div>
+        <div class="pane-note">사진 165dp에 글자 <b>약 54dp</b>. “글자보다 먼저 보여야 할 것이 사진”(6절)과 어긋납니다.</div>
+      </div>
+
+      <div class="pane next">
+        <div class="pane-head"><span class="dot"></span>제안<span class="tag">레이블만 불투명 필로</span></div>
+        <div class="pane-body"><div class="phone pad">
+          <div class="hl-row gap-8">
+            <div class="hl-card">
+              <div class="frame r-md"><div class="photo ratio-4x5">
+                <svg class="bottle"><use href="#bottle-wine"/></svg>
+                <span class="overlay-pill">가장 높게 준</span>
+              </div></div>
+              <div class="meta">
+                <div class="t-body-m nm">샤토 몽페라 2019</div>
+                <div class="t-label-s det">5.0점</div>
+              </div>
+            </div>
+            <div class="hl-card">
+              <div class="frame r-md"><div class="photo v3 ratio-4x5">
+                <svg class="bottle"><use href="#bottle-whisky"/></svg>
+                <span class="overlay-pill">가장 자주 산</span>
+              </div></div>
+              <div class="meta">
+                <div class="t-body-m nm">글렌피딕 12년</div>
+                <div class="t-label-s det">4번</div>
+              </div>
+            </div>
+          </div>
+        </div></div>
+        <div class="pane-note">텍스트 줄 <b>3 → 2</b>. 같은 폭에서 사진이 차지하는 비율이 올라갑니다.</div>
+      </div>
+    </div>
+
+    <p class="why" style="margin-top:22px">
+      <b>필 배경은 불투명이어야 합니다.</b> 반투명은 사진에 따라 대비가 달라져 2절의 AA(4.5:1)를 지킬 수
+      없습니다 — Pinterest도 필 배경을 불투명으로 못 박아 두었습니다. 아래는 밝은 사진 위에서의 차이입니다.
+    </p>
+    <div class="compare">
+      <div class="pane now">
+        <div class="pane-head"><span class="dot"></span>반투명 필 — 채택 안 함</div>
+        <div class="pane-body"><div class="phone pad" style="display:flex;justify-content:center">
+          <div style="width:132px"><div class="photo v3 ratio-4x5" style="border-radius:var(--shape-md)">
+            <svg class="bottle"><use href="#bottle-whisky"/></svg>
+            <span class="overlay-pill translucent">가장 자주 산</span>
+          </div></div>
+        </div></div>
+        <div class="pane-note">배경이 사진마다 달라져 <b>대비를 보장할 수 없습니다.</b></div>
+      </div>
+      <div class="pane next">
+        <div class="pane-head"><span class="dot"></span>불투명 <code>surface</code> — 채택</div>
+        <div class="pane-body"><div class="phone pad" style="display:flex;justify-content:center">
+          <div style="width:132px"><div class="photo v3 ratio-4x5" style="border-radius:var(--shape-md)">
+            <svg class="bottle"><use href="#bottle-whisky"/></svg>
+            <span class="overlay-pill">가장 자주 산</span>
+          </div></div>
+        </div></div>
+        <div class="pane-note">사진과 무관하게 <b>대비가 고정</b>됩니다.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ 원칙 3 ══════════ -->
+  <section class="principle" id="p3">
+    <h3><span class="num">3</span> 액센트는 “종류”가 아니라 “찍히는 횟수”로 센다</h3>
+    <p class="why">
+      2절은 이미 “액센트 최대 2개”를 정해 두었지만, <b>한 화면에 몇 번 찍히는지를 세어 본 적이 없습니다.</b>
+      만족도 숫자는 <b>모든 행에</b> 있어서, 행이 늘어날수록 보틀그린이 그만큼 늘어납니다.
+    </p>
+    <p class="why">
+      제안은 <b>목록 행의 만족도 숫자에서 액센트를 빼는 것</b>입니다. 숫자는 이미 <code>titleLarge</code>로
+      크기가 강조를 맡고 있어 색까지 줄 필요가 없고, 그 행에서 색을 독점할 자격이 있는 것은
+      매장에서 3초 만에 확인해야 하는 <b>재구매 뱃지</b> 하나입니다.
+    </p>
+
+    <div class="compare">
+      <div class="pane now">
+        <div class="pane-head"><span class="dot"></span>지금<span class="tag">DDDrinkRecordCard.kt:157</span></div>
+        <div class="pane-body"><div class="phone pad">
+          <div class="rec-card">
+            <div class="rec-thumb sq"><div class="photo ratio-1x1"><svg class="bottle"><use href="#bottle-wine"/></svg></div></div>
+            <div class="rec-body"><div class="t-title-m rec-name">샤토 몽페라 2019</div>
+              <div class="t-body-m rec-sub">레드 · 2026.08.14</div>
+              <span class="badge repurchase hit">다시 살래요</span></div>
+            <div class="t-title-l rec-score accent hit">5.0</div>
+          </div>
+          <div class="rec-card">
+            <div class="rec-thumb sq"><div class="photo v3 ratio-1x1"><svg class="bottle"><use href="#bottle-whisky"/></svg></div></div>
+            <div class="rec-body"><div class="t-title-m rec-name">글렌피딕 12년</div>
+              <div class="t-body-m rec-sub">싱글몰트 · 2026.08.11</div>
+              <span class="badge repurchase hit">다시 살래요</span></div>
+            <div class="t-title-l rec-score accent hit">4.5</div>
+          </div>
+          <div class="rec-card">
+            <div class="rec-thumb sq"><div class="photo v2 ratio-1x1"><svg class="bottle"><use href="#bottle-wine"/></svg></div></div>
+            <div class="rec-body"><div class="t-title-m rec-name">몬테스 알파 카베르네</div>
+              <div class="t-body-m rec-sub">레드 · 2026.08.09</div></div>
+            <div class="t-title-l rec-score accent hit">3.5</div>
+          </div>
+          <div class="rec-card">
+            <div class="rec-thumb sq"><div class="photo v3 ratio-1x1"><svg class="bottle"><use href="#bottle-whisky"/></svg></div></div>
+            <div class="rec-body"><div class="t-title-m rec-name">아드벡 10년</div>
+              <div class="t-body-m rec-sub">싱글몰트 · 2026.08.05</div>
+              <span class="badge avoid">안 맞아요</span></div>
+            <div class="t-title-l rec-score accent hit">2.0</div>
+          </div>
+          <div class="rec-card">
+            <div class="rec-thumb sq"><div class="photo ratio-1x1"><svg class="bottle"><use href="#bottle-wine"/></svg></div></div>
+            <div class="rec-body"><div class="t-title-m rec-name">클라우디 베이 소비뇽</div>
+              <div class="t-body-m rec-sub">화이트 · 2026.08.02</div></div>
+            <div class="t-title-l rec-score accent hit">4.0</div>
+          </div>
+          <div class="navbar">
+            <div class="item">기록</div><div class="item on hit">컬렉션</div><div class="item">취향</div><div class="item">설정</div>
+          </div>
+        </div></div>
+        <div class="count-strip"><span class="accent-count"><span class="swatch"></span>보틀그린 8회</span></div>
+        <div class="pane-note">만족도 5 + 재구매 2 + 네비 1. <b>강조가 강조로 읽히지 않습니다.</b></div>
+      </div>
+
+      <div class="pane next">
+        <div class="pane-head"><span class="dot"></span>제안<span class="tag">만족도 숫자 → onSurface</span></div>
+        <div class="pane-body"><div class="phone pad">
+          <div class="rec-card">
+            <div class="rec-thumb p45"><div class="photo ratio-4x5"><svg class="bottle"><use href="#bottle-wine"/></svg></div></div>
+            <div class="rec-body"><div class="t-title-m rec-name">샤토 몽페라 2019</div>
+              <div class="t-body-m rec-sub">레드 · 2026.08.14</div>
+              <span class="badge repurchase">다시 살래요</span></div>
+            <div class="t-title-l rec-score quiet">5.0</div>
+          </div>
+          <div class="rec-card">
+            <div class="rec-thumb p45"><div class="photo v3 ratio-4x5"><svg class="bottle"><use href="#bottle-whisky"/></svg></div></div>
+            <div class="rec-body"><div class="t-title-m rec-name">글렌피딕 12년</div>
+              <div class="t-body-m rec-sub">싱글몰트 · 2026.08.11</div>
+              <span class="badge repurchase">다시 살래요</span></div>
+            <div class="t-title-l rec-score quiet">4.5</div>
+          </div>
+          <div class="rec-card">
+            <div class="rec-thumb p45"><div class="photo v2 ratio-4x5"><svg class="bottle"><use href="#bottle-wine"/></svg></div></div>
+            <div class="rec-body"><div class="t-title-m rec-name">몬테스 알파 카베르네</div>
+              <div class="t-body-m rec-sub">레드 · 2026.08.09</div></div>
+            <div class="t-title-l rec-score quiet">3.5</div>
+          </div>
+          <div class="rec-card">
+            <div class="rec-thumb p45"><div class="photo v3 ratio-4x5"><svg class="bottle"><use href="#bottle-whisky"/></svg></div></div>
+            <div class="rec-body"><div class="t-title-m rec-name">아드벡 10년</div>
+              <div class="t-body-m rec-sub">싱글몰트 · 2026.08.05</div>
+              <span class="badge avoid">안 맞아요</span></div>
+            <div class="t-title-l rec-score quiet">2.0</div>
+          </div>
+          <div class="rec-card">
+            <div class="rec-thumb p45"><div class="photo ratio-4x5"><svg class="bottle"><use href="#bottle-wine"/></svg></div></div>
+            <div class="rec-body"><div class="t-title-m rec-name">클라우디 베이 소비뇽</div>
+              <div class="t-body-m rec-sub">화이트 · 2026.08.02</div></div>
+            <div class="t-title-l rec-score quiet">4.0</div>
+          </div>
+          <div class="navbar">
+            <div class="item">기록</div><div class="item on">컬렉션</div><div class="item">취향</div><div class="item">설정</div>
+          </div>
+        </div></div>
+        <div class="count-strip"><span class="accent-count"><span class="swatch"></span>보틀그린 3회</span></div>
+        <div class="pane-note">재구매 2 + 네비 1. <b>초록이 뜬 행 = 다시 살 것</b>이 한눈에 읽힙니다. (썸네일 4:5는 6번 판)</div>
+      </div>
+    </div>
+    <p class="scale-note">왼쪽 판의 점선은 보틀그린이 찍힌 자리입니다.</p>
+  </section>
+
+  <!-- ══════════ 원칙 4 ══════════ -->
+  <section class="principle" id="p4">
+    <h3><span class="num">4</span> 사진끼리의 거터를 좁힌다</h3>
+    <p class="why">
+      사진이 붙으면 “사진 묶음”으로, 떨어지면 “카드 여러 장”으로 읽힙니다. Pinterest가 그리드 거터만
+      시스템 최소값(8px)으로 잡아 둔 이유입니다. <b>새 토큰을 만들지 않고</b> 기존 스케일에서 한 칸
+      내립니다(<code>sm</code> 12dp → <code>xs</code> 8dp).
+    </p>
+
+    <div class="compare">
+      <div class="pane now">
+        <div class="pane-head"><span class="dot"></span>지금 · 12dp<span class="tag">spacing.sm</span></div>
+        <div class="pane-body"><div class="phone pad">
+          <div class="hl-row gap-12">
+            <div class="hl-card"><div class="frame r-md"><div class="photo ratio-4x5"><svg class="bottle"><use href="#bottle-wine"/></svg><span class="overlay-pill">가장 높게 준</span></div></div></div>
+            <div class="hl-card"><div class="frame r-md"><div class="photo v3 ratio-4x5"><svg class="bottle"><use href="#bottle-whisky"/></svg><span class="overlay-pill">가장 자주 산</span></div></div></div>
+            <div class="hl-card"><div class="frame r-md"><div class="photo v2 ratio-4x5"><svg class="bottle"><use href="#bottle-wine"/></svg><span class="overlay-pill">가장 최근</span></div></div></div>
+          </div>
+        </div></div>
+        <div class="pane-note">카드가 <b>개별 카드</b>로 떨어져 읽힙니다.</div>
+      </div>
+      <div class="pane next">
+        <div class="pane-head"><span class="dot"></span>제안 · 8dp<span class="tag">spacing.xs</span></div>
+        <div class="pane-body"><div class="phone pad">
+          <div class="hl-row gap-8">
+            <div class="hl-card"><div class="frame r-md"><div class="photo ratio-4x5"><svg class="bottle"><use href="#bottle-wine"/></svg><span class="overlay-pill">가장 높게 준</span></div></div></div>
+            <div class="hl-card"><div class="frame r-md"><div class="photo v3 ratio-4x5"><svg class="bottle"><use href="#bottle-whisky"/></svg><span class="overlay-pill">가장 자주 산</span></div></div></div>
+            <div class="hl-card"><div class="frame r-md"><div class="photo v2 ratio-4x5"><svg class="bottle"><use href="#bottle-wine"/></svg><span class="overlay-pill">가장 최근</span></div></div></div>
+          </div>
+        </div></div>
+        <div class="pane-note">한 <b>사진 묶음</b>으로 읽히고, 세 번째 카드가 8dp 더 드러납니다.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ 원칙 5 ══════════ -->
+  <section class="principle" id="p5">
+    <h3><span class="num">5</span> 반경은 표면 크기를 따라간다</h3>
+    <p class="why">
+      Pinterest에서 유효한 것은 절대값(16/32px)이 아니라 <b>“작은 표면은 md, 큰 표면은 lg”</b>라는 배정
+      규칙입니다. 지금은 폭이 1.6배 다른 두 사진 표면이 같은 <code>ShapeLarge</code>를 써서
+      <b>같은 토큰인데 눈에는 다른 모양</b>입니다. 값은 늘리지 않고 배정만 고칩니다.
+    </p>
+
+    <div class="compare">
+      <div class="pane now">
+        <div class="pane-head"><span class="dot"></span>지금 · 둘 다 18dp</div>
+        <div class="pane-body"><div class="surface-block">
+          <div class="radius-demo">
+            <figure>
+              <div class="photo ratio-4x5" style="width:132px;border-radius:18px"><svg class="bottle"><use href="#bottle-wine"/></svg></div>
+              <figcaption><b>HighlightCard 132dp</b>18dp = 폭의 13.6%</figcaption>
+            </figure>
+            <figure>
+              <div class="photo v3 ratio-4x5" style="width:216px;border-radius:18px"><svg class="bottle"><use href="#bottle-whisky"/></svg></div>
+              <figcaption><b>DDPhotoField ≈216dp</b>18dp = 폭의 8.3%</figcaption>
+            </figure>
+          </div>
+        </div></div>
+        <div class="pane-note">작은 쪽이 눈에 띄게 <b>더 둥급니다.</b> 두 표면이 다른 시스템처럼 보입니다.</div>
+      </div>
+      <div class="pane next">
+        <div class="pane-head"><span class="dot"></span>제안 · 12dp / 18dp</div>
+        <div class="pane-body"><div class="surface-block">
+          <div class="radius-demo">
+            <figure>
+              <div class="photo ratio-4x5" style="width:132px;border-radius:12px"><svg class="bottle"><use href="#bottle-wine"/></svg></div>
+              <figcaption><b>ShapeMedium 12dp</b>= 폭의 9.1%</figcaption>
+            </figure>
+            <figure>
+              <div class="photo v3 ratio-4x5" style="width:216px;border-radius:18px"><svg class="bottle"><use href="#bottle-whisky"/></svg></div>
+              <figcaption><b>ShapeLarge 18dp</b>= 폭의 8.3%</figcaption>
+            </figure>
+          </div>
+        </div></div>
+        <div class="pane-note">체감 곡률이 <b>13.6% → 9.1%</b>로 가까워집니다. 새 반경 값은 만들지 않았습니다.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ 4:5 썸네일 ══════════ -->
+  <section class="principle" id="p6">
+    <h3><span class="num">6</span> 4:5 규칙이 컬렉션 목록에는 걸려 있지 않다</h3>
+    <p class="why">
+      이 항목만 <b>Pinterest에서 온 것이 아닙니다.</b> 우리 규칙의 미적용 지점입니다 —
+      5.3절은 <code>DDPhotoField</code>·<code>DDDrinkHighlightRow</code>에만 4:5를 못 박았고,
+      컬렉션 썸네일은 <code>size(56.dp)</code> 정사각입니다.
+    </p>
+    <p class="why">
+      <b>컬렉션이 사진을 가장 많이 보는 자리입니다.</b> 기록 하나당 대시보드에서는 많아야 한 번,
+      목록에서는 스크롤할 때마다 봅니다. 세로로 찍은 병을 여기서만 정사각으로 자르면
+      <b>라벨 위아래가 사라집니다</b> — 라벨은 사진을 찍는 이유 그 자체입니다(F1-3).
+    </p>
+
+    <div class="compare">
+      <div class="pane now">
+        <div class="pane-head"><span class="dot"></span>지금 · 56×56 (1:1)<span class="tag">DDDrinkRecordCard.kt:103</span></div>
+        <div class="pane-body"><div class="phone pad">
+          <div class="rec-card">
+            <div class="rec-thumb sq"><div class="photo ratio-1x1"><svg class="bottle"><use href="#bottle-wine"/></svg></div></div>
+            <div class="rec-body"><div class="t-title-m rec-name">샤토 몽페라 2019</div>
+              <div class="t-body-m rec-sub">레드 · 2026.08.14</div>
+              <span class="badge repurchase">다시 살래요</span></div>
+            <div class="t-title-l rec-score quiet">5.0</div>
+          </div>
+          <div style="height:20px"></div>
+          <div style="display:flex;gap:20px;align-items:center;justify-content:center">
+            <div>
+              <div class="rec-thumb sq" style="border-radius:var(--shape-sm)"><div class="photo ratio-1x1"><svg class="bottle"><use href="#bottle-wine"/></svg></div></div>
+              <div class="t-label-s" style="margin-top:6px;color:var(--ink-soft);text-align:center">56×56</div>
+            </div>
+            <div class="t-body-m" style="color:var(--ink-soft);max-width:180px">
+              라벨(흰 띠)의 위아래가 잘려 나갑니다. 병이 무엇인지 알아보는 단서가 그 띠입니다.
+            </div>
+          </div>
+        </div></div>
+        <div class="pane-note">찍을 때(4:5)와 볼 때(1:1)의 모양이 달라 <b>같은 사진으로 읽히지 않습니다.</b></div>
+      </div>
+
+      <div class="pane next">
+        <div class="pane-head"><span class="dot"></span>제안 · 48×60 (4:5)<span class="tag">폭 −8dp, 이름 줄 +8dp</span></div>
+        <div class="pane-body"><div class="phone pad">
+          <div class="rec-card">
+            <div class="rec-thumb p45"><div class="photo ratio-4x5"><svg class="bottle"><use href="#bottle-wine"/></svg></div></div>
+            <div class="rec-body"><div class="t-title-m rec-name">샤토 몽페라 2019</div>
+              <div class="t-body-m rec-sub">레드 · 2026.08.14</div>
+              <span class="badge repurchase">다시 살래요</span></div>
+            <div class="t-title-l rec-score quiet">5.0</div>
+          </div>
+          <div style="height:20px"></div>
+          <div style="display:flex;gap:20px;align-items:center;justify-content:center">
+            <div>
+              <div class="rec-thumb p45" style="border-radius:var(--shape-sm)"><div class="photo ratio-4x5"><svg class="bottle"><use href="#bottle-wine"/></svg></div></div>
+              <div class="t-label-s" style="margin-top:6px;color:var(--ink-soft);text-align:center">48×60</div>
+            </div>
+            <div class="t-body-m" style="color:var(--ink-soft);max-width:180px">
+              라벨이 온전히 남습니다. 폭이 8dp 줄어 이름 줄은 오히려 넓어집니다.
+            </div>
+          </div>
+        </div></div>
+        <div class="pane-note">기록 폼·대시보드·목록이 <b>같은 4:5</b>를 씁니다. 행 높이는 <b>에뮬레이터 확인 필요</b>.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ 화면 통합 ══════════ -->
+  <section class="principle" id="screens">
+    <h3><span class="num">★</span> 한 화면에 모아 보기 — 취향 대시보드</h3>
+    <p class="why">
+      원칙 1·2·4·5가 동시에 걸리는 자리입니다. 위계는 그대로입니다 —
+      결론(취향 유형) → 사진 하이라이트 → 최근 흐름. <b>순서는 건드리지 않습니다.</b>
+    </p>
+
+    <div class="compare">
+      <div class="pane now">
+        <div class="pane-head"><span class="dot"></span>지금</div>
+        <div class="pane-body"><div class="phone pad">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--sp-md)">
+            <span class="t-display" style="color:var(--primary)">SFRE</span>
+            <span class="badge avoid">묵직한 여운형</span>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--line-strong);border-radius:var(--shape-lg);padding:20px;margin-bottom:var(--sp-lg)">
+            <div class="t-headline">묵직하며 향이 진해요. 단맛과 여운은 크게 가리지 않으세요.</div>
+          </div>
+          <div class="hl-row gap-12">
+            <div class="hl-card">
+              <div class="frame"><div class="photo ratio-4x5 bordered"><svg class="bottle"><use href="#bottle-wine"/></svg></div></div>
+              <div class="meta"><div class="t-label-s lbl">가장 높게 준</div><div class="t-body-m nm">샤토 몽페라 2019</div><div class="t-label-s det">5.0점</div></div>
+            </div>
+            <div class="hl-card">
+              <div class="frame"><div class="photo v3 ratio-4x5 bordered"><svg class="bottle"><use href="#bottle-whisky"/></svg></div></div>
+              <div class="meta"><div class="t-label-s lbl">가장 자주 산</div><div class="t-body-m nm">글렌피딕 12년</div><div class="t-label-s det">4번</div></div>
+            </div>
+            <div class="hl-card">
+              <div class="frame"><div class="photo v2 ratio-4x5 bordered"><svg class="bottle"><use href="#bottle-wine"/></svg></div></div>
+              <div class="meta"><div class="t-label-s lbl">가장 최근</div><div class="t-body-m nm">클라우디 베이</div><div class="t-label-s det">4.0점</div></div>
+            </div>
+          </div>
+        </div></div>
+        <div class="pane-note">사진 층에 <b>선 3개 · 글자 9줄</b>. 카드가 서로 떨어져 있습니다.</div>
+      </div>
+
+      <div class="pane next">
+        <div class="pane-head"><span class="dot"></span>제안</div>
+        <div class="pane-body"><div class="phone pad">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--sp-md)">
+            <span class="t-display" style="color:var(--primary)">SFRE</span>
+            <span class="badge avoid">묵직한 여운형</span>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--line-strong);border-radius:var(--shape-lg);padding:20px;margin-bottom:var(--sp-lg)">
+            <div class="t-headline">묵직하며 향이 진해요. 단맛과 여운은 크게 가리지 않으세요.</div>
+          </div>
+          <div class="hl-row gap-8">
+            <div class="hl-card">
+              <div class="frame r-md"><div class="photo ratio-4x5"><svg class="bottle"><use href="#bottle-wine"/></svg><span class="overlay-pill">가장 높게 준</span></div></div>
+              <div class="meta"><div class="t-body-m nm">샤토 몽페라 2019</div><div class="t-label-s det">5.0점</div></div>
+            </div>
+            <div class="hl-card">
+              <div class="frame r-md"><div class="photo v3 ratio-4x5"><svg class="bottle"><use href="#bottle-whisky"/></svg><span class="overlay-pill">가장 자주 산</span></div></div>
+              <div class="meta"><div class="t-body-m nm">글렌피딕 12년</div><div class="t-label-s det">4번</div></div>
+            </div>
+            <div class="hl-card">
+              <div class="frame r-md"><div class="photo v2 ratio-4x5"><svg class="bottle"><use href="#bottle-wine"/></svg><span class="overlay-pill">가장 최근</span></div></div>
+              <div class="meta"><div class="t-body-m nm">클라우디 베이</div><div class="t-label-s det">4.0점</div></div>
+            </div>
+          </div>
+        </div></div>
+        <div class="pane-note">사진 층에 <b>선 0개 · 글자 6줄</b>. 취향 카드의 선은 <b>남습니다</b> — 사진이 아니라 표면입니다.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ 반려 목록 ══════════ -->
+  <section class="principle" id="rejected">
+    <h3><span class="num">✕</span> 반려한 것 — 재논쟁하지 않기 위해</h3>
+    <table class="spec">
+      <thead><tr><th style="width:34%">Pinterest 규격</th><th>반려 사유</th></tr></thead>
+      <tbody>
+        <tr><td class="no">Primary = <code>#e60023</code></td><td>보틀그린은 <code>branding.md</code> 2-2 사용자 확정값. 앱 아이콘 배경도 같은 값이고 <code>DesignTokenTest</code>가 hex를 검사한다. 색 하나가 아니라 브랜드·에셋·테스트를 동시에 뒤집는 일이다</td></tr>
+        <tr><td class="no">Pin Sans / Inter 단일 산세리프</td><td>Serif+Sans 페어링이 확정이고 <code>DisplayTasteCode</code>가 “아날로그 양장본 저널” 컨셉을 혼자 지탱한다</td></tr>
+        <tr><td class="no">display 70px 히어로 티어</td><td>마케팅 페이지 티어다. 앱에 히어로 섹션이 없다</td></tr>
+        <tr><td class="no">핀 이미지 자연 비율 보존</td><td>4:5 고정은 근거 있는 결정이다 — “찍을 때 본 모양과 볼 때 보는 모양이 다르면 같은 사진으로 읽히지 않는다”(5.3)</td></tr>
+        <tr><td class="no">컬렉션을 메이슨리 핀 그리드로</td><td>(a) 컬렉션은 훑어서 <b>구매를 판단하는</b> 자리라 이름·만족도·재구매가 사라지면 F5가 무너진다 (b) 사진 없는 기록도 카드가 되어야 하는데 넣을 자연 비율이 없다</td></tr>
+        <tr><td class="no">그림자 전면 금지</td><td>2절이 다단계 섀도우를 허용한다. 시스템 규칙은 두고 <b>사진 표면만</b> 뺀다(원칙 1)</td></tr>
+        <tr><td class="no">반경 16/32px 2단</td><td><code>6/12/18dp</code> 3단이 이미 있다. 유효한 것은 절대값이 아니라 <b>크기에 따른 배정 규칙</b>이고 그건 원칙 5로 흡수했다</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ══════════ 검증 ══════════ -->
+  <section class="principle" id="verify">
+    <h3><span class="num">?</span> 이 프리뷰가 대신할 수 없는 것</h3>
+    <div class="callout" style="max-width:none;border-left-color:var(--flag-bad)">
+      <strong>이건 브라우저 렌더링이지 Compose 렌더링이 아닙니다.</strong>
+      제안 여섯 개는 전부 눈으로만 판정되는 것이라 승인 후 코드에 반영하면
+      <strong>에뮬레이터에서 다시 봐야 합니다.</strong> 특히 다음 셋은 여기서 답이 나오지 않습니다.
+      <br><br>
+      ① 48×60 썸네일이 실제 행 높이를 밀어 올리는지 (여기 계산으로는 안 밀지만 관측이 아닙니다) ·
+      ② 132dp 카드에서 <b>가장 긴 실제 레이블</b>이 필 폭을 넘칠 때의 처리(생략 vs 아래로 되돌림) — 초안 7절의 열린 항목 ·
+      ③ 다크 테마에서 불투명 필(<code>surface #221C17</code>)이 어두운 사진 위에서 충분히 떠 보이는지
+      <br><br>
+      색 토큰은 이번 작업에서 바뀌지 않으므로 <code>DesignTokenTest</code>는 그대로 통과해야 합니다.
+      깨진다면 범위를 넘어선 것이니 되돌립니다.
+    </div>
+  </section>
+
+  <footer class="doc">
+    테이스트 아카이브 · 부서 초안 프리뷰 · 2026-08-17 ·
+    근거 <code>departments/designer/pinterest-principle-adoption-2026-08.md</code> ·
+    백로그 <code>P2-12</code> (승인 대기)
+    <br>사진 자리는 도형 플레이스홀더이며 실제 사진이 아닙니다. 축척 1dp = 1px.
+  </footer>
+
+</div>
+
+<script>
+  (function () {
+    var btn = document.getElementById('themeBtn');
+    var root = document.documentElement;
+    function apply(mode) {
+      root.setAttribute('data-theme', mode);
+      btn.textContent = mode === 'dark' ? '라이트로 보기' : '다크로 보기';
+    }
+    apply(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    btn.addEventListener('click', function () {
+      apply(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    });
+  })();
+</script>
+
+</body>
+</html>
