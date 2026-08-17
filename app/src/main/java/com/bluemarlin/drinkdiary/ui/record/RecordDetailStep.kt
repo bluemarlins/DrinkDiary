@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
@@ -20,9 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.bluemarlin.drinkdiary.domain.model.CollectionStatus
@@ -31,13 +28,15 @@ import com.bluemarlin.drinkdiary.domain.model.ServingStyle
 import com.bluemarlin.drinkdiary.domain.model.TagCategory
 import com.bluemarlin.drinkdiary.ui.DrinkLabels
 import com.bluemarlin.drinkdiary.ui.component.DDChip
+import com.bluemarlin.drinkdiary.ui.component.DDPhotoField
 import com.bluemarlin.drinkdiary.ui.component.DDPrimaryButton
 import com.bluemarlin.drinkdiary.ui.component.DDRatingInput
-import com.bluemarlin.drinkdiary.ui.component.DDUriImage
 import com.bluemarlin.drinkdiary.ui.navigation.LocalDDScreenMargin
 
 // 취향 입력 이후 단계. 이름과 만족도만 필수이고 나머지는 접어둔다 —
 // 기본 경로를 무겁게 만들면 F2에서 지킨 마찰 예산이 여기서 무너진다.
+//
+// **사진은 예외다.** 필수는 아니지만 접지도 않는다 — 폼의 첫 자리다(prd.md F1-3).
 @Composable
 fun RecordDetailStep(
     type: DrinkType,
@@ -66,6 +65,9 @@ fun RecordDetailStep(
         rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
             if (uri != null) onPhotoPicked(uri.toString())
         }
+    val pickPhoto = {
+        photoPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+    }
 
     Column(
         modifier =
@@ -75,6 +77,11 @@ fun RecordDetailStep(
                 .padding(LocalDDScreenMargin.current),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
+        // **사진이 첫 자리다**(prd.md F1-3). 이전에는 만족도·재구매 뒤의 작은 텍스트 버튼이었고,
+        // 그 배치가 "선택 입력"이라는 분류를 "나중에, 접어서"로 번역했다. 기록에 사진이 남지 않으니
+        // 대시보드가 통째로 글자가 된 것은 그 결과였다.
+        DDPhotoField(imageUri = form.imageUri, onPick = pickPhoto)
+
         Text("무엇이었나요?", style = MaterialTheme.typography.titleLarge)
 
         OutlinedTextField(
@@ -104,24 +111,6 @@ fun RecordDetailStep(
         }
 
         tasteSection()
-
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            TextButton(
-                onClick = {
-                    photoPicker.launch(
-                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
-                    )
-                },
-            ) { Text(if (form.imageUri == null) "사진 넣기" else "사진 바꾸기") }
-
-            form.imageUri?.let {
-                DDUriImage(
-                    imageUri = it,
-                    contentDescription = "선택한 사진",
-                    modifier = Modifier.size(64.dp).clip(MaterialTheme.shapes.small),
-                )
-            }
-        }
 
         TagPicker(
             type = type,
