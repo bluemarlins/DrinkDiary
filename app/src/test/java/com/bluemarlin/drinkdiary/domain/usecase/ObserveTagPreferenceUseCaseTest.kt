@@ -76,6 +76,34 @@ class ObserveTagPreferenceUseCaseTest {
         assertFalse(pref.meaningfulGap)
     }
 
+    // 차이가 말할 만할 때만 대조가 생긴다. 없는 선호를 대조로 그리면 그것이 곧 순위가 된다.
+    @Test
+    fun `the contrast pair appears only when the gap is meaningful`() {
+        val clear = peat(List(3) { peated(4.6) } + List(3) { unpeated(2.4) })!!
+        assertEquals(PeatTag.Peated.name, clear.contrast!!.higher.value)
+        assertEquals(PeatTag.Unpeated.name, clear.contrast!!.lower.value)
+
+        val flat = peat(List(3) { peated(4.0) } + List(3) { unpeated(3.8) })!!
+        assertNull(flat.contrast)
+    }
+
+    // 표본이 모자란 값이 "낮게 준 쪽"으로 뽑히면 우연이 결론처럼 보인다.
+    @Test
+    fun `a value below the sample floor never becomes the low side`() {
+        val styled = { style: WhiskyStyle, rating: Double -> record(rating, DrinkTags(whiskyStyle = style)) }
+        val records =
+            List(3) { styled(WhiskyStyle.SingleMalt, 4.8) } +
+                List(3) { styled(WhiskyStyle.Blended, 4.0) } +
+                listOf(styled(WhiskyStyle.Bourbon, 1.0))
+
+        val pref = preferences(records).first { it.category == TagCategory.WhiskyStyle }
+
+        // 버번 한 잔이 목록에는 남지만 대조의 바닥은 블렌디드다.
+        assertEquals(3, pref.values.size)
+        assertEquals(WhiskyStyle.SingleMalt.name, pref.contrast!!.higher.value)
+        assertEquals(WhiskyStyle.Blended.name, pref.contrast!!.lower.value)
+    }
+
     @Test
     fun `a value below the sample floor cannot decide the gap`() {
         // 논피트가 1잔뿐이라 비교 대상이 되지 못한다.

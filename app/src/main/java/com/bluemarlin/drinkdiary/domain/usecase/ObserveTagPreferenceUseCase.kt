@@ -3,6 +3,7 @@ package com.bluemarlin.drinkdiary.domain.usecase
 import com.bluemarlin.drinkdiary.domain.model.DrinkRecord
 import com.bluemarlin.drinkdiary.domain.model.DrinkType
 import com.bluemarlin.drinkdiary.domain.model.TagCategory
+import com.bluemarlin.drinkdiary.domain.model.TagContrast
 import com.bluemarlin.drinkdiary.domain.model.TagPreference
 import com.bluemarlin.drinkdiary.domain.model.TagValueRating
 import com.bluemarlin.drinkdiary.domain.model.TypeScope
@@ -61,11 +62,17 @@ class ObserveTagPreferenceUseCase(
                 comparable.first().averageRating - comparable.last().averageRating
             }
 
+        // 차이가 작으면 방향을 말하지 않는다. 감각 축에서와 같은 이유다.
+        val meaningfulGap = gap != null && gap >= TagThresholds.MIN_RATING_GAP
+
         return TagPreference(
             category = category,
             values = byValue,
-            // 차이가 작으면 방향을 말하지 않는다. 감각 축에서와 같은 이유다.
-            meaningfulGap = gap != null && gap >= TagThresholds.MIN_RATING_GAP,
+            meaningfulGap = meaningfulGap,
+            // 대조는 차이가 말할 만할 때만 만든다. 목록은 그대로 남으므로
+            // 대조에 뽑히지 않은 값도 사용자가 계속 확인할 수 있다(prd.md F3 — 근거 확인).
+            contrast =
+                if (meaningfulGap) TagContrast(comparable.first(), comparable.last()) else null,
         )
     }
 }

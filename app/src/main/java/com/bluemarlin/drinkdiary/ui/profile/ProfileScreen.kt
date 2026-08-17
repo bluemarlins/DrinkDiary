@@ -18,7 +18,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.bluemarlin.drinkdiary.domain.model.DrinkType
 import com.bluemarlin.drinkdiary.domain.model.ProfileReadiness
+import com.bluemarlin.drinkdiary.domain.model.TagCategory
 import com.bluemarlin.drinkdiary.domain.model.TagPreference
+import com.bluemarlin.drinkdiary.domain.model.TagValueRating
 import com.bluemarlin.drinkdiary.domain.model.TasteProfile
 import com.bluemarlin.drinkdiary.domain.model.TypeScope
 import com.bluemarlin.drinkdiary.ui.DrinkLabels
@@ -147,8 +149,11 @@ private fun TraitSections(
             Column(verticalArrangement = Arrangement.spacedBy(DrinkDiarySpacing.md)) {
                 Text("라벨로 본 취향", style = MaterialTheme.typography.titleMedium)
                 Text(
-                    // 이쪽 결과는 가져갈 수 있다는 점이 감각 축과 다르다.
-                    text = "매장에서 라벨만 보고도 쓸 수 있는 기준이에요.",
+                    // **무엇인지를 먼저 말한다.** 이쪽은 집계이고 유형은 상관에서 나온다.
+                    // 그 차이를 밝히지 않으면 이 숫자들이 유형의 근거로 읽히고, 그 순간
+                    // 화면이 근거라고 내놓는 것이 실제 판정 근거와 달라진다(prd.md F3-3 (c)).
+                    // 뒷문장은 이쪽 결과가 감각 축과 달리 **가져갈 수 있다**는 뜻이다.
+                    text = "기록한 만족도를 라벨별로 모은 거예요. 매장에서 라벨만 보고도 쓸 수 있어요.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -248,6 +253,7 @@ private fun TagPreferenceBlock(
     scope: TypeScope,
 ) {
     val drinkType = drinkTypeOf(scope)
+    val contrast = pref.contrast
 
     Column(verticalArrangement = Arrangement.spacedBy(DrinkDiarySpacing.xs)) {
         Row(
@@ -256,7 +262,7 @@ private fun TagPreferenceBlock(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(DrinkLabels.tagCategory(pref.category), style = MaterialTheme.typography.bodyLarge)
-            if (!pref.meaningfulGap) {
+            if (contrast == null) {
                 // 차이가 없으면 없다고 말한다. 순위만 보여주면 없는 선호가 있는 것처럼 읽힌다.
                 Text(
                     text = "아직 차이가 뚜렷하지 않아요",
@@ -266,23 +272,57 @@ private fun TagPreferenceBlock(
             }
         }
 
-        pref.values.forEach { value ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                // 표본 수는 값을 한정하는 말이므로 값 옆에 둔다. 오른쪽 끝은 FAB가 떠 있는
-                // 자리라, 거기 두면 화면 아래쪽에서 잘린다(에뮬레이터에서 확인된 결함).
-                Text(
-                    text = "${DrinkLabels.tagValue(pref.category, value.value, drinkType)} · ${value.samples}잔",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Text(
-                    text = DrinkLabels.rating(value.averageRating),
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
+        // 대조가 성립하면 양 끝을 먼저 보여준다. Vivino의 What You Like / Dislike와 같은
+        // 자리이되, **판정을 대신 내려주지 않는다** — "좋아하는 쪽"이 아니라 "높게 준 쪽"이다.
+        // 실제로 있었던 일만 말하면 훈계할 자리가 남지 않는다(branding.md 2-1).
+        if (contrast != null) {
+            TagValueRow("높게 준 쪽", contrast.higher, pref.category, drinkType, emphasised = true)
+            TagValueRow("낮게 준 쪽", contrast.lower, pref.category, drinkType, emphasised = true)
         }
+
+        // 대조에 뽑히지 않은 값도 남긴다. 감추면 사용자가 근거를 확인할 수 없다(prd.md F3).
+        pref.values
+            .filter { it != contrast?.higher && it != contrast?.lower }
+            .forEach { value ->
+                TagValueRow(null, value, pref.category, drinkType, emphasised = false)
+            }
+    }
+}
+
+@Composable
+private fun TagValueRow(
+    role: String?,
+    value: TagValueRating,
+    category: TagCategory,
+    drinkType: DrinkType?,
+    emphasised: Boolean,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        // 표본 수는 값을 한정하는 말이므로 값 옆에 둔다. 오른쪽 끝은 FAB가 떠 있는
+        // 자리라, 거기 두면 화면 아래쪽에서 잘린다(에뮬레이터에서 확인된 결함).
+        val label = "${DrinkLabels.tagValue(category, value.value, drinkType)} · ${value.samples}잔"
+        Text(
+            text = if (role == null) label else "$role · $label",
+            style = MaterialTheme.typography.bodyMedium,
+            color =
+                if (emphasised) {
+                    MaterialTheme.colorScheme.onSurface
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                },
+        )
+        Text(
+            text = DrinkLabels.rating(value.averageRating),
+            style = MaterialTheme.typography.bodyMedium,
+            color =
+                if (emphasised) {
+                    MaterialTheme.colorScheme.onSurface
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                },
+        )
     }
 }
