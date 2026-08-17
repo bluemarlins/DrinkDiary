@@ -6,11 +6,14 @@ import com.bluemarlin.drinkdiary.data.local.AssetBottleDictionary
 import com.bluemarlin.drinkdiary.data.local.DrinkDiaryDatabase
 import com.bluemarlin.drinkdiary.data.local.MIGRATION_2_3
 import com.bluemarlin.drinkdiary.data.repository.DrinkRecordRepositoryImpl
+import com.bluemarlin.drinkdiary.data.repository.PhotoRepositoryImpl
 import com.bluemarlin.drinkdiary.data.repository.UserPreferencesRepositoryImpl
 import com.bluemarlin.drinkdiary.domain.repository.BottleDictionary
 import com.bluemarlin.drinkdiary.domain.repository.BottleMatcher
 import com.bluemarlin.drinkdiary.domain.repository.DrinkRecordRepository
+import com.bluemarlin.drinkdiary.domain.repository.PhotoRepository
 import com.bluemarlin.drinkdiary.domain.repository.UserPreferencesRepository
+import com.bluemarlin.drinkdiary.domain.usecase.ImportPhotoUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveAnswerReflectionUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveMonthlySummaryUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveRecentTrendUseCase
@@ -47,6 +50,10 @@ class AppContainer(
 
     val userPreferencesRepository: UserPreferencesRepository =
         UserPreferencesRepositoryImpl(application)
+
+    // 사진은 앱 안에 복사해 둔다. 갤러리 URI를 그대로 저장하면 재시작에서 사라진다(prd.md F1-3).
+    val photoRepository: PhotoRepository = PhotoRepositoryImpl(application)
+    val importPhotoUseCase = ImportPhotoUseCase(photoRepository)
 
     val observeTasteProfileUseCase = ObserveTasteProfileUseCase(drinkRecordRepository)
 

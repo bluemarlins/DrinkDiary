@@ -19,6 +19,7 @@ import com.bluemarlin.drinkdiary.ui.navigation.LocalDDScreenMargin
 fun EditRecordScreen(
     state: EditUiState,
     onFormChange: (RecordForm) -> Unit,
+    onPhotoPicked: (String) -> Unit,
     onAnswer: (Trait, TraitAnswer) -> Unit,
     onSave: () -> Unit,
     contentPadding: PaddingValues,
@@ -44,6 +45,7 @@ fun EditRecordScreen(
         form = state.form,
         alwaysAskTags = state.alwaysAskTags,
         onFormChange = onFormChange,
+        onPhotoPicked = onPhotoPicked,
         onSave = onSave,
         saving = state.saving,
         modifier = modifier.padding(contentPadding),

@@ -37,6 +37,7 @@ fun RecordFlow(modifier: Modifier = Modifier) {
                 RecordViewModel.Factory(
                     appContainer.drinkRecordRepository,
                     appContainer.userPreferencesRepository,
+                    appContainer.importPhotoUseCase,
                 ),
         )
     val state by viewModel.uiState.collectAsState()
@@ -70,9 +71,11 @@ fun RecordFlow(modifier: Modifier = Modifier) {
                     form = state.form,
                     alwaysAskTags = state.alwaysAskTags,
                     onFormChange = viewModel::updateForm,
+                    onPhotoPicked = viewModel::pickPhoto,
                     onSave = viewModel::save,
                     saving = state.saving,
                     modifier = modifier,
+                    errorMessage = state.error,
                 )
 
             Step.Saved ->

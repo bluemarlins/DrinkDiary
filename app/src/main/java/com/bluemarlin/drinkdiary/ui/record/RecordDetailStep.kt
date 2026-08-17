@@ -44,11 +44,17 @@ fun RecordDetailStep(
     form: RecordForm,
     alwaysAskTags: Set<TagCategory>,
     onFormChange: (RecordForm) -> Unit,
+    // 사진만 폼을 거치지 않는다. 고른 URI를 그대로 담으면 재시작 후 못 읽는 참조가 남으므로
+    // ViewModel이 앱 안으로 들여온 뒤에야 폼에 실린다(prd.md F1-3).
+    onPhotoPicked: (String) -> Unit,
     onSave: () -> Unit,
     saving: Boolean,
     modifier: Modifier = Modifier,
     // 편집 화면도 이 폼을 그대로 쓴다. 폼을 복제하면 저장 규칙이 한쪽에서만 지켜진다.
     saveLabel: String = "저장",
+    // 작성 경로에는 스낵바가 없다. 편집은 화면 바깥에서 스낵바로 띄우므로 여기서는 비워 둔다 —
+    // 두 곳에서 같이 띄우면 같은 실패가 두 번 보인다.
+    errorMessage: String? = null,
     // 편집에서만 채워지는 자리. 작성 경로는 마법사가 이미 취향을 물었으므로 비어 있다 —
     // 같은 것을 두 번 물으면 F2의 탭 예산이 무너진다.
     tasteSection: @Composable () -> Unit = {},
@@ -58,7 +64,7 @@ fun RecordDetailStep(
     var expanded by remember { mutableStateOf(false) }
     val photoPicker =
         rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-            if (uri != null) onFormChange(form.copy(imageUri = uri.toString()))
+            if (uri != null) onPhotoPicked(uri.toString())
         }
 
     Column(
@@ -135,6 +141,14 @@ fun RecordDetailStep(
                 form = form,
                 foldedTags = folded,
                 onFormChange = onFormChange,
+            )
+        }
+
+        errorMessage?.let {
+            Text(
+                text = it,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.error,
             )
         }
 

@@ -452,6 +452,7 @@ private fun ScreenContent(
                             screen.id,
                             appContainer.drinkRecordRepository,
                             appContainer.userPreferencesRepository,
+                            appContainer.importPhotoUseCase,
                         ),
                 )
             val edit by editViewModel.uiState.collectAsState()
@@ -470,6 +471,7 @@ private fun ScreenContent(
             EditRecordScreen(
                 state = edit,
                 onFormChange = editViewModel::updateForm,
+                onPhotoPicked = editViewModel::pickPhoto,
                 onAnswer = editViewModel::answer,
                 onSave = editViewModel::save,
                 contentPadding = padding,

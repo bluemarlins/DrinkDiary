@@ -15,6 +15,7 @@ import com.bluemarlin.drinkdiary.domain.model.Trait
 import com.bluemarlin.drinkdiary.domain.model.TraitAnswer
 import com.bluemarlin.drinkdiary.domain.repository.DrinkRecordRepository
 import com.bluemarlin.drinkdiary.domain.repository.UserPreferencesRepository
+import com.bluemarlin.drinkdiary.domain.usecase.ImportPhotoUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -73,6 +74,7 @@ data class RecordUiState(
 class RecordViewModel(
     private val repository: DrinkRecordRepository,
     private val preferences: UserPreferencesRepository,
+    private val importPhoto: ImportPhotoUseCase,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(RecordUiState())
     val uiState: StateFlow<RecordUiState> = _uiState.asStateFlow()
@@ -114,6 +116,21 @@ class RecordViewModel(
     }
 
     fun updateForm(form: RecordForm) = _uiState.update { it.copy(form = form) }
+
+    // 고른 즉시 앱 안으로 들여온다. 저장까지 미루면 그 사이 프로세스가 죽었을 때
+    // 갤러리 URI는 이미 못 읽는 것이 되어 있다(prd.md F1-3).
+    fun pickPhoto(sourceUri: String) {
+        viewModelScope.launch {
+            when (val result = importPhoto(sourceUri)) {
+                is AppResult.Success -> _uiState.update { it.copy(form = it.form.copy(imageUri = result.value)) }
+                // 조용히 넘기면 사용자는 사진이 붙은 줄 안다(harness.md §7).
+                is AppResult.Failure ->
+                    _uiState.update { it.copy(error = "사진을 가져오지 못했어요. 다시 골라 주세요.") }
+            }
+        }
+    }
+
+    fun dismissError() = _uiState.update { it.copy(error = null) }
 
     fun save() {
         val state = _uiState.value
@@ -158,8 +175,10 @@ class RecordViewModel(
     class Factory(
         private val repository: DrinkRecordRepository,
         private val preferences: UserPreferencesRepository,
+        private val importPhoto: ImportPhotoUseCase,
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel> create(modelClass: Class<T>): T = RecordViewModel(repository, preferences) as T
+        override fun <T : ViewModel> create(modelClass: Class<T>): T =
+            RecordViewModel(repository, preferences, importPhoto) as T
     }
 }
