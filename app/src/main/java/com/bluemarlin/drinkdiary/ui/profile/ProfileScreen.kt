@@ -26,6 +26,7 @@ import com.bluemarlin.drinkdiary.domain.model.TasteProfile
 import com.bluemarlin.drinkdiary.domain.model.TypeScope
 import com.bluemarlin.drinkdiary.ui.DrinkLabels
 import com.bluemarlin.drinkdiary.ui.component.DDChip
+import com.bluemarlin.drinkdiary.ui.component.DDDrinkHighlightRow
 import com.bluemarlin.drinkdiary.ui.component.DDMonthlySummaryCard
 import com.bluemarlin.drinkdiary.ui.component.DDProfileProgressCard
 import com.bluemarlin.drinkdiary.ui.component.DDRecentTrendCard
@@ -123,6 +124,9 @@ private fun SummarySection(
             profile = state.profile,
             reflection = state.reflection,
         )
+        // 결론 바로 다음이 사진이다. 사용자가 "한눈에 안 들어온다"고 한 자리가 여기이고,
+        // 글자보다 먼저 보여야 할 것이 사진이다(prd.md F3-4 (a)).
+        DDDrinkHighlightRow(cards = state.highlights.map(DrinkHighlightCopy::card))
         // 유형 **아래**다. 유형은 잘 안 바뀌는 것이 설계이므로, 새 기록이 화면을 바꾸는 일은
         // 이 층이 맡는다(prd.md F3-3 (a)).
         state.recentTrend?.let { trend ->

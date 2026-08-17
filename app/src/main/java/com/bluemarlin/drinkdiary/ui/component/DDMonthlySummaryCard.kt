@@ -15,11 +15,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -73,7 +71,7 @@ fun DDMonthlySummaryCard(
             }
 
             summary.topRecord?.let { top ->
-                TopRecord(name = top.name, rating = DrinkLabels.rating(top.rating), imageUri = top.imageUri)
+                TopRecord(name = top.name, rating = DrinkLabels.rating(top.rating))
             }
         }
     }
@@ -132,44 +130,28 @@ private fun Stat(
     }
 }
 
-// 이미지가 붙는 자리는 여기다. **취향 유형 카드가 아니다** — 유형은 81가지 계산 결과이고
-// 특정 병의 사진을 얹으면 "그 술이 곧 당신의 유형"으로 읽힌다. 반면 이 자리는
-// 실제로 그 한 잔을 가리키므로 사진이 그 잔의 것이 맞다.
+// **사진은 더 이상 여기 붙지 않는다** (2026-08-17, prd.md F3-4 (a)).
+//
+// 이 카드의 것은 **이번 달** 최고이고 하이라이트 층의 것은 **역대** 최고라 서로 다른 사실이지만,
+// 실제로는 같은 잔일 때가 많다. 바로 위 카드와 같은 사진이 또 나오면 그건 정보가 아니라 소음이다.
+// 사실은 한 줄로 남기고 사진만 위로 올렸다.
 @Composable
 private fun TopRecord(
     name: String,
     rating: String,
-    imageUri: String?,
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(DrinkDiarySpacing.sm),
-        verticalAlignment = Alignment.CenterVertically,
+    Column(
+        modifier =
+            Modifier.fillMaxWidth().semantics {
+                contentDescription = "이번 달 가장 높게 준 한 잔 $name $rating"
+            },
+        verticalArrangement = Arrangement.spacedBy(DrinkDiarySpacing.xxs),
     ) {
-        if (imageUri != null) {
-            DDUriImage(
-                imageUri = imageUri,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier =
-                    Modifier
-                        .size(48.dp)
-                        .clip(MaterialTheme.shapes.small),
-            )
-        }
-        Column(
-            modifier =
-                Modifier.semantics {
-                    contentDescription = "가장 높게 준 한 잔 $name $rating"
-                },
-            verticalArrangement = Arrangement.spacedBy(DrinkDiarySpacing.xxs),
-        ) {
-            Text(
-                text = "가장 높게 준 한 잔",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Text("$name · $rating", style = MaterialTheme.typography.bodyMedium)
-        }
+        Text(
+            text = "가장 높게 준 한 잔",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text("$name · $rating", style = MaterialTheme.typography.bodyMedium)
     }
 }

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.bluemarlin.drinkdiary.domain.model.AnswerReflection
+import com.bluemarlin.drinkdiary.domain.model.DrinkHighlight
 import com.bluemarlin.drinkdiary.domain.model.MonthlySummary
 import com.bluemarlin.drinkdiary.domain.model.ProfileReadiness
 import com.bluemarlin.drinkdiary.domain.model.RecentTrend
@@ -12,6 +13,7 @@ import com.bluemarlin.drinkdiary.domain.model.TasteProfile
 import com.bluemarlin.drinkdiary.domain.model.TastingGap
 import com.bluemarlin.drinkdiary.domain.model.TypeScope
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveAnswerReflectionUseCase
+import com.bluemarlin.drinkdiary.domain.usecase.ObserveDrinkHighlightsUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveMonthlySummaryUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveRecentTrendUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveTagPreferenceUseCase
@@ -42,14 +44,17 @@ data class ProfileUiState(
     val tastingGaps: List<TastingGap> = emptyList(),
     // 판정 전 구간에서만 쓴다. **답의 되비침이지 취향이 아니다**(prd.md F3-3 (d)).
     val reflection: AnswerReflection = AnswerReflection.Empty,
+    // 읽지 않아도 보이는 층(prd.md F3-4 (a)).
+    val highlights: List<DrinkHighlight> = emptyList(),
 )
 
-// F3-3의 세 층을 한 묶음으로 합친다. `combine`의 타입 있는 오버로드가 다섯 개까지라
+// F3-3·F3-4의 층들을 한 묶음으로 합친다. `combine`의 타입 있는 오버로드가 다섯 개까지라
 // 여섯 번째부터는 vararg + 캐스팅이 되는데, 그 캐스팅은 컴파일러가 지켜 주지 않는다.
 private data class DashboardInsights(
     val trend: RecentTrend?,
     val gaps: List<TastingGap>,
     val reflection: AnswerReflection,
+    val highlights: List<DrinkHighlight>,
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -61,6 +66,7 @@ class ProfileViewModel(
     private val observeRecentTrend: ObserveRecentTrendUseCase,
     private val observeTastingGaps: ObserveTastingGapsUseCase,
     private val observeAnswerReflection: ObserveAnswerReflectionUseCase,
+    private val observeDrinkHighlights: ObserveDrinkHighlightsUseCase,
 ) : ViewModel() {
     private val scope = MutableStateFlow(TypeScope.Wine)
 
@@ -72,6 +78,7 @@ class ProfileViewModel(
                         observeRecentTrend(selected),
                         observeTastingGaps(selected),
                         observeAnswerReflection(selected),
+                        observeDrinkHighlights(selected),
                         ::DashboardInsights,
                     )
 
@@ -92,6 +99,7 @@ class ProfileViewModel(
                         recentTrend = extra.trend,
                         tastingGaps = extra.gaps,
                         reflection = extra.reflection,
+                        highlights = extra.highlights,
                     )
                 }
             }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ProfileUiState())
@@ -108,6 +116,7 @@ class ProfileViewModel(
         private val observeRecentTrend: ObserveRecentTrendUseCase,
         private val observeTastingGaps: ObserveTastingGapsUseCase,
         private val observeAnswerReflection: ObserveAnswerReflectionUseCase,
+        private val observeDrinkHighlights: ObserveDrinkHighlightsUseCase,
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
@@ -119,6 +128,7 @@ class ProfileViewModel(
                 observeRecentTrend,
                 observeTastingGaps,
                 observeAnswerReflection,
+                observeDrinkHighlights,
             ) as T
     }
 }
