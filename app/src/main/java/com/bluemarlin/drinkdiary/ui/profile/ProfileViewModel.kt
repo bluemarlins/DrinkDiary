@@ -5,10 +5,12 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.bluemarlin.drinkdiary.domain.model.MonthlySummary
 import com.bluemarlin.drinkdiary.domain.model.ProfileReadiness
+import com.bluemarlin.drinkdiary.domain.model.RecentTrend
 import com.bluemarlin.drinkdiary.domain.model.TagPreference
 import com.bluemarlin.drinkdiary.domain.model.TasteProfile
 import com.bluemarlin.drinkdiary.domain.model.TypeScope
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveMonthlySummaryUseCase
+import com.bluemarlin.drinkdiary.domain.usecase.ObserveRecentTrendUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveTagPreferenceUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveTasteProfileUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ResolveProfileReadinessUseCase
@@ -30,6 +32,8 @@ data class ProfileUiState(
         ProfileReadiness.NotReady(recordsNeeded = TasteThresholds.MIN_SAMPLES),
     // 이번 달 회고는 스코프와 무관하다 — 와인 탭을 봐도 이번 달에 마신 위스키는 마신 것이다.
     val monthly: MonthlySummary = MonthlySummary.Empty,
+    // 대조군이 모이기 전에는 null이다. 없는 흐름을 지어내지 않는다(prd.md F3-3 (a)).
+    val recentTrend: RecentTrend? = null,
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -38,6 +42,7 @@ class ProfileViewModel(
     private val observeTagPreference: ObserveTagPreferenceUseCase,
     private val resolveReadiness: ResolveProfileReadinessUseCase,
     private val observeMonthlySummary: ObserveMonthlySummaryUseCase,
+    private val observeRecentTrend: ObserveRecentTrendUseCase,
 ) : ViewModel() {
     private val scope = MutableStateFlow(TypeScope.Wine)
 
@@ -50,13 +55,15 @@ class ProfileViewModel(
                     observeTasteProfile(selected),
                     observeTagPreference(selected),
                     observeMonthlySummary(),
-                ) { profile, tags, monthly ->
+                    observeRecentTrend(selected),
+                ) { profile, tags, monthly, trend ->
                     ProfileUiState(
                         scope = selected,
                         profile = profile,
                         tagPreferences = tags,
                         readiness = resolveReadiness(profile),
                         monthly = monthly,
+                        recentTrend = trend,
                     )
                 }
             }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ProfileUiState())
@@ -70,6 +77,7 @@ class ProfileViewModel(
         private val observeTagPreference: ObserveTagPreferenceUseCase,
         private val resolveReadiness: ResolveProfileReadinessUseCase,
         private val observeMonthlySummary: ObserveMonthlySummaryUseCase,
+        private val observeRecentTrend: ObserveRecentTrendUseCase,
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
@@ -78,6 +86,7 @@ class ProfileViewModel(
                 observeTagPreference,
                 resolveReadiness,
                 observeMonthlySummary,
+                observeRecentTrend,
             ) as T
     }
 }

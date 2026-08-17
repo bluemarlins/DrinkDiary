@@ -25,6 +25,7 @@ import com.bluemarlin.drinkdiary.ui.DrinkLabels
 import com.bluemarlin.drinkdiary.ui.component.DDChip
 import com.bluemarlin.drinkdiary.ui.component.DDMonthlySummaryCard
 import com.bluemarlin.drinkdiary.ui.component.DDProfileProgressCard
+import com.bluemarlin.drinkdiary.ui.component.DDRecentTrendCard
 import com.bluemarlin.drinkdiary.ui.component.DDTasteSentenceCard
 import com.bluemarlin.drinkdiary.ui.component.DDTasteTypeBadge
 import com.bluemarlin.drinkdiary.ui.navigation.DDWindowSize
@@ -113,6 +114,14 @@ private fun SummarySection(
     ) {
         ScopeSelector(selected = state.scope, onSelect = onScopeChange)
         SummaryHeadline(readiness = state.readiness, profile = state.profile)
+        // 유형 **아래**다. 유형은 잘 안 바뀌는 것이 설계이므로, 새 기록이 화면을 바꾸는 일은
+        // 이 층이 맡는다(prd.md F3-3 (a)).
+        state.recentTrend?.let { trend ->
+            DDRecentTrendCard(
+                caption = RecentTrendCopy.caption(trend),
+                lines = RecentTrendCopy.lines(trend),
+            )
+        }
         // 2단에서는 요약 칸이 짧아 빈 스크롤이 생겼다. 월 요약이 그 자리를 채우면서
         // 1단과 같은 순서(취향 먼저, 회고 나중)를 유지한다. 1단에서는 바깥에서 그린다.
         if (LocalDDWindowSize.current != DDWindowSize.Compact) {
