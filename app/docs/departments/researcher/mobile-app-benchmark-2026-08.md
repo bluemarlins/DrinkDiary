@@ -160,22 +160,39 @@ agy가 [필수]로 올렸으나, 우리는 `ActivityResultContracts.PickVisualMe
 | **오픈소스 라이선스 고지** | **없음** | 동일 |
 | **개발자 문의 경로** | **없음** | 동일 |
 | **작성 중 이탈 방지** | **없음** | `SavedStateHandle` 미사용, 이탈 확인 다이얼로그 없음 |
-| **아이콘 버튼 대체 텍스트** | **3곳 누락** | 아래 표 |
+| ~~아이콘 버튼 대체 텍스트~~ | **오탐 — 철회** | 아래 CAUTION |
 
 **백업은 이미 확정된 MVP 항목이다.** `software-architecture.md` 9절-4가
 "`design-principles.md` 쟁점 2에서 **MVP 포함으로 확정**"이라고 기록하고 있고, `mvp-scope.md` F6
 무료 범위에도 "백업·내보내기"가 들어 있다. **즉 이건 새 제안이 아니라 밀린 숙제다.**
 
-**대체 텍스트 누락 3곳** — 나머지 10곳의 `contentDescription = null`은 라벨이 함께 있는
-내비게이션 항목이라 **정상**이다.
-
-| 위치 | 아이콘 | 문제 |
-| --- | --- | --- |
-| `DrinkDiaryApp.kt:235` | `ic_close` (선택 모드 해제) | 아이콘 단독 버튼인데 읽을 것이 없다 |
-| `DrinkDiaryApp.kt:244` | `ic_settings` (설정 진입) | 동일 |
-| `DDScreenScaffold.kt:275` | `ic_back` | 같은 파일 271행은 `R.string.back`을 주는데 이쪽만 `null` |
-
-`design-system.md` §1-4가 "WCAG 2.1 준수"를 원칙으로 걸어 두었으므로 **명세 위반**이다.
+> [!CAUTION]
+> **~~대체 텍스트 누락 3곳~~ — 이 항목은 틀렸다. 철회한다 (2026-08-17).**
+>
+> 지목한 세 곳은 전부 **`DDIconButton`이 감싸고 있고 그 래퍼가 설명을 건다.**
+>
+> ```kotlin
+> // DDButtons.kt:110
+> IconButton(
+>     onClick = onClick,
+>     modifier = modifier.size(48.dp)
+>         .semantics { this.contentDescription = contentDescription },
+> )
+> ```
+>
+> | 위치 | 래퍼가 거는 설명 |
+> | --- | --- |
+> | `DDScreenScaffold.kt` 뒤로가기 | `R.string.back` |
+> | `DrinkDiaryApp.kt` 선택 해제 | `"선택 해제"` |
+> | `DrinkDiaryApp.kt` 설정 | `"설정"` |
+>
+> 안쪽 `Icon`의 `contentDescription = null`은 결함이 아니라 **올바른 패턴**이다 — 클릭 가능한
+> 노드에 설명을 걸고 장식용 자식은 비운다. 둘 다 걸면 스크린 리더가 같은 말을 두 번 읽는다.
+> **코드에 그 주석이 이미 달려 있었다.** `DDDrinkRecordCard`의 썸네일도 같은 이유로 `null`이
+> 맞다 — 옆에 술 이름이 텍스트로 있다.
+>
+> **원인**: `contentDescription = null`의 **개수만 세고 감싸는 노드를 보지 않았다.**
+> 이 절의 다른 항목은 값이나 부재를 대조했는데 이것만 패턴을 짐작했다.
 
 ### 3-2. 이미 하고 있는 것 [검증됨]
 
@@ -209,7 +226,8 @@ agy가 [필수]로 올린 것 중 **이미 충족한 항목**이다. 개선 계�
 1순위 권고는 입력 오염으로 무효였다.
 
 **그럼에도 건진 것이 분명하다.** 백업 부재·설정 화면의 상용 최소 요건 3종·작성 중 이탈
-방지·대체 텍스트 3곳은 **코드로 확인된 실제 결함**이고, 문구 지적 6건도 실재한다.
+방지는 **코드로 확인된 실제 결함**이고, 문구 지적 6건도 실재한다. **대체 텍스트 3곳은 철회했다** —
+3-1절 참고. agy만 오탐을 낸 것이 아니라 Claude도 냈다.
 특히 **종결어미와 용어가 화면마다 갈라져 있다**는 것은 3판 디자인 감사가 값·구조만 보느라
 놓친 층위다.
 
