@@ -94,6 +94,9 @@ fun DDTasteSentenceCard(
     }
 }
 
+// 임계치 전 구간의 카드. **게이지만 있던 자리에 되비침이 들어온다**(prd.md F3-3 (d)) —
+// 그 자리가 비어 있으면 이 구간의 화면 전체가 "아직 아무것도 없다"가 된다.
+// `details`는 사용자가 남긴 답을 되읽어 주는 줄이며 **취향 판정이 아니다**.
 @Composable
 fun DDProfileProgressCard(
     title: String,
@@ -101,6 +104,7 @@ fun DDProfileProgressCard(
     currentCount: Int,
     targetCount: Int,
     modifier: Modifier = Modifier,
+    details: List<String> = emptyList(),
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -125,6 +129,18 @@ fun DDProfileProgressCard(
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+
+            if (details.isNotEmpty()) {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    details.forEach { detail ->
+                        Text(
+                            text = detail,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                    }
+                }
+            }
 
             // Progress bar
             val safeTarget = targetCount.coerceAtLeast(1)

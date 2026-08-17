@@ -18,11 +18,11 @@ object RecentTrendCopy {
 
     fun lines(trend: RecentTrend): List<String> = listOf(shiftLine(trend), ratingLine(trend))
 
+    // 축 이름을 앞에 붙이지 않는다. 양극 이름이 이미 어느 축인지 말해 주고, 붙이면
+    // "여운은 그 이전보다 긴 여운에"처럼 같은 말이 두 번 나온다.
     private fun shiftLine(trend: RecentTrend): String {
         val shift = trend.shift ?: return "답하신 방향은 그 이전과 크게 다르지 않아요."
-        val trait = Josa.topic(DrinkLabels.trait(shift.trait))
-        val pole = DrinkLabels.answer(shift.trait, shift.direction)
-        return "$trait 그 이전보다 ${pole}에 가깝게 답하셨어요."
+        return "그 이전보다 ${DrinkLabels.answer(shift.trait, shift.direction)}에 가깝게 답하셨어요."
     }
 
     // 만족도 평균은 회고다(F3-2의 '이번 달'과 같은 성격). 판정의 근거로 배치하지 않으려면

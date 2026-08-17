@@ -3,6 +3,7 @@ package com.bluemarlin.drinkdiary.ui.profile
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.bluemarlin.drinkdiary.domain.model.AnswerReflection
 import com.bluemarlin.drinkdiary.domain.model.MonthlySummary
 import com.bluemarlin.drinkdiary.domain.model.ProfileReadiness
 import com.bluemarlin.drinkdiary.domain.model.RecentTrend
@@ -10,6 +11,7 @@ import com.bluemarlin.drinkdiary.domain.model.TagPreference
 import com.bluemarlin.drinkdiary.domain.model.TasteProfile
 import com.bluemarlin.drinkdiary.domain.model.TastingGap
 import com.bluemarlin.drinkdiary.domain.model.TypeScope
+import com.bluemarlin.drinkdiary.domain.usecase.ObserveAnswerReflectionUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveMonthlySummaryUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveRecentTrendUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveTagPreferenceUseCase
@@ -38,6 +40,16 @@ data class ProfileUiState(
     val recentTrend: RecentTrend? = null,
     // 한쪽만 쌓인 자리. 추천이 아니라 공백 안내다(prd.md F3-3 (b)).
     val tastingGaps: List<TastingGap> = emptyList(),
+    // 판정 전 구간에서만 쓴다. **답의 되비침이지 취향이 아니다**(prd.md F3-3 (d)).
+    val reflection: AnswerReflection = AnswerReflection.Empty,
+)
+
+// F3-3의 세 층을 한 묶음으로 합친다. `combine`의 타입 있는 오버로드가 다섯 개까지라
+// 여섯 번째부터는 vararg + 캐스팅이 되는데, 그 캐스팅은 컴파일러가 지켜 주지 않는다.
+private data class DashboardInsights(
+    val trend: RecentTrend?,
+    val gaps: List<TastingGap>,
+    val reflection: AnswerReflection,
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -48,29 +60,38 @@ class ProfileViewModel(
     private val observeMonthlySummary: ObserveMonthlySummaryUseCase,
     private val observeRecentTrend: ObserveRecentTrendUseCase,
     private val observeTastingGaps: ObserveTastingGapsUseCase,
+    private val observeAnswerReflection: ObserveAnswerReflectionUseCase,
 ) : ViewModel() {
     private val scope = MutableStateFlow(TypeScope.Wine)
 
     val uiState: StateFlow<ProfileUiState> =
         scope
             .flatMapLatest { selected ->
+                val insights =
+                    combine(
+                        observeRecentTrend(selected),
+                        observeTastingGaps(selected),
+                        observeAnswerReflection(selected),
+                        ::DashboardInsights,
+                    )
+
                 // 감각 축과 태그는 별개 경로다. 한쪽이 비어도 다른 쪽은 말할 수 있어야 한다.
                 // 월 요약은 스코프 밖이라 flatMapLatest 안에서 다시 구독해도 같은 값이 온다.
                 combine(
                     observeTasteProfile(selected),
                     observeTagPreference(selected),
                     observeMonthlySummary(),
-                    observeRecentTrend(selected),
-                    observeTastingGaps(selected),
-                ) { profile, tags, monthly, trend, gaps ->
+                    insights,
+                ) { profile, tags, monthly, extra ->
                     ProfileUiState(
                         scope = selected,
                         profile = profile,
                         tagPreferences = tags,
                         readiness = resolveReadiness(profile),
                         monthly = monthly,
-                        recentTrend = trend,
-                        tastingGaps = gaps,
+                        recentTrend = extra.trend,
+                        tastingGaps = extra.gaps,
+                        reflection = extra.reflection,
                     )
                 }
             }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ProfileUiState())
@@ -86,6 +107,7 @@ class ProfileViewModel(
         private val observeMonthlySummary: ObserveMonthlySummaryUseCase,
         private val observeRecentTrend: ObserveRecentTrendUseCase,
         private val observeTastingGaps: ObserveTastingGapsUseCase,
+        private val observeAnswerReflection: ObserveAnswerReflectionUseCase,
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
@@ -96,6 +118,7 @@ class ProfileViewModel(
                 observeMonthlySummary,
                 observeRecentTrend,
                 observeTastingGaps,
+                observeAnswerReflection,
             ) as T
     }
 }

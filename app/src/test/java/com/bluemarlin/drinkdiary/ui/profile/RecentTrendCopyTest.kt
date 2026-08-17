@@ -4,6 +4,7 @@ import com.bluemarlin.drinkdiary.domain.model.RecentTrend
 import com.bluemarlin.drinkdiary.domain.model.Trait
 import com.bluemarlin.drinkdiary.domain.model.TraitAnswer
 import com.bluemarlin.drinkdiary.domain.model.TraitShift
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -63,15 +64,13 @@ class RecentTrendCopyTest {
             }
     }
 
-    // 조사를 조립하는 이상 축 이름이 바뀌면 "향의 세기은"이 화면에 뜬다.
+    // 축 이름을 앞에 붙이면 "여운은 그 이전보다 긴 여운에"처럼 같은 말이 두 번 나온다.
     @Test
-    fun `the topic particle follows the trait name`() {
+    fun `the line does not repeat the trait name`() {
         fun shiftLine(trait: Trait) = RecentTrendCopy.lines(trend(shift = TraitShift(trait, TraitAnswer.High))).first()
 
-        assertTrue(shiftLine(Trait.Body).startsWith("무게감은"))
-        assertTrue(shiftLine(Trait.Intensity).startsWith("향의 세기는"))
-        assertTrue(shiftLine(Trait.Sweetness).startsWith("단맛은"))
-        assertTrue(shiftLine(Trait.Aftertaste).startsWith("여운은"))
+        assertEquals("그 이전보다 긴 여운에 가깝게 답하셨어요.", shiftLine(Trait.Aftertaste))
+        assertEquals("그 이전보다 묵직함에 가깝게 답하셨어요.", shiftLine(Trait.Body))
     }
 
     @Test

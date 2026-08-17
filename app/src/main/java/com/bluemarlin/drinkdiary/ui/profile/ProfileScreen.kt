@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.bluemarlin.drinkdiary.domain.model.AnswerReflection
 import com.bluemarlin.drinkdiary.domain.model.DrinkType
 import com.bluemarlin.drinkdiary.domain.model.ProfileReadiness
 import com.bluemarlin.drinkdiary.domain.model.TagCategory
@@ -117,7 +118,11 @@ private fun SummarySection(
         verticalArrangement = Arrangement.spacedBy(DrinkDiarySpacing.xl),
     ) {
         ScopeSelector(selected = state.scope, onSelect = onScopeChange)
-        SummaryHeadline(readiness = state.readiness, profile = state.profile)
+        SummaryHeadline(
+            readiness = state.readiness,
+            profile = state.profile,
+            reflection = state.reflection,
+        )
         // 유형 **아래**다. 유형은 잘 안 바뀌는 것이 설계이므로, 새 기록이 화면을 바꾸는 일은
         // 이 층이 맡는다(prd.md F3-3 (a)).
         state.recentTrend?.let { trend ->
@@ -212,6 +217,7 @@ private fun ScopeSelector(
 private fun SummaryHeadline(
     readiness: ProfileReadiness,
     profile: TasteProfile?,
+    reflection: AnswerReflection,
 ) {
     val recordCount = profile?.recordCount ?: 0
 
@@ -230,18 +236,14 @@ private fun SummaryHeadline(
         }
 
         is ProfileReadiness.NotReady -> {
-            val description =
-                if (recordCount == 0) {
-                    "첫 기록을 남기면 여기서 취향이 보이기 시작해요."
-                } else {
-                    "지금까지 ${recordCount}개를 기록했어요. ${readiness.recordsNeeded}개만 더 남기면 유형이 나와요."
-                }
-            val target = recordCount + readiness.recordsNeeded
+            // 게이지는 남기고 **숫자 약속만** 걷어냈다. 남은 거리는 게이지가 말한다
+            // (prd.md 7절-2 · F3-3 (d)).
             DDProfileProgressCard(
-                title = "아직 취향을 판단하기엔 일러요",
-                description = description,
+                title = AnswerReflectionCopy.TITLE,
+                description = AnswerReflectionCopy.description(recordCount, reflection),
                 currentCount = recordCount,
-                targetCount = target,
+                targetCount = recordCount + readiness.recordsNeeded,
+                details = AnswerReflectionCopy.lines(reflection),
             )
         }
     }
