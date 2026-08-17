@@ -124,7 +124,9 @@
 | :--- | :--- |
 | `DDTasteSentenceCard` | **[F3 핵심]** 문장 형태의 취향 요약 표시 카드 (배경 톤 + 인용구 스타일) |
 | `DDTasteTypeBadge` | 81유형 코드(예: `SFRE`)와 레이블을 품격 있게 표현하는 컴포넌트 |
-| `DDProfileProgressCard` | 임계치 도달 전("N잔 더 마시면...") 남은 진행도 안내 카드 |
+| `DDProfileProgressCard` | 임계치 도달 전의 진행도 안내 카드. `details`로 **판정 전 되비침**(답한 내용)을 함께 싣는다(`../planner/prd.md` F3-3 (d)). **개수를 약속하지 않는다** — 남은 거리는 게이지가 말하고 문장은 숫자를 대지 않는다(`prd.md` 7절-2) |
+| `DDRecentTrendCard` | 최근 N잔을 그 이전과 대조한 한 줄(`../planner/prd.md` F3-3 (a)). 취향 카드 **아래**에 놓이며 그보다 조용해야 한다 — `HeadlineSentence`를 쓰면 회고가 결론과 같은 목소리를 갖는다. 그래서 `DDTasteSentenceCard`를 재사용하지 않는다 |
+| `DDTastingGapCard` | 아직 안 마셔본 조합 안내(`../planner/prd.md` F3-3 (b)). **추천 카드가 아니다** — 강조색도 액션도 두지 않는다. 누를 것이 있으면 권유가 되고, 권유는 우리가 갖고 있지 않은 근거(남의 평점)를 요구한다 |
 | `DDDrinkBadge` | 와인(버건디)/위스키(골드) 및 세부 분류를 한눈에 보여주는 도메인 뱃지 |
 | `DDRepurchaseBadge` | 매장에서 3초 만에 선호도를 확인하는 "재구매 추천" 뱃지 |
 | `DDDrinkRecordCard` | 컬렉션 목록의 직관적인 기록 카드 (이미지 썸네일, 이름, 주종, 만족도, 날짜) |
@@ -151,12 +153,20 @@
    - 첫 기록 태그 승격 프롬프트 (`TagPreferencePrompt`)
 2. **취향 프로필 / 대시보드 (`ui/profile/ProfileScreen`)** — 위에서 아래 순서가 곧 위계다.
    - 결론: `DDTasteTypeBadge` + `DDTasteSentenceCard`
-   - 미달 상태 안내: `DDProfileProgressCard`
+   - 미달 상태 안내 + 판정 전 되비침: `DDProfileProgressCard` (`../planner/prd.md` F3-3 (d))
+   - **최근 흐름**: `DDRecentTrendCard` (`../planner/prd.md` F3-3 (a)) — 결론 **바로 아래**다.
+     유형은 잘 안 바뀌는 것이 설계이므로, 새 기록이 화면을 바꾸는 일은 이 층이 맡는다.
    - 이번 달 회고: `DDMonthlySummaryCard` (`../planner/prd.md` F3-2)
-   - 라벨/태그 기반 인사이트 ("셰리 4.7점", "스모키함 4.5점")
+   - 라벨/태그 기반 인사이트 — **높게 준 쪽 / 낮게 준 쪽의 대조** (`../planner/prd.md` F3-3 (c)).
+     차이가 임계 미만이면 대조를 만들지 않고 "아직 차이가 뚜렷하지 않아요"를 남긴다.
+     대조에 뽑히지 않은 값도 아래에 계속 보여준다 — 감추면 사용자가 근거를 확인할 수 없다.
+   - **아직 안 마셔본 것**: `DDTastingGapCard` (`../planner/prd.md` F3-3 (b)) — 있는 것 바로 다음에
+     없는 것을 둔다. 라벨 인사이트가 아직 안 나온 사용자에게도 보이므로 그 절과 독립이다.
    - **감각 축별 선호 상태 리스트는 두지 않는다** *(2026-08-17, `../planner/prd.md` F3-1)*.
      `TraitStatusRow`와 `TraitStatus`는 함께 삭제됐다 — 사용자는 결론이 어떻게 나왔는지 묻지 않는다.
      이 줄을 근거로 되살리지 않는다.
+   - **문구가 성격을 밝힌다.** F3-3의 네 층은 전부 집계·회고이고 판정은 상관에서 나온다. 그 차이를
+     문구가 말하지 않으면 화면이 근거라고 내놓는 숫자가 실제 판정 근거가 아니게 된다.
 3. **컬렉션 & 검색 (`ui/collection/CollectionScreen`)**
    - 검색창 + 주종/재구매 필터 칩 (`LazyColumn` + `DDDrinkRecordCard`)
 4. **기록 상세 (`ui/collection/RecordDetailScreen`)**
