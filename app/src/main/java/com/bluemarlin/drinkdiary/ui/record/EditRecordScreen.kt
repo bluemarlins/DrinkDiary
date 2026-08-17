@@ -47,7 +47,7 @@ fun EditRecordScreen(
         onSave = onSave,
         saving = state.saving,
         modifier = modifier.padding(contentPadding),
-        saveLabel = "고친 내용 저장",
+        saveLabel = "수정 완료",
         tasteSection = {
             HorizontalDivider()
             TasteEditor(taste = state.taste, onAnswer = onAnswer)

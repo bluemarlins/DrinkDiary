@@ -385,7 +385,7 @@ ui/
 | `DrinkType.Beer` | **삭제** |
 | Room 마이그레이션 v1→v2→v3 | **폐기**, version 1로 재시작 |
 | `domain/model`의 `R` import | **제거** — Probe 문구를 UI로 이동해 자연 해소 |
-| `InsightsSummary`(월별 추이·가격대 만족도) | **보류** — F3와 목적이 다르다. 재도입은 MVP 이후 |
+| `InsightsSummary`(월별 추이·가격대 만족도) | **보류 유지.** 단 2026-08-17에 **이번 달 회고**만 따로 신설했다(`ObserveMonthlySummaryUseCase`, `prd.md` F3-2) — 취향 카드를 대신하지 않고 그 아래 곁으로 붙는 조건이다. 월별 추이·가격대 만족도는 여전히 안 만든다 |
 | 로컬라이제이션(ko/en strings) | **영어 폐기, 한국어 단일** — 아래 절 참조 |
 | `Components.kt`의 DD* | **선별 재사용** |
 | Navigation 3 구조 | **유지** — 화면 목록만 교체 |

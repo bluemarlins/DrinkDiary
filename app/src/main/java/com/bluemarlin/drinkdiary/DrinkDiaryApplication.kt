@@ -11,6 +11,7 @@ import com.bluemarlin.drinkdiary.domain.repository.BottleDictionary
 import com.bluemarlin.drinkdiary.domain.repository.BottleMatcher
 import com.bluemarlin.drinkdiary.domain.repository.DrinkRecordRepository
 import com.bluemarlin.drinkdiary.domain.repository.UserPreferencesRepository
+import com.bluemarlin.drinkdiary.domain.usecase.ObserveMonthlySummaryUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveTagPreferenceUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveTasteProfileUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ResolveProfileReadinessUseCase
@@ -52,4 +53,5 @@ class AppContainer(
 
     val observeTagPreferenceUseCase = ObserveTagPreferenceUseCase(drinkRecordRepository, bottleDictionary)
     val resolveProfileReadinessUseCase = ResolveProfileReadinessUseCase()
+    val observeMonthlySummaryUseCase = ObserveMonthlySummaryUseCase(drinkRecordRepository)
 }

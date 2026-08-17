@@ -22,7 +22,12 @@ object TasteTypeCopy {
 
     fun sentence(type: TasteType): String {
         val directional = type.directional
-        if (directional.isEmpty()) return "어느 쪽에도 치우치지 않고 두루 즐기시네요."
+        // 부정형("치우치지 않고")은 취향이 **없다**는 말로 읽힌다 — 사용자 지적, 2026-08-17.
+        // 다만 "밸런스 있는 스타일을 좋아하신다"고는 쓸 수 없다. XXXX가 뜻하는 것은 축값과
+        // 만족도 사이에 상관이 없다는 것이지 중간을 선호한다는 것이 아니다. 그렇게 쓰면
+        // 재정의가 없애려던 바로 그것 — 없는 취향을 지어내는 것 — 을 문구가 되살린다.
+        // 데이터가 실제로 말하는 것은 **폭**이다: 어느 스타일에서도 만족을 얻었다.
+        if (directional.isEmpty()) return "어떤 스타일이든 두루 즐기시네요."
 
         // 마지막 절만 종결형으로 닫는다. 축이 하나뿐이어도 문장이 성립한다.
         val body =

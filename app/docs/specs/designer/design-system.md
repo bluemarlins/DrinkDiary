@@ -129,6 +129,7 @@
 | `DDRepurchaseBadge` | 매장에서 3초 만에 선호도를 확인하는 "재구매 추천" 뱃지 |
 | `DDDrinkRecordCard` | 컬렉션 목록의 직관적인 기록 카드 (이미지 썸네일, 이름, 주종, 만족도, 날짜) |
 | `DDShareCard` | 인스타그램 스토리용 9:16 비율의 로컬 비트맵 렌더링용 Compose 레이아웃 |
+| `DDMonthlySummaryCard` | 대시보드의 이번 달 회고(`../planner/prd.md` F3-2). 취향 카드 **아래**에 둔다 — 판정이 주인공이고 이쪽은 곁이다. 사진이 붙는 자리는 '가장 높게 준 한 잔'이지 유형 카드가 아니다 |
 
 ### 5.4 Feedback Components
 | 컴포넌트 | 역할 |

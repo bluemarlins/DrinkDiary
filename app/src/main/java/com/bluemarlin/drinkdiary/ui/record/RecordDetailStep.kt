@@ -86,7 +86,7 @@ fun RecordDetailStep(
             onRatingChange = { onFormChange(form.copy(rating = it)) },
         )
 
-        Text("다시 살 건가요?", style = MaterialTheme.typography.titleMedium)
+        Text("또 살래요?", style = MaterialTheme.typography.titleMedium)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             CollectionStatus.entries.forEach { status ->
                 DDChip(

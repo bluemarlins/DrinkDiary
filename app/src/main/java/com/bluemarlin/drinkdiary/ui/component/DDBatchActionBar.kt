@@ -40,7 +40,7 @@ fun DDBatchActionBar(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = "${selectedCount}개 선택됨",
+                text = "${selectedCount}개 선택",
                 style = MaterialTheme.typography.titleMedium,
             )
             DDDestructiveButton(text = "지우기", onClick = onDelete)

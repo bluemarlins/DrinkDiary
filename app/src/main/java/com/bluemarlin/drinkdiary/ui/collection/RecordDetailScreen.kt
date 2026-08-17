@@ -90,7 +90,7 @@ fun RecordDetailScreen(
         }
 
         DetailRow("만족도", DrinkLabels.rating(record.rating))
-        DetailRow("다시 살까", DrinkLabels.collectionStatus(record.collectionStatus))
+        DetailRow("또 살래요?", DrinkLabels.collectionStatus(record.collectionStatus))
         record.price?.let { DetailRow("가격", DrinkLabels.price(it)) }
         record.place?.let { DetailRow("어디에서", it) }
 
@@ -136,7 +136,7 @@ fun RecordDetailScreen(
         // 고치기가 지우기보다 위에 있고 채워진 버튼이다. 오타 하나 때문에 지우고 다시 쓰게
         // 만들면 그 기록의 날짜가 바뀌고, 취향 판정의 표본도 한 번 흔들린다.
         DDPrimaryButton(
-            text = "고치기",
+            text = "수정",
             onClick = onEdit,
             modifier = Modifier.fillMaxWidth(),
         )

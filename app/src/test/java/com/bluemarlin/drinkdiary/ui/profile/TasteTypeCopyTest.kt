@@ -61,7 +61,7 @@ class TasteTypeCopyTest {
 
         assertEquals("XXXX", type.code)
         assertEquals("고루 즐기는 취향", TasteTypeCopy.shortName(type))
-        assertEquals("어느 쪽에도 치우치지 않고 두루 즐기시네요.", TasteTypeCopy.sentence(type))
+        assertEquals("어떤 스타일이든 두루 즐기시네요.", TasteTypeCopy.sentence(type))
     }
 
     // 중립을 결핍처럼 말하지 않는다 — branding.md 4-5절.

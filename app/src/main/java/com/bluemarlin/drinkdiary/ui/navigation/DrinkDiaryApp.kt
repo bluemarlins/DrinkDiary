@@ -161,7 +161,7 @@ fun DrinkDiaryApp(modifier: Modifier = Modifier) {
                         collection.records
                             .firstOrNull { it.id == current.id }
                             ?.let { DrinkLabels.drinkType(it.type) } ?: "기록"
-                    is Screen.Edit -> "기록 고치기"
+                    is Screen.Edit -> "기록 수정"
                     Screen.Settings -> "설정"
                 }
             }
@@ -369,6 +369,7 @@ private fun ScreenContent(
                             appContainer.observeTasteProfileUseCase,
                             appContainer.observeTagPreferenceUseCase,
                             appContainer.resolveProfileReadinessUseCase,
+                            appContainer.observeMonthlySummaryUseCase,
                         ),
                 )
             val profile by profileViewModel.uiState.collectAsState()

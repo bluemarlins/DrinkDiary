@@ -15,18 +15,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.bluemarlin.drinkdiary.domain.model.DrinkType
 import com.bluemarlin.drinkdiary.domain.model.ProfileReadiness
 import com.bluemarlin.drinkdiary.domain.model.TagPreference
 import com.bluemarlin.drinkdiary.domain.model.TasteProfile
-import com.bluemarlin.drinkdiary.domain.model.TraitPreference
 import com.bluemarlin.drinkdiary.domain.model.TypeScope
 import com.bluemarlin.drinkdiary.ui.DrinkLabels
 import com.bluemarlin.drinkdiary.ui.component.DDChip
+import com.bluemarlin.drinkdiary.ui.component.DDMonthlySummaryCard
 import com.bluemarlin.drinkdiary.ui.component.DDProfileProgressCard
-import com.bluemarlin.drinkdiary.ui.component.DDSemanticBadge
 import com.bluemarlin.drinkdiary.ui.component.DDTasteSentenceCard
 import com.bluemarlin.drinkdiary.ui.component.DDTasteTypeBadge
 import com.bluemarlin.drinkdiary.ui.navigation.DDWindowSize
@@ -66,6 +64,7 @@ fun ProfileScreen(
                 verticalArrangement = Arrangement.spacedBy(DrinkDiarySpacing.xl),
             ) {
                 SummarySection(state = state, onScopeChange = onScopeChange)
+                DDMonthlySummaryCard(summary = state.monthly)
                 TraitSections(state = state)
             }
         }
@@ -114,6 +113,11 @@ private fun SummarySection(
     ) {
         ScopeSelector(selected = state.scope, onSelect = onScopeChange)
         SummaryHeadline(readiness = state.readiness, profile = state.profile)
+        // 2단에서는 요약 칸이 짧아 빈 스크롤이 생겼다. 월 요약이 그 자리를 채우면서
+        // 1단과 같은 순서(취향 먼저, 회고 나중)를 유지한다. 1단에서는 바깥에서 그린다.
+        if (LocalDDWindowSize.current != DDWindowSize.Compact) {
+            DDMonthlySummaryCard(summary = state.monthly)
+        }
     }
 }
 
@@ -126,30 +130,8 @@ private fun TraitSections(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(DrinkDiarySpacing.xl),
     ) {
-        val preferences = state.profile?.preferences.orEmpty()
-
-        // 유형은 공통 축만으로 성립한다. 주종 고유 축을 같은 목록에 섞으면 유형까지의 거리가
-        // 실제보다 멀어 보이고, 기본 입력 경로가 묻지도 않는 축에 "더 기록하면 된다"고
-        // 약속하게 된다(실기기에서 확인된 결함).
-        val (shared, specific) = preferences.partition { it.trait.shared }
-
-        if (shared.isNotEmpty()) {
-            Column(verticalArrangement = Arrangement.spacedBy(DrinkDiarySpacing.sm)) {
-                Text("유형을 만드는 축", style = MaterialTheme.typography.titleMedium)
-                shared.forEach { pref -> TraitStatusRow(pref) }
-            }
-        }
-
-        // 고유 축은 확장 입력 경로로만 채워진다. 답이 하나도 없으면 아예 보여주지 않는다 —
-        // 채울 방법이 없는 항목을 미완성으로 걸어두지 않는다.
-        val answeredSpecific = specific.filter { it.samples > 0 }
-        if (answeredSpecific.isNotEmpty()) {
-            Column(verticalArrangement = Arrangement.spacedBy(DrinkDiarySpacing.sm)) {
-                Text("추가로 기록한 축", style = MaterialTheme.typography.titleMedium)
-                answeredSpecific.forEach { pref -> TraitStatusRow(pref) }
-            }
-        }
-
+        // 축별 판정 상태 목록은 걷어냈다(2026-08-17 사용자 지시) — 사용자는 "어떻게 그 결론이
+        // 나왔는지"를 묻지 않는다. 남긴 것은 **매장에 가져갈 수 있는** 라벨 기준뿐이다.
         if (state.tagPreferences.isNotEmpty()) {
             Column(verticalArrangement = Arrangement.spacedBy(DrinkDiarySpacing.md)) {
                 Text("라벨로 본 취향", style = MaterialTheme.typography.titleMedium)
@@ -273,45 +255,6 @@ private fun TagPreferenceBlock(
                     style = MaterialTheme.typography.bodyMedium,
                 )
             }
-        }
-    }
-}
-
-@Composable
-private fun TraitStatusRow(pref: TraitPreference) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(DrinkLabels.trait(pref.trait), style = MaterialTheme.typography.bodyLarge)
-
-        when (traitStatus(pref)) {
-            // 칩이 아니라 뱃지다. `AssistChip(onClick = {})`은 누를 수 있게 생겼는데
-            // 아무 일도 하지 않는다 — 읽을 값이면 읽을 것처럼 생겨야 한다.
-            TraitStatus.Resolved ->
-                DDSemanticBadge(
-                    text = DrinkLabels.preference(pref.trait, pref.preference!!),
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.primary,
-                )
-
-            // 결핍이 아니라 결론이다. "아직"이라고 말하지 않는다.
-            TraitStatus.Neutral ->
-                Text(
-                    text = "크게 가리지 않으세요",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.End,
-                )
-
-            TraitStatus.NeedsRecords ->
-                Text(
-                    text = "${recordsNeeded(pref)}개 더 필요해요",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.End,
-                )
         }
     }
 }
