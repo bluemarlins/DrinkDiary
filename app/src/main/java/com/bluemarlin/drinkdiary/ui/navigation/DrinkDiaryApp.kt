@@ -335,7 +335,7 @@ fun DrinkDiaryApp(modifier: Modifier = Modifier) {
             val count = collection.selected.size
             DDConfirmDialog(
                 title = "${count}개 기록을 지울까요?",
-                message = "취향 답까지 함께 지워지고, 되돌릴 수 없어요. 취향 유형도 이 ${count}개만큼 다시 계산됩니다.",
+                message = "취향 답까지 함께 지워지고, 되돌릴 수 없어요. 취향 유형도 이 ${count}개만큼 다시 계산돼요.",
                 confirmLabel = "지우기",
                 dismissLabel = "그대로 두기",
                 onConfirm = {

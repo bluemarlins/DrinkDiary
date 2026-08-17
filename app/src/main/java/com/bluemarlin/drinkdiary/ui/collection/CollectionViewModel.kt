@@ -80,7 +80,7 @@ class CollectionViewModel(
                     selection.value = emptySet()
                     error.value = null
                 }
-                is AppResult.Failure -> error.value = "지우지 못했습니다. 다시 시도해 주세요."
+                is AppResult.Failure -> error.value = "지우지 못했어요. 다시 시도해 주세요."
             }
         }
     }
@@ -90,7 +90,7 @@ class CollectionViewModel(
             // 삭제 실패를 조용히 넘기면 목록이 그대로라 사용자는 지워진 줄 안다(harness.md §7).
             when (repository.deleteById(id)) {
                 is AppResult.Success -> error.value = null
-                is AppResult.Failure -> error.value = "지우지 못했습니다. 다시 시도해 주세요."
+                is AppResult.Failure -> error.value = "지우지 못했어요. 다시 시도해 주세요."
             }
         }
     }

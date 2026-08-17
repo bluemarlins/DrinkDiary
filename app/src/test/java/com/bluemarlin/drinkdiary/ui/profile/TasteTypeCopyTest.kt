@@ -18,7 +18,7 @@ class TasteTypeCopyTest {
 
         assertEquals("DFRE", type.code)
         assertEquals("드라이한 묵직한 취향", TasteTypeCopy.shortName(type))
-        assertEquals("드라이하고 묵직하며 향이 진하고 여운이 깁니다.", TasteTypeCopy.sentence(type))
+        assertEquals("드라이하고 묵직하며 향이 진하고 여운이 길어요.", TasteTypeCopy.sentence(type))
     }
 
     @Test
@@ -27,7 +27,7 @@ class TasteTypeCopyTest {
 
         assertEquals("SLMQ", type.code)
         assertEquals("달콤한 가벼운 취향", TasteTypeCopy.shortName(type))
-        assertEquals("달콤하고 가벼우며 향이 은은하고 산뜻하게 끝납니다.", TasteTypeCopy.sentence(type))
+        assertEquals("달콤하고 가벼우며 향이 은은하고 산뜻하게 끝나요.", TasteTypeCopy.sentence(type))
     }
 
     // 중립 축이 있어도 문장이 끝나야 한다. 마지막 방향 축이 종결형으로 닫히는지 본다.
@@ -38,7 +38,7 @@ class TasteTypeCopyTest {
         assertEquals("DFXE", type.code)
         assertEquals("드라이한 묵직한 취향", TasteTypeCopy.shortName(type))
         assertEquals(
-            "드라이하고 묵직하며 여운이 깁니다. 향의 세기는 크게 가리지 않으세요.",
+            "드라이하고 묵직하며 여운이 길어요. 향의 세기는 크게 가리지 않으세요.",
             TasteTypeCopy.sentence(type),
         )
     }
@@ -50,7 +50,7 @@ class TasteTypeCopyTest {
         assertEquals("SXXX", type.code)
         assertEquals("달콤한 취향", TasteTypeCopy.shortName(type))
         assertEquals(
-            "달콤합니다. 무게감과 향의 세기와 여운은 크게 가리지 않으세요.",
+            "달콤해요. 무게감과 향의 세기와 여운은 크게 가리지 않으세요.",
             TasteTypeCopy.sentence(type),
         )
     }
@@ -83,6 +83,24 @@ class TasteTypeCopyTest {
             assertFalse(phrase, phrase.contains("없"))
             assertFalse(phrase, phrase.contains("부족"))
             assertTrue(phrase, phrase.endsWith("."))
+        }
+    }
+
+    // 종결은 해요체다(branding.md 2-3절). 여기가 어미가 실제로 갈라졌던 자리다 —
+    // `ending()`만 합니다체여서 "향이 진합니다. …가리지 않으세요."처럼 한 문장 안에서 바뀌었다.
+    // 81가지를 전부 보므로 어느 축 조합으로 되돌아와도 걸린다.
+    @Test
+    fun `every taste sentence stays in 해요체`() {
+        val all = TastePreference.entries
+        all.forEach { s ->
+            all.forEach { b ->
+                all.forEach { i ->
+                    all.forEach { a ->
+                        val phrase = TasteTypeCopy.sentence(TasteType(s, b, i, a))
+                        assertFalse(phrase, phrase.contains("니다"))
+                    }
+                }
+            }
         }
     }
 

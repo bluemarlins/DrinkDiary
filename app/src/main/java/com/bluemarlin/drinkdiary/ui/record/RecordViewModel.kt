@@ -147,7 +147,7 @@ class RecordViewModel(
                     }
                 }
                 is AppResult.Failure ->
-                    _uiState.update { it.copy(saving = false, error = "저장하지 못했습니다. 다시 시도해 주세요.") }
+                    _uiState.update { it.copy(saving = false, error = "저장하지 못했어요. 다시 시도해 주세요.") }
             }
         }
     }

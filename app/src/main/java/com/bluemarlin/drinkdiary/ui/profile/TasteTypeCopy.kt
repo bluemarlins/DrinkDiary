@@ -10,6 +10,10 @@ import com.bluemarlin.drinkdiary.ui.DrinkLabels
 //
 // 중립을 결핍처럼 쓰지 않는다 — "아직 취향이 없다"가 아니라 "가리지 않는다"다
 // (branding.md 4-5절 '지켜야 할 선').
+//
+// 종결은 해요체다(branding.md 2-3절). 이 문장은 술이 아니라 **읽는 사람**을 서술하므로
+// 상대 높임이 맞고, 아래 중립 절이 이미 "가리지 않으세요"라 합니다체를 섞으면 한 문장 안에서
+// 어미가 갈라졌다.
 object TasteTypeCopy {
     fun shortName(type: TasteType): String {
         val words = type.directional.take(2).map { (trait, preference) -> adjective(trait, preference) }
@@ -71,10 +75,10 @@ object TasteTypeCopy {
     ): String {
         val high = preference == TastePreference.High
         return when (trait) {
-            Trait.Sweetness -> if (high) "달콤합니다" else "드라이합니다"
-            Trait.Body -> if (high) "묵직합니다" else "가볍습니다"
-            Trait.Intensity -> if (high) "향이 진합니다" else "향이 은은합니다"
-            Trait.Aftertaste -> if (high) "여운이 깁니다" else "산뜻하게 끝납니다"
+            Trait.Sweetness -> if (high) "달콤해요" else "드라이해요"
+            Trait.Body -> if (high) "묵직해요" else "가벼워요"
+            Trait.Intensity -> if (high) "향이 진해요" else "향이 은은해요"
+            Trait.Aftertaste -> if (high) "여운이 길어요" else "산뜻하게 끝나요"
             else -> DrinkLabels.trait(trait)
         }
     }

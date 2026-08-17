@@ -152,7 +152,7 @@ fun RecordDetailScreen(
         DDConfirmDialog(
             title = "${record.name} 기록을 지울까요?",
             // 되돌릴 수 없다는 사실을 누르기 전에 말한다.
-            message = "취향 답까지 함께 지워지고, 되돌릴 수 없어요. 취향 유형도 이 기록만큼 다시 계산됩니다.",
+            message = "취향 답까지 함께 지워지고, 되돌릴 수 없어요. 취향 유형도 이 기록만큼 다시 계산돼요.",
             confirmLabel = "지우기",
             dismissLabel = "그대로 두기",
             onConfirm = {

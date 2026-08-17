@@ -113,8 +113,8 @@ private fun RecordSaved(
                 .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Text("기록했습니다.", style = MaterialTheme.typography.titleLarge)
-        Text("취향 입력은 탭 ${taps}번으로 끝났습니다.", style = MaterialTheme.typography.bodyLarge)
+        Text("기록했어요.", style = MaterialTheme.typography.titleLarge)
+        Text("취향 입력은 탭 ${taps}번으로 끝났어요.", style = MaterialTheme.typography.bodyLarge)
         Text(
             // '보통'을 뺀 개수를 말하되 그것이 버려졌다는 인상을 주지 않는다 — 판정에는 다 쓰인다.
             text = "뚜렷한 인상을 남긴 축 ${leaning}개.",
@@ -122,7 +122,7 @@ private fun RecordSaved(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Text(
-            text = "유형은 한 잔으로 나오지 않습니다. 기록이 쌓여 대비가 생겨야 판정됩니다.",
+            text = "유형은 한 잔으로 나오지 않아요. 기록이 쌓여 대비가 생겨야 나와요.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

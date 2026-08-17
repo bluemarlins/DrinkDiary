@@ -116,7 +116,7 @@ class EditRecordViewModel(
                 is AppResult.Success -> _uiState.update { it.copy(saving = false, saved = true) }
                 // 저장 실패를 조용히 넘기면 사용자는 고쳐진 줄 안다(harness.md §7).
                 is AppResult.Failure ->
-                    _uiState.update { it.copy(saving = false, error = "고치지 못했습니다. 다시 시도해 주세요.") }
+                    _uiState.update { it.copy(saving = false, error = "고치지 못했어요. 다시 시도해 주세요.") }
             }
         }
     }
