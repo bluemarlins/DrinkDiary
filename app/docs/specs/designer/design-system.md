@@ -149,11 +149,14 @@
    - 4축 감각 입력 (`ProbeSequenceScreen`, `DDProbeProgress`, `DDProbeQuestion`)
    - 상세 정보 & 선택 태그 (`RecordDetailStep`, `DDRatingInput`, `DDToggleRow`, `DDTagChipGroup`)
    - 첫 기록 태그 승격 프롬프트 (`TagPreferencePrompt`)
-2. **취향 프로필 (`ui/profile/ProfileScreen`)**
-   - `DDTasteTypeBadge` + `DDTasteSentenceCard`
-   - 감각 축별 선호 상태 리스트 (`TraitStatusRow`)
-   - 라벨/태그 기반 인사이트 ("셰리 4.7점", "스모키함 4.5점")
+2. **취향 프로필 / 대시보드 (`ui/profile/ProfileScreen`)** — 위에서 아래 순서가 곧 위계다.
+   - 결론: `DDTasteTypeBadge` + `DDTasteSentenceCard`
    - 미달 상태 안내: `DDProfileProgressCard`
+   - 이번 달 회고: `DDMonthlySummaryCard` (`../planner/prd.md` F3-2)
+   - 라벨/태그 기반 인사이트 ("셰리 4.7점", "스모키함 4.5점")
+   - **감각 축별 선호 상태 리스트는 두지 않는다** *(2026-08-17, `../planner/prd.md` F3-1)*.
+     `TraitStatusRow`와 `TraitStatus`는 함께 삭제됐다 — 사용자는 결론이 어떻게 나왔는지 묻지 않는다.
+     이 줄을 근거로 되살리지 않는다.
 3. **컬렉션 & 검색 (`ui/collection/CollectionScreen`)**
    - 검색창 + 주종/재구매 필터 칩 (`LazyColumn` + `DDDrinkRecordCard`)
 4. **기록 상세 (`ui/collection/RecordDetailScreen`)**
