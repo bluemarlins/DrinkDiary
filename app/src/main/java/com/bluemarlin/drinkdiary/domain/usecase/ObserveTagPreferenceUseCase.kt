@@ -34,29 +34,15 @@ class ObserveTagPreferenceUseCase(
         }
     }
 
-    // 사용자가 답한 태그와, 사전이 아는 사실을 같은 자리에서 꺼낸다. 판정 방식은 동일하다 —
-    // 어디서 왔든 "그 값을 가진 기록의 만족도"를 비교할 뿐이다.
-    private fun valueOf(
-        record: DrinkRecord,
-        category: TagCategory,
-    ): String? =
-        if (category.fromDictionary) {
-            dictionary.lookup(record.type, record.name)?.let { facts ->
-                when (category) {
-                    TagCategory.Cask -> facts.cask?.name
-                    TagCategory.WineStyle -> facts.wineStyle?.name
-                    else -> null
-                }
-            }
-        } else {
-            record.tags[category]
-        }
-
     private fun summarise(
         category: TagCategory,
         records: List<DrinkRecord>,
     ): TagPreference? {
-        val tagged = records.mapNotNull { record -> valueOf(record, category)?.let { it to record.rating } }
+        // 값을 꺼내는 규칙은 공백 안내(F3-3 (b))와 공유한다 — `TagValueLookup`.
+        val tagged =
+            records.mapNotNull { record ->
+                record.tagValue(category, dictionary)?.let { it to record.rating }
+            }
         if (tagged.isEmpty()) return null
 
         val byValue =

@@ -28,6 +28,8 @@ import com.bluemarlin.drinkdiary.ui.component.DDProfileProgressCard
 import com.bluemarlin.drinkdiary.ui.component.DDRecentTrendCard
 import com.bluemarlin.drinkdiary.ui.component.DDTasteSentenceCard
 import com.bluemarlin.drinkdiary.ui.component.DDTasteTypeBadge
+import com.bluemarlin.drinkdiary.ui.component.DDTastingGapCard
+import com.bluemarlin.drinkdiary.ui.component.DDTastingGapLine
 import com.bluemarlin.drinkdiary.ui.navigation.DDWindowSize
 import com.bluemarlin.drinkdiary.ui.navigation.LocalDDScreenMargin
 import com.bluemarlin.drinkdiary.ui.navigation.LocalDDWindowSize
@@ -155,8 +157,31 @@ private fun TraitSections(
                 }
             }
         }
+
+        // 있는 것 바로 다음에 없는 것을 둔다. 태그 선호가 아직 안 나온 사용자에게도 보여야
+        // 하므로 위 블록과 독립이다 — 오히려 그쪽이 이 안내가 가장 쓸모 있는 상태다.
+        if (state.tastingGaps.isNotEmpty()) {
+            DDTastingGapCard(
+                lines =
+                    state.tastingGaps.map { gap ->
+                        DDTastingGapLine(
+                            label = TastingGapCopy.label(gap),
+                            sentence = TastingGapCopy.sentence(gap, drinkTypeOf(state.scope)),
+                        )
+                    },
+            )
+        }
     }
 }
+
+// 통합 스코프에서는 주종을 특정할 수 없다. 도수 구간의 경계가 주종마다 달라서, 모를 때는
+// 순서로만 말해야 한다.
+private fun drinkTypeOf(scope: TypeScope): DrinkType? =
+    when (scope) {
+        TypeScope.Wine -> DrinkType.Wine
+        TypeScope.Whiskey -> DrinkType.Whiskey
+        TypeScope.Combined -> null
+    }
 
 @Composable
 private fun ScopeSelector(
@@ -222,13 +247,7 @@ private fun TagPreferenceBlock(
     pref: TagPreference,
     scope: TypeScope,
 ) {
-    // 통합 스코프에서는 주종을 특정할 수 없으므로 도수 구간을 순서로만 말한다.
-    val drinkType =
-        when (scope) {
-            TypeScope.Wine -> DrinkType.Wine
-            TypeScope.Whiskey -> DrinkType.Whiskey
-            TypeScope.Combined -> null
-        }
+    val drinkType = drinkTypeOf(scope)
 
     Column(verticalArrangement = Arrangement.spacedBy(DrinkDiarySpacing.xs)) {
         Row(

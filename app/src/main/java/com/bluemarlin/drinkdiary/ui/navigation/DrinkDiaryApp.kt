@@ -371,6 +371,7 @@ private fun ScreenContent(
                             appContainer.resolveProfileReadinessUseCase,
                             appContainer.observeMonthlySummaryUseCase,
                             appContainer.observeRecentTrendUseCase,
+                            appContainer.observeTastingGapsUseCase,
                         ),
                 )
             val profile by profileViewModel.uiState.collectAsState()

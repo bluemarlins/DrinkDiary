@@ -8,11 +8,13 @@ import com.bluemarlin.drinkdiary.domain.model.ProfileReadiness
 import com.bluemarlin.drinkdiary.domain.model.RecentTrend
 import com.bluemarlin.drinkdiary.domain.model.TagPreference
 import com.bluemarlin.drinkdiary.domain.model.TasteProfile
+import com.bluemarlin.drinkdiary.domain.model.TastingGap
 import com.bluemarlin.drinkdiary.domain.model.TypeScope
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveMonthlySummaryUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveRecentTrendUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveTagPreferenceUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveTasteProfileUseCase
+import com.bluemarlin.drinkdiary.domain.usecase.ObserveTastingGapsUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ResolveProfileReadinessUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.TasteThresholds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -34,6 +36,8 @@ data class ProfileUiState(
     val monthly: MonthlySummary = MonthlySummary.Empty,
     // 대조군이 모이기 전에는 null이다. 없는 흐름을 지어내지 않는다(prd.md F3-3 (a)).
     val recentTrend: RecentTrend? = null,
+    // 한쪽만 쌓인 자리. 추천이 아니라 공백 안내다(prd.md F3-3 (b)).
+    val tastingGaps: List<TastingGap> = emptyList(),
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -43,6 +47,7 @@ class ProfileViewModel(
     private val resolveReadiness: ResolveProfileReadinessUseCase,
     private val observeMonthlySummary: ObserveMonthlySummaryUseCase,
     private val observeRecentTrend: ObserveRecentTrendUseCase,
+    private val observeTastingGaps: ObserveTastingGapsUseCase,
 ) : ViewModel() {
     private val scope = MutableStateFlow(TypeScope.Wine)
 
@@ -56,7 +61,8 @@ class ProfileViewModel(
                     observeTagPreference(selected),
                     observeMonthlySummary(),
                     observeRecentTrend(selected),
-                ) { profile, tags, monthly, trend ->
+                    observeTastingGaps(selected),
+                ) { profile, tags, monthly, trend, gaps ->
                     ProfileUiState(
                         scope = selected,
                         profile = profile,
@@ -64,6 +70,7 @@ class ProfileViewModel(
                         readiness = resolveReadiness(profile),
                         monthly = monthly,
                         recentTrend = trend,
+                        tastingGaps = gaps,
                     )
                 }
             }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ProfileUiState())
@@ -78,6 +85,7 @@ class ProfileViewModel(
         private val resolveReadiness: ResolveProfileReadinessUseCase,
         private val observeMonthlySummary: ObserveMonthlySummaryUseCase,
         private val observeRecentTrend: ObserveRecentTrendUseCase,
+        private val observeTastingGaps: ObserveTastingGapsUseCase,
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
@@ -87,6 +95,7 @@ class ProfileViewModel(
                 resolveReadiness,
                 observeMonthlySummary,
                 observeRecentTrend,
+                observeTastingGaps,
             ) as T
     }
 }

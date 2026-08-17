@@ -37,6 +37,25 @@ enum class TagCategory(
     }
 }
 
+// 아직 한 잔도 없는 값을 말하려면 그 카테고리가 가질 수 있는 값을 알아야 한다(prd.md F3-3 (b)).
+//
+// **뭉뚱그리는 값은 뺀다.** 캐스크의 "여러 캐스크"와 와인 색의 "그 외"는 마셔서 채울 수 있는
+// 칸이 아니라 나머지를 담는 자루다. "그 외는 아직 없어요"는 사용자가 할 수 있는 일이 없는 말이다.
+//
+// enum 바깥에 두는 이유는 이름 충돌이다 — `TagCategory.WhiskyStyle`(카테고리)과
+// `WhiskyStyle`(값)이 같은 이름이라 enum 안에서는 값 쪽을 가리킬 수 없다.
+val TagCategory.gapCandidates: List<String>
+    get() =
+        when (this) {
+            TagCategory.WhiskyStyle -> WhiskyStyle.entries.map { it.name }
+            TagCategory.Peat -> PeatTag.entries.map { it.name }
+            TagCategory.WineColor -> WineColor.entries.filter { it != WineColor.Other }.map { it.name }
+            TagCategory.AbvBand -> AbvBand.entries.map { it.name }
+            TagCategory.Origin -> Origin.entries.map { it.name }
+            TagCategory.Cask -> CaskGroup.entries.filter { it != CaskGroup.Mixed }.map { it.name }
+            TagCategory.WineStyle -> WineStyle.entries.map { it.name }
+        }
+
 enum class WhiskyStyle { SingleMalt, Blended, Bourbon }
 
 enum class PeatTag { Peated, Unpeated }
