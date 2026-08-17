@@ -138,7 +138,10 @@ private fun SummarySection(
         state.recentTrend?.let { trend ->
             DDRecentTrendCard(
                 caption = RecentTrendCopy.caption(trend),
-                lines = RecentTrendCopy.lines(trend),
+                shiftLine = RecentTrendCopy.shiftLine(trend),
+                recent = RecentTrendCopy.recentBar(trend),
+                earlier = RecentTrendCopy.earlierBar(trend),
+                verdict = RecentTrendCopy.verdict(trend),
             )
         }
         // 2단에서는 요약 칸이 짧아 빈 스크롤이 생겼다. 월 요약이 그 자리를 채우면서
@@ -268,11 +271,21 @@ private fun TagPreferenceBlock(
     val contrast = pref.contrast
     var expanded by remember(pref.category) { mutableStateOf(false) }
 
-    // 늘 보이는 것은 두 줄까지다. 대조가 있으면 양 끝, 없으면 위에서 둘.
-    // 나머지는 접는다 — **감추는 것이 아니라 접는 것**이다. F3이 판정에 쓰인 사실을 확인할 수
-    // 있어야 한다고 정했으므로 펼칠 길이 반드시 있어야 하고, 몇 개가 더 있는지도 보여야 한다.
-    val pinned = listOfNotNull(contrast?.higher, contrast?.lower).ifEmpty { pref.values.take(2) }
-    val folded = pref.values.filterNot { it in pinned }
+    // 늘 보이는 것은 두 줄까지다. 나머지는 접는다 — **감추는 것이 아니라 접는 것**이다.
+    // F3이 판정에 쓰인 사실을 확인할 수 있어야 한다고 정했으므로 펼칠 길이 반드시 있어야 하고,
+    // 몇 개가 더 있는지도 보여야 한다.
+    //
+    // **대조가 없을 때는 점수가 아니라 표본으로 고른다.** `values`는 점수 내림차순이라
+    // 그대로 둘을 자르면 한 잔짜리가 맨 위에 온다 — 전부 나열하던 때는 덜했지만, 접고 나니
+    // 그 한 줄이 그 카테고리를 대표하게 됐다. 표본이 적은 값을 위에 올리면 우연이 결론처럼 보인다.
+    val kept =
+        listOfNotNull(contrast?.higher, contrast?.lower)
+            .ifEmpty { pref.values.sortedByDescending { it.samples }.take(2) }
+            .toSet()
+
+    // 화면 순서는 점수 내림차순 그대로다. 고르는 기준과 늘어놓는 순서는 다른 문제다.
+    val pinned = pref.values.filter { it in kept }
+    val folded = pref.values.filterNot { it in kept }
 
     Column(verticalArrangement = Arrangement.spacedBy(DrinkDiarySpacing.sm)) {
         Row(

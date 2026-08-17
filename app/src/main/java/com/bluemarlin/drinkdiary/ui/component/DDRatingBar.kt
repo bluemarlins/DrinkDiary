@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme
@@ -66,31 +65,20 @@ fun DDRatingBar(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(DrinkDiarySpacing.xxs),
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.bodyMedium,
-                color =
-                    if (emphasised) {
-                        MaterialTheme.colorScheme.onSurface
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    },
-            )
-            Text(
-                text = value,
-                style = MaterialTheme.typography.bodyMedium,
-                color =
-                    if (emphasised) {
-                        MaterialTheme.colorScheme.onSurface
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    },
-            )
-        }
+        // **점수를 오른쪽 끝에 두지 않는다.** 거기는 FAB가 떠 있는 자리다 — 표본 수를 왼쪽으로
+        // 옮긴 것과 같은 이유이고, 그때 점수만 남겨 둔 탓에 같은 함정을 다시 밟았다
+        // (에뮬레이터에서 확인: "최근 5잔 … 2.4점"의 점수가 FAB에 가려짐).
+        // 길이 비교는 어차피 막대가 하므로 숫자를 굳이 열 맞춰 세울 이유가 없다.
+        Text(
+            text = "$label · $value",
+            style = MaterialTheme.typography.bodyMedium,
+            color =
+                if (emphasised) {
+                    MaterialTheme.colorScheme.onSurface
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                },
+        )
         DDBar(
             fraction = fraction,
             color =
