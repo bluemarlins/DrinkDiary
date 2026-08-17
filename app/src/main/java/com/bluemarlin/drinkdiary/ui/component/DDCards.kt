@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -142,27 +141,12 @@ fun DDProfileProgressCard(
                 }
             }
 
-            // Progress bar
+            // 남은 거리는 게이지가 말한다. 문장은 숫자를 대지 않는다(prd.md 7절-2).
             val safeTarget = targetCount.coerceAtLeast(1)
-            val progressFraction = (currentCount.toFloat() / safeTarget).coerceIn(0f, 1f)
-
-            Box(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .height(6.dp)
-                        .clip(MaterialTheme.shapes.small)
-                        .background(MaterialTheme.colorScheme.surfaceVariant),
-            ) {
-                Box(
-                    modifier =
-                        Modifier
-                            .fillMaxWidth(progressFraction)
-                            .height(6.dp)
-                            .clip(MaterialTheme.shapes.small)
-                            .background(MaterialTheme.colorScheme.primary),
-                )
-            }
+            DDBar(
+                fraction = currentCount.toFloat() / safeTarget,
+                color = MaterialTheme.colorScheme.primary,
+            )
         }
     }
 }

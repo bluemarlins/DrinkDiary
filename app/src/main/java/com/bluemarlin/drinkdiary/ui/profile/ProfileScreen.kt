@@ -12,7 +12,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -29,6 +34,7 @@ import com.bluemarlin.drinkdiary.ui.component.DDChip
 import com.bluemarlin.drinkdiary.ui.component.DDDrinkHighlightRow
 import com.bluemarlin.drinkdiary.ui.component.DDMonthlySummaryCard
 import com.bluemarlin.drinkdiary.ui.component.DDProfileProgressCard
+import com.bluemarlin.drinkdiary.ui.component.DDRatingBar
 import com.bluemarlin.drinkdiary.ui.component.DDRecentTrendCard
 import com.bluemarlin.drinkdiary.ui.component.DDTasteSentenceCard
 import com.bluemarlin.drinkdiary.ui.component.DDTasteTypeBadge
@@ -260,8 +266,15 @@ private fun TagPreferenceBlock(
 ) {
     val drinkType = drinkTypeOf(scope)
     val contrast = pref.contrast
+    var expanded by remember(pref.category) { mutableStateOf(false) }
 
-    Column(verticalArrangement = Arrangement.spacedBy(DrinkDiarySpacing.xs)) {
+    // 늘 보이는 것은 두 줄까지다. 대조가 있으면 양 끝, 없으면 위에서 둘.
+    // 나머지는 접는다 — **감추는 것이 아니라 접는 것**이다. F3이 판정에 쓰인 사실을 확인할 수
+    // 있어야 한다고 정했으므로 펼칠 길이 반드시 있어야 하고, 몇 개가 더 있는지도 보여야 한다.
+    val pinned = listOfNotNull(contrast?.higher, contrast?.lower).ifEmpty { pref.values.take(2) }
+    val folded = pref.values.filterNot { it in pinned }
+
+    Column(verticalArrangement = Arrangement.spacedBy(DrinkDiarySpacing.sm)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -281,54 +294,48 @@ private fun TagPreferenceBlock(
         // 대조가 성립하면 양 끝을 먼저 보여준다. Vivino의 What You Like / Dislike와 같은
         // 자리이되, **판정을 대신 내려주지 않는다** — "좋아하는 쪽"이 아니라 "높게 준 쪽"이다.
         // 실제로 있었던 일만 말하면 훈계할 자리가 남지 않는다(branding.md 2-1).
-        if (contrast != null) {
-            TagValueRow("높게 준 쪽", contrast.higher, pref.category, drinkType, emphasised = true)
-            TagValueRow("낮게 준 쪽", contrast.lower, pref.category, drinkType, emphasised = true)
+        pinned.forEach { value ->
+            val role =
+                when (value) {
+                    contrast?.higher -> "높게 준 쪽"
+                    contrast?.lower -> "낮게 준 쪽"
+                    else -> null
+                }
+            TagValueBar(role, value, pref.category, drinkType, emphasised = contrast != null)
         }
 
-        // 대조에 뽑히지 않은 값도 남긴다. 감추면 사용자가 근거를 확인할 수 없다(prd.md F3).
-        pref.values
-            .filter { it != contrast?.higher && it != contrast?.lower }
-            .forEach { value ->
-                TagValueRow(null, value, pref.category, drinkType, emphasised = false)
+        if (folded.isNotEmpty()) {
+            if (expanded) {
+                folded.forEach { value ->
+                    TagValueBar(null, value, pref.category, drinkType, emphasised = false)
+                }
             }
+            TextButton(onClick = { expanded = !expanded }) {
+                Text(if (expanded) "접기" else "값 ${folded.size}개 더 보기")
+            }
+        }
     }
 }
 
 @Composable
-private fun TagValueRow(
+private fun TagValueBar(
     role: String?,
     value: TagValueRating,
     category: TagCategory,
     drinkType: DrinkType?,
     emphasised: Boolean,
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-        // 표본 수는 값을 한정하는 말이므로 값 옆에 둔다. 오른쪽 끝은 FAB가 떠 있는
-        // 자리라, 거기 두면 화면 아래쪽에서 잘린다(에뮬레이터에서 확인된 결함).
-        val label = "${DrinkLabels.tagValue(category, value.value, drinkType)} · ${value.samples}잔"
-        Text(
-            text = if (role == null) label else "$role · $label",
-            style = MaterialTheme.typography.bodyMedium,
-            color =
-                if (emphasised) {
-                    MaterialTheme.colorScheme.onSurface
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                },
-        )
-        Text(
-            text = DrinkLabels.rating(value.averageRating),
-            style = MaterialTheme.typography.bodyMedium,
-            color =
-                if (emphasised) {
-                    MaterialTheme.colorScheme.onSurface
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                },
-        )
-    }
+    // 표본 수는 값을 한정하는 말이므로 값 옆에 둔다. 오른쪽 끝은 FAB가 떠 있는
+    // 자리라, 거기 두면 화면 아래쪽에서 잘린다(에뮬레이터에서 확인된 결함).
+    val label = "${DrinkLabels.tagValue(category, value.value, drinkType)} · ${value.samples}잔"
+
+    DDRatingBar(
+        label = if (role == null) label else "$role · $label",
+        value = DrinkLabels.rating(value.averageRating),
+        // 만족도는 1~5 척도다. 빈도가 아니라 점수라는 것이 이 나눗셈의 전부다(prd.md F3-4 (b)).
+        fraction = (value.averageRating / MAX_RATING).toFloat(),
+        emphasised = emphasised,
+    )
 }
+
+private const val MAX_RATING = 5.0
