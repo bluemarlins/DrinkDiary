@@ -805,6 +805,8 @@ Billing 연동은 Phase 3(가장 마지막)으로 이동. Phase 1은 순수 기�
 | P2-11 | (계획 외 추가) 디자인 시스템 개정 및 모션/인터랙션 고도화 | agy | done | | `specs/designer/design-system.md` 전면 승격 및 앱 UI 디자인 시스템 적용 완료 (ktlint/unit test/lint 통과) |
 | P2-12 | Pinterest 디자인 시스템 원칙 흡수 — 명세 승격 + 코드 반영 | Claude | done | | **2026-08-17 사용자 승인 → 승격 완료.** 초안 `../departments/designer/pinterest-principle-adoption-2026-08.md`, 시각 비교 `../departments/designer/pinterest-principle-preview.html`. `specs/designer/design-system.md` 2·3.3·5.3절 개정. 코드: `DDPhotoField`(채워지면 테두리 제거), `DDDrinkHighlightRow`(오버레이 필·거터 8dp·반경 12dp·테두리), `DDDrinkRecordCard`(썸네일 4:5 48×60dp, 만족도 액센트 제거). 팔레트·서체·4:5 비율은 변경 없음 → `DesignTokenTest` 그대로 통과. `ktlintCheck`/`testDebugUnitTest`/`lint`/`assembleDebug` 통과, **에뮬레이터 라이트·다크 육안 검증 완료**(6절 참고) |
 
+| P2-13 | 대시보드 IA 벤치마킹 (15개 앱 구조 조사) | agy+Claude | done | | 초안 `../departments/researcher/dashboard-ia-benchmark-2026-08.md`, 와이어프레임 갤러리 `../departments/researcher/dashboard-ia-benchmark.html`. `gemini-3.7-flash-high` **2회 호출** — 1차 conversation `af7168ce-8a80-4ee1-86dd-40e958576a27`는 검증에서 오류 5건(Apple Fitness 탭 수, Oura 개편 방향, Whoop 탭 수, Streaks 페이징 누락, Oura FAB 날조) + Vivino 중대 누락으로 **폐기**. 2차는 앱 15개를 이름으로 고정해 재조사, 6건 전부 교정 확인. **Claude 반론 3건**(오버레이 칩 반투명화 반려, 유형 4 적합성 1·2차 상충, 뱅크샐러드 분류 오류)은 초안 3절. 미검증 5개 앱은 근거로 쓰지 말 것 |
+
 ## Phase 3 — Billing 연동 (최종 단계)
 
 | ID | 태스크 | 담당 | 상태 | 커밋 | 비고 |
