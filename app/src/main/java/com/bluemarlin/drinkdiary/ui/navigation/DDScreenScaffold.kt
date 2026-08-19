@@ -59,10 +59,13 @@ enum class DDScreenType {
     Editor,
 }
 
+// 하단 내비게이션의 목적지다. **선언 순서가 곧 화면에 그려지는 순서**이므로 여기를 바꾸면
+// 탭 위치가 바뀐다(2026-08-19 사용자 확정: 대시보드 / 찾기 / 컬렉션 / 설정).
 enum class DDTopLevelTab {
     Dashboard,
-    Collection,
     Search,
+    Collection,
+    Settings,
 }
 
 // 명세 4절의 세 구간이다. 이전에는 `maxWidth >= 840.dp` 하나뿐이라 600~839dp가 통째로
@@ -95,6 +98,7 @@ fun DDScreenScaffold(
     onDashboardClick: (() -> Unit)? = null,
     onCollectionClick: (() -> Unit)? = null,
     onSearchClick: (() -> Unit)? = null,
+    onSettingsClick: (() -> Unit)? = null,
     onBackClick: (() -> Unit)? = null,
     floatingActionButton: @Composable (() -> Unit)? = null,
     toolbarActions: @Composable RowScope.() -> Unit = {},
@@ -131,6 +135,7 @@ fun DDScreenScaffold(
                     onDashboardClick = onDashboardClick,
                     onCollectionClick = onCollectionClick,
                     onSearchClick = onSearchClick,
+                    onSettingsClick = onSettingsClick,
                     onBackClick = onBackClick,
                     hazeState = haze,
                     floatingActionButton = floatingActionButton,
@@ -155,6 +160,7 @@ fun DDScreenScaffold(
                             onDashboardClick = onDashboardClick,
                             onCollectionClick = onCollectionClick,
                             onSearchClick = onSearchClick,
+                            onSettingsClick = onSettingsClick,
                         )
                         scaffold(false, null)
                     }
@@ -167,6 +173,7 @@ fun DDScreenScaffold(
                                 onDashboardClick = onDashboardClick,
                                 onCollectionClick = onCollectionClick,
                                 onSearchClick = onSearchClick,
+                                onSettingsClick = onSettingsClick,
                             )
                         },
                     ) {
@@ -187,6 +194,7 @@ private fun AppScaffold(
     onDashboardClick: (() -> Unit)?,
     onCollectionClick: (() -> Unit)?,
     onSearchClick: (() -> Unit)?,
+    onSettingsClick: (() -> Unit)?,
     onBackClick: (() -> Unit)?,
     hazeState: HazeState?,
     floatingActionButton: @Composable (() -> Unit)?,
@@ -210,6 +218,7 @@ private fun AppScaffold(
                     onDashboardClick = onDashboardClick,
                     onCollectionClick = onCollectionClick,
                     onSearchClick = onSearchClick,
+                    onSettingsClick = onSettingsClick,
                     hazeState = hazeState,
                 )
             }
@@ -286,6 +295,7 @@ fun DDBottomNavigationBar(
     onDashboardClick: (() -> Unit)?,
     onCollectionClick: (() -> Unit)?,
     onSearchClick: (() -> Unit)?,
+    onSettingsClick: (() -> Unit)?,
     hazeState: HazeState? = null,
 ) {
     val shape = MaterialTheme.shapes.large
@@ -330,6 +340,7 @@ fun DDBottomNavigationBar(
                 onDashboardClick = onDashboardClick,
                 onCollectionClick = onCollectionClick,
                 onSearchClick = onSearchClick,
+                onSettingsClick = onSettingsClick,
             )
         }
     }
@@ -341,6 +352,7 @@ private fun AppNavigationRail(
     onDashboardClick: (() -> Unit)?,
     onCollectionClick: (() -> Unit)?,
     onSearchClick: (() -> Unit)?,
+    onSettingsClick: (() -> Unit)?,
 ) {
     val itemColors =
         NavigationRailItemDefaults.colors(
@@ -359,6 +371,15 @@ private fun AppNavigationRail(
                 colors = itemColors,
             )
         }
+        onSearchClick?.let { onClick ->
+            NavigationRailItem(
+                selected = selectedTab == DDTopLevelTab.Search,
+                onClick = onClick,
+                icon = { Icon(painter = painterResource(R.drawable.ic_nav_search), contentDescription = null) },
+                label = { Text(stringResource(R.string.nav_search)) },
+                colors = itemColors,
+            )
+        }
         onCollectionClick?.let { onClick ->
             NavigationRailItem(
                 selected = selectedTab == DDTopLevelTab.Collection,
@@ -368,12 +389,13 @@ private fun AppNavigationRail(
                 colors = itemColors,
             )
         }
-        onSearchClick?.let { onClick ->
+
+        onSettingsClick?.let { onClick ->
             NavigationRailItem(
-                selected = selectedTab == DDTopLevelTab.Search,
+                selected = selectedTab == DDTopLevelTab.Settings,
                 onClick = onClick,
-                icon = { Icon(painter = painterResource(R.drawable.ic_nav_search), contentDescription = null) },
-                label = { Text(stringResource(R.string.nav_search)) },
+                icon = { Icon(painter = painterResource(R.drawable.ic_settings), contentDescription = null) },
+                label = { Text(stringResource(R.string.nav_settings)) },
                 colors = itemColors,
             )
         }
@@ -386,6 +408,7 @@ private fun AppNavigationDrawerSheet(
     onDashboardClick: (() -> Unit)?,
     onCollectionClick: (() -> Unit)?,
     onSearchClick: (() -> Unit)?,
+    onSettingsClick: (() -> Unit)?,
 ) {
     PermanentDrawerSheet {
         val itemColors =
@@ -404,6 +427,15 @@ private fun AppNavigationDrawerSheet(
                 colors = itemColors,
             )
         }
+        onSearchClick?.let { onClick ->
+            NavigationDrawerItem(
+                icon = { Icon(painter = painterResource(R.drawable.ic_nav_search), contentDescription = null) },
+                label = { Text(stringResource(R.string.nav_search)) },
+                selected = selectedTab == DDTopLevelTab.Search,
+                onClick = onClick,
+                colors = itemColors,
+            )
+        }
         onCollectionClick?.let { onClick ->
             NavigationDrawerItem(
                 icon = { Icon(painter = painterResource(R.drawable.ic_nav_collection), contentDescription = null) },
@@ -413,11 +445,12 @@ private fun AppNavigationDrawerSheet(
                 colors = itemColors,
             )
         }
-        onSearchClick?.let { onClick ->
+
+        onSettingsClick?.let { onClick ->
             NavigationDrawerItem(
-                icon = { Icon(painter = painterResource(R.drawable.ic_nav_search), contentDescription = null) },
-                label = { Text(stringResource(R.string.nav_search)) },
-                selected = selectedTab == DDTopLevelTab.Search,
+                icon = { Icon(painter = painterResource(R.drawable.ic_settings), contentDescription = null) },
+                label = { Text(stringResource(R.string.nav_settings)) },
+                selected = selectedTab == DDTopLevelTab.Settings,
                 onClick = onClick,
                 colors = itemColors,
             )
@@ -433,6 +466,7 @@ private fun RowScope.AppNavigationItems(
     onDashboardClick: (() -> Unit)?,
     onCollectionClick: (() -> Unit)?,
     onSearchClick: (() -> Unit)?,
+    onSettingsClick: (() -> Unit)?,
 ) {
     // 색을 명시하지 않으면 M3 기본값이 명세를 이긴다 — 선택 표시가 `secondaryContainer`,
     // 즉 우리 매핑에서는 위스키 앰버로 칠해진다. 명세 3.1절은 선택 상태를 `PrimaryContainer`로 정한다.
@@ -454,6 +488,15 @@ private fun RowScope.AppNavigationItems(
             colors = itemColors,
         )
     }
+    onSearchClick?.let { onClick ->
+        NavigationBarItem(
+            selected = selectedTab == DDTopLevelTab.Search,
+            onClick = onClick,
+            icon = { Icon(painter = painterResource(R.drawable.ic_nav_search), contentDescription = null) },
+            label = { Text(stringResource(R.string.nav_search)) },
+            colors = itemColors,
+        )
+    }
     onCollectionClick?.let { onClick ->
         NavigationBarItem(
             selected = selectedTab == DDTopLevelTab.Collection,
@@ -463,12 +506,13 @@ private fun RowScope.AppNavigationItems(
             colors = itemColors,
         )
     }
-    onSearchClick?.let { onClick ->
+
+    onSettingsClick?.let { onClick ->
         NavigationBarItem(
-            selected = selectedTab == DDTopLevelTab.Search,
+            selected = selectedTab == DDTopLevelTab.Settings,
             onClick = onClick,
-            icon = { Icon(painter = painterResource(R.drawable.ic_nav_search), contentDescription = null) },
-            label = { Text(stringResource(R.string.nav_search)) },
+            icon = { Icon(painter = painterResource(R.drawable.ic_settings), contentDescription = null) },
+            label = { Text(stringResource(R.string.nav_settings)) },
             colors = itemColors,
         )
     }

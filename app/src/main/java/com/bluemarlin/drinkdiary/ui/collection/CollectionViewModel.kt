@@ -25,6 +25,10 @@ import kotlinx.coroutines.launch
 data class CollectionUiState(
     val filter: DrinkType? = null,
     val records: List<DrinkRecord> = emptyList(),
+    // **필터를 타지 않은 전체 목록.** 찾기(F5)가 쓴다 — 매장에서 이름을 치는 사람은 자기가
+    // 컬렉션에 무슨 필터를 걸어 뒀는지 기억하지 못한다. 걸러진 목록으로 찾으면 있는 기록을
+    // "없다"고 답하게 되고, 그 조용한 오답이 이 제품의 존재 이유(prd.md S3)를 무너뜨린다.
+    val allRecords: List<DrinkRecord> = emptyList(),
     val loaded: Boolean = false,
     val error: String? = null,
     val selectionMode: Boolean = false,
@@ -47,12 +51,14 @@ class CollectionViewModel(
         combine(
             filter,
             filter.flatMapLatest { repository.observeRecords(it) },
+            repository.observeRecords(null),
             selection,
             error,
-        ) { selectedFilter, records, selectedIds, message ->
+        ) { selectedFilter, records, all, selectedIds, message ->
             CollectionUiState(
                 filter = selectedFilter,
                 records = records,
+                allRecords = all,
                 loaded = true,
                 error = message,
                 selectionMode = selectedIds.isNotEmpty(),

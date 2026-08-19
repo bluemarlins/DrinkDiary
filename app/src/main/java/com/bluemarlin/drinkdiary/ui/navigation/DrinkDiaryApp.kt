@@ -38,6 +38,7 @@ import com.bluemarlin.drinkdiary.ui.collection.CollectionScreen
 import com.bluemarlin.drinkdiary.ui.collection.CollectionUiState
 import com.bluemarlin.drinkdiary.ui.collection.CollectionViewModel
 import com.bluemarlin.drinkdiary.ui.collection.RecordDetailScreen
+import com.bluemarlin.drinkdiary.ui.collection.SearchScreen
 import com.bluemarlin.drinkdiary.ui.component.DDBatchActionBar
 import com.bluemarlin.drinkdiary.ui.component.DDConfirmDialog
 import com.bluemarlin.drinkdiary.ui.component.DDIconButton
@@ -51,6 +52,8 @@ import com.bluemarlin.drinkdiary.ui.settings.SettingsViewModel
 
 private sealed interface Screen {
     data object Dashboard : Screen
+
+    data object Search : Screen
 
     data object Collection : Screen
 
@@ -72,8 +75,8 @@ private sealed interface Screen {
 private val Screen.depth: Int
     get() =
         when (this) {
-            Screen.Dashboard, Screen.Collection -> 0
-            Screen.Record, Screen.Settings, is Screen.Detail -> 1
+            Screen.Dashboard, Screen.Search, Screen.Collection, Screen.Settings -> 0
+            Screen.Record, is Screen.Detail -> 1
             is Screen.Edit -> 2
         }
 
@@ -161,6 +164,7 @@ fun DrinkDiaryApp(modifier: Modifier = Modifier) {
             } else {
                 when (val current = screen) {
                     Screen.Dashboard -> "테이스트 아카이브"
+                    Screen.Search -> "찾기"
                     Screen.Collection -> "컬렉션"
                     Screen.Record -> "기록하기"
                     is Screen.Detail ->
@@ -175,7 +179,7 @@ fun DrinkDiaryApp(modifier: Modifier = Modifier) {
         val screenType =
             when {
                 listDetail -> DDScreenType.TopLevel
-                screen == Screen.Dashboard || screen == Screen.Collection -> DDScreenType.TopLevel
+                screen.depth == 0 -> DDScreenType.TopLevel
                 screen == Screen.Record || screen is Screen.Edit -> DDScreenType.Editor
                 else -> DDScreenType.Detail
             }
@@ -184,14 +188,23 @@ fun DrinkDiaryApp(modifier: Modifier = Modifier) {
             when {
                 listDetail -> DDTopLevelTab.Collection
                 screen == Screen.Dashboard -> DDTopLevelTab.Dashboard
+                screen == Screen.Search -> DDTopLevelTab.Search
                 screen == Screen.Collection -> DDTopLevelTab.Collection
+                screen == Screen.Settings -> DDTopLevelTab.Settings
                 else -> null
             }
 
-        // 검색(F5)은 아직 화면이 없어 핸들러를 넘기지 않는다 — 탭도 그려지지 않는다.
+        // 탭 넷은 전부 화면을 갖는다(2026-08-19). 핸들러가 없는 탭은 그려지지 않으므로,
+        // 여기서 null을 넘기면 그 탭은 하단 바에서 사라진다.
         val onDashboardClick: (() -> Unit)? =
             if (topLevel) {
                 { screen = Screen.Dashboard }
+            } else {
+                null
+            }
+        val onSearchClick: (() -> Unit)? =
+            if (topLevel) {
+                { screen = Screen.Search }
             } else {
                 null
             }
@@ -201,13 +214,19 @@ fun DrinkDiaryApp(modifier: Modifier = Modifier) {
             } else {
                 null
             }
+        val onSettingsClick: (() -> Unit)? =
+            if (topLevel) {
+                { screen = Screen.Settings }
+            } else {
+                null
+            }
 
         val onBackClick: (() -> Unit)? =
             if (listDetail) {
                 null
             } else {
                 when (val current = screen) {
-                    Screen.Record, Screen.Settings -> {
+                    Screen.Record -> {
                         { screen = Screen.Dashboard }
                     }
                     is Screen.Detail -> {
@@ -216,13 +235,17 @@ fun DrinkDiaryApp(modifier: Modifier = Modifier) {
                     is Screen.Edit -> {
                         { screen = Screen.Detail(current.id) }
                     }
-                    Screen.Dashboard, Screen.Collection -> null
+                    Screen.Dashboard, Screen.Search, Screen.Collection, Screen.Settings -> null
                 }
             }
 
         // 지우러 들어온 사람에게 더하기를 권하지 않는다(prd.md F1-2).
+        //
+        // **찾기와 설정에는 두지 않는다**(2026-08-19). 찾기는 매장에서 "샀던 것인지" 확인하러
+        // 오는 자리라(F5) 결과 옆의 +는 "이걸 추가"로 읽힐 수 있고, 설정은 기록과 무관하다.
+        val fabHost = screen == Screen.Dashboard || inCollection
         val floatingActionButton: (@Composable () -> Unit)? =
-            if (topLevel && !selecting) {
+            if (fabHost && !selecting) {
                 {
                     FloatingActionButton(onClick = { screen = Screen.Record }) {
                         Icon(painter = painterResource(R.drawable.ic_add), contentDescription = "기록 추가")
@@ -240,16 +263,9 @@ fun DrinkDiaryApp(modifier: Modifier = Modifier) {
                 ) {
                     Icon(painter = painterResource(R.drawable.ic_close), contentDescription = null)
                 }
-            } else if (screen == Screen.Dashboard) {
-                // 설정은 하단 탭이 아니라 툴바에 둔다. 탭은 매일 오가는 곳이고
-                // 설정은 한 번 정하면 다시 안 오는 곳이다.
-                DDIconButton(
-                    onClick = { screen = Screen.Settings },
-                    contentDescription = "설정",
-                ) {
-                    Icon(painter = painterResource(R.drawable.ic_settings), contentDescription = null)
-                }
             }
+            // 설정 아이콘을 툴바에서 걷어냈다(2026-08-19 사용자 확정). 이제 하단 탭이 설정의
+            // 진입점이며, 진입점이 둘이면 어느 쪽이 정본인지 알 수 없고 선택 상태도 어긋난다.
         }
 
         DDScreenScaffold(
@@ -257,7 +273,9 @@ fun DrinkDiaryApp(modifier: Modifier = Modifier) {
             screenType = screenType,
             selectedTab = selectedTab,
             onDashboardClick = onDashboardClick,
+            onSearchClick = onSearchClick,
             onCollectionClick = onCollectionClick,
+            onSettingsClick = onSettingsClick,
             onBackClick = onBackClick,
             floatingActionButton = floatingActionButton,
             toolbarActions = toolbarActions,
@@ -417,6 +435,16 @@ private fun ScreenContent(
                     modifier = modifier,
                 )
             }
+
+        // 찾기(F5). **필터를 타지 않은 `allRecords`를 넘긴다** — 컬렉션 필터가 검색을 좁히면
+        // 있는 기록이 "없다"로 나온다.
+        Screen.Search ->
+            SearchScreen(
+                records = collection.allRecords,
+                onOpen = { onNavigate(Screen.Detail(it)) },
+                contentPadding = padding,
+                modifier = modifier,
+            )
 
         Screen.Record -> RecordFlow(modifier = modifier.padding(padding))
 

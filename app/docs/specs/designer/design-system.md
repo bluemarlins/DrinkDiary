@@ -197,10 +197,22 @@
      이 줄을 근거로 되살리지 않는다.
    - **문구가 성격을 밝힌다.** F3-3의 네 층은 전부 집계·회고이고 판정은 상관에서 나온다. 그 차이를
      문구가 말하지 않으면 화면이 근거라고 내놓는 숫자가 실제 판정 근거가 아니게 된다.
-3. **컬렉션 & 검색 (`ui/collection/CollectionScreen`)**
-   - 검색창 + 주종/재구매 필터 칩 (`LazyColumn` + `DDDrinkRecordCard`)
+3. **컬렉션 (`ui/collection/CollectionScreen`)**
+   - 주종 필터 칩 + `LazyColumn` + `DDDrinkRecordCard`
+   - **검색창은 여기 없다.** 찾기는 별도 최상위 탭이다(아래 6번) — 구 문서는 이 줄에 검색창을
+     적어 뒀으나 코드에 없었다.
+6. **찾기 (`ui/collection/SearchScreen`)** *(2026-08-19 신설)* — `../planner/prd.md` F5.
+   - 이름 일부 입력(`OutlinedTextField`) + 결과 `DDDrinkRecordCard` 목록. **화면 전환 없이
+     입력창 바로 아래에 결과가 깔린다** — 매장에서는 한 번의 전환도 비싸다.
+   - **"좋아했는지"를 위한 새 표현을 만들지 않는다.** `DDDrinkRecordCard`의 만족도와 재구매
+     뱃지가 이미 그 답이며, 같은 사실을 두 모양으로 보여주면 판단이 한 박자 늦는다.
+   - **주종 필터를 타지 않은 전체 목록을 검색한다.** 컬렉션 필터가 검색을 좁히면 있는 기록이
+     "없다"로 나오고, 그 조용한 오답이 F5의 존재 이유를 무너뜨린다.
+   - **FAB을 두지 않는다.** 결과 옆의 `+`는 "이걸 추가"로 읽힌다.
 4. **기록 상세 (`ui/collection/RecordDetailScreen`)**
    - 대표 이미지(`DDUriImage`) + 주종/재구매 뱃지 + 평점 + 감각 축 응답 + 메모
    - 수정(`EditRecordScreen`), 삭제(`DDDestructiveButton`, `DDConfirmDialog`)
 5. **설정 (`ui/settings/SettingsScreen`)**
    - 기록 시 물어볼 태그 스위치 관리
+   - **하단 탭이 진입점이다** *(2026-08-19)*. 툴바 아이콘은 제거했다 — `../planner/prd.md` F7 참고.
+   - **FAB을 두지 않는다.** 기록과 무관한 화면이다.
