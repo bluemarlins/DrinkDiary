@@ -3,6 +3,7 @@ package com.bluemarlin.drinkdiary.ui.profile
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -40,6 +41,7 @@ import com.bluemarlin.drinkdiary.ui.component.DDTasteSentenceCard
 import com.bluemarlin.drinkdiary.ui.component.DDTasteTypeBadge
 import com.bluemarlin.drinkdiary.ui.component.DDTastingGapCard
 import com.bluemarlin.drinkdiary.ui.component.DDTastingGapLine
+import com.bluemarlin.drinkdiary.ui.navigation.DDBottomNavigationBarHeight
 import com.bluemarlin.drinkdiary.ui.navigation.DDWindowSize
 import com.bluemarlin.drinkdiary.ui.navigation.LocalDDScreenMargin
 import com.bluemarlin.drinkdiary.ui.navigation.LocalDDWindowSize
@@ -51,10 +53,11 @@ import com.bluemarlin.drinkdiary.ui.theme.DrinkDiarySpacing
 fun ProfileScreen(
     state: ProfileUiState,
     onScopeChange: (TypeScope) -> Unit,
+    contentPadding: PaddingValues = PaddingValues(),
     modifier: Modifier = Modifier,
 ) {
     val twoPane = LocalDDWindowSize.current != DDWindowSize.Compact
-    val fabClearance = 96.dp
+    val fabClearance = DDBottomNavigationBarHeight + LocalDDScreenMargin.current
 
     if (!twoPane) {
         // FAB는 내용 위에 떠 있다. 아래 여백만 주면 부족한데, **내용이 화면보다 짧으면 스크롤이
@@ -68,10 +71,12 @@ fun ProfileScreen(
                         .fillMaxWidth()
                         .verticalScroll(rememberScrollState())
                         .heightIn(min = maxHeight + fabClearance)
+                        // **상단 인셋을 스크롤 안쪽에서 먹는다.** 바깥에 걸면 내용이 플로팅
+                        // 상단 바 뒤로 흐르지 않아 블러가 비출 것이 없어진다.
                         .padding(
                             start = LocalDDScreenMargin.current,
                             end = LocalDDScreenMargin.current,
-                            top = LocalDDScreenMargin.current,
+                            top = contentPadding.calculateTopPadding(),
                             bottom = fabClearance,
                         ),
                 verticalArrangement = Arrangement.spacedBy(DrinkDiarySpacing.xl),

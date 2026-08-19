@@ -33,7 +33,7 @@ fun SettingsScreen(
         modifier =
             modifier
                 .fillMaxWidth()
-                .padding(contentPadding)
+                .padding(top = contentPadding.calculateTopPadding())
                 .verticalScroll(rememberScrollState())
                 .padding(LocalDDScreenMargin.current),
         verticalArrangement = Arrangement.spacedBy(20.dp),

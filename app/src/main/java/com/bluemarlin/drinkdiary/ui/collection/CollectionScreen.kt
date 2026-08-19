@@ -16,6 +16,7 @@ import com.bluemarlin.drinkdiary.domain.model.DrinkType
 import com.bluemarlin.drinkdiary.ui.component.DDChip
 import com.bluemarlin.drinkdiary.ui.component.DDDrinkRecordCard
 import com.bluemarlin.drinkdiary.ui.component.DDEmptyContent
+import com.bluemarlin.drinkdiary.ui.navigation.DDBottomNavigationBarHeight
 import com.bluemarlin.drinkdiary.ui.navigation.LocalDDScreenMargin
 
 @Composable
@@ -27,9 +28,15 @@ fun CollectionScreen(
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier = modifier.fillMaxSize().padding(contentPadding)) {
+    // **바깥 padding으로 인셋을 먹지 않는다.** 그러면 콘텐츠가 플로팅 바 뒤로 흐르지 않아
+    // 블러가 비출 것이 없어진다. 위쪽은 필터 줄이, 아래쪽은 목록이 각자 비운다.
+    Column(modifier = modifier.fillMaxSize()) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = LocalDDScreenMargin.current, vertical = 12.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(top = contentPadding.calculateTopPadding())
+                    .padding(horizontal = LocalDDScreenMargin.current, vertical = 12.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             listOf(null to "전체", DrinkType.Wine to "와인", DrinkType.Whiskey to "위스키")
@@ -59,7 +66,7 @@ fun CollectionScreen(
                 PaddingValues(
                     start = LocalDDScreenMargin.current,
                     end = LocalDDScreenMargin.current,
-                    bottom = 96.dp,
+                    bottom = DDBottomNavigationBarHeight + LocalDDScreenMargin.current,
                 ),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {

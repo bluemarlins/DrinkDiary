@@ -1,5 +1,7 @@
 package com.bluemarlin.drinkdiary.ui.navigation
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -7,14 +9,20 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -35,15 +43,29 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.bluemarlin.drinkdiary.R
 import com.bluemarlin.drinkdiary.ui.component.DDIconButton
@@ -84,6 +106,14 @@ val LocalDDScreenMargin = staticCompositionLocalOf { 16.dp }
 // 내용이 반투명 바 밑으로 흐르도록 bottom 인셋을 0으로 넘기므로, 바 위에 무언가를 얹으려면
 // 이 값을 직접 비켜야 한다. 바와 소비자가 같은 상수를 보게 해서 둘이 갈라지지 않게 한다.
 val DDBottomNavigationBarHeight = 80.dp
+
+// 상단 플로팅 바가 차지하는 높이(막대 56dp + 위아래 여백 8dp씩). 상태바 인셋은 여기 포함하지
+// 않는다 — 그건 기기마다 다르고 `statusBarsPadding()`이 따로 준다.
+//
+// **하단과 같은 규칙이다.** 콘텐츠는 이 바 뒤로 흐르고, 화면은 스크롤 컨테이너의
+// `contentPadding`으로 이만큼을 비운다. 바깥 `Modifier.padding`으로 비우면 흐르지 않아서
+// 블러가 비출 것이 없어진다 — 플로팅이 아니라 그냥 떠 있는 불투명 막대가 된다.
+val DDTopAppBarHeight = 72.dp
 
 // T4에서는 읽는 곳이 없어 지웠던 값이다. 명세 4절 마지막 열(화면별 적응형 레이아웃)을 구현하면서
 // 화면이 자기 구간을 알아야 할 이유가 생겨 되살린다.
@@ -203,13 +233,50 @@ private fun AppScaffold(
     content: @Composable (PaddingValues) -> Unit,
 ) {
     val layoutDirection = LocalLayoutDirection.current
+
+    // **앱바가 언제 떠야 하는지는 콘텐츠가 정한다.** 스크롤이 0이면 겹칠 것이 없으므로 알약도
+    // 필요 없다 — 그때는 평범한 도킹 앱바다. 콘텐츠가 위로 올라와 앱바 영역과 겹치기 시작하는
+    // 그 순간부터 알약이 자라난다.
+    //
+    // 스크롤 상태는 화면마다 다르고(Column·LazyColumn) 스캐폴드는 그걸 알 수 없다. 그래서
+    // 자식들이 흘려보내는 스크롤 델타를 `NestedScrollConnection`으로 주워 담는다 —
+    // 화면 코드를 하나도 고치지 않고도 네 화면 모두에서 동작한다.
+    var scrolledPx by remember { mutableFloatStateOf(0f) }
+    val overlapConnection =
+        remember {
+            object : NestedScrollConnection {
+                override fun onPreScroll(
+                    available: Offset,
+                    source: NestedScrollSource,
+                ): Offset {
+                    scrolledPx = (scrolledPx - available.y).coerceAtLeast(0f)
+                    return Offset.Zero
+                }
+            }
+        }
+    // 손가락 떨림으로 알약이 깜박이지 않게 하는 최소 문턱이다.
+    val overlapped = scrolledPx > with(LocalDensity.current) { 4.dp.toPx() }
+
     Scaffold(
         topBar = {
-            DDTopAppBar(
-                title = title,
-                onBackClick = onBackClick,
-                actions = toolbarActions,
-            )
+            // 플로팅은 **콘텐츠가 뒤로 흐르는 자리에서만** 성립한다. `hazeState`가 있는 구간이
+            // 정확히 그 자리다(Compact + 최상위). 상세·편집처럼 흐르지 않는 화면에 알약을 얹으면
+            // 블러가 비출 것이 없어서 그냥 떠 있는 불투명 막대가 된다.
+            if (hazeState != null) {
+                DDFloatingTopAppBar(
+                    title = title,
+                    onBackClick = onBackClick,
+                    actions = toolbarActions,
+                    hazeState = hazeState,
+                    floating = overlapped,
+                )
+            } else {
+                DDTopAppBar(
+                    title = title,
+                    onBackClick = onBackClick,
+                    actions = toolbarActions,
+                )
+            }
         },
         bottomBar = {
             if (showBottomBar) {
@@ -234,10 +301,13 @@ private fun AppScaffold(
                         end = padding.calculateEndPadding(layoutDirection),
                         bottom = 0.dp,
                     )
+                val topFade = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+                val bottomFade = DrinkDiarySpacing.xl
                 Box(
                     modifier =
                         Modifier
                             .fillMaxSize()
+                            .nestedScroll(overlapConnection)
                             .haze(
                                 state = hazeState,
                                 style =
@@ -247,7 +317,35 @@ private fun AppScaffold(
                                     ),
                             ),
                 ) {
-                    content(overlayContentPadding)
+                    // **페이딩 엣지.** 콘텐츠가 화면 끝에서 뚝 잘리는 대신 알파로 사라진다.
+                    // 잘린 글자 반 줄은 "여기가 끝"이 아니라 "덜 그려졌다"로 읽힌다.
+                    //
+                    // 페이드 범위는 **바가 아니라 화면 가장자리**에 맞춘다. 바 뒤까지 지워 버리면
+                    // 블러가 비출 것이 없어져 플로팅 자체가 죽는다 — 위는 상태바 높이만큼,
+                    // 아래는 24dp만 녹인다.
+                    Box(
+                        modifier =
+                            Modifier
+                                .fillMaxSize()
+                                .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
+                                .drawWithContent {
+                                    drawContent()
+                                    val top = (topFade.toPx() / size.height).coerceIn(0f, 0.5f)
+                                    val bottom = (bottomFade.toPx() / size.height).coerceIn(0f, 0.5f)
+                                    drawRect(
+                                        brush =
+                                            Brush.verticalGradient(
+                                                0f to Color.Transparent,
+                                                top to Color.Black,
+                                                (1f - bottom) to Color.Black,
+                                                1f to Color.Transparent,
+                                            ),
+                                        blendMode = BlendMode.DstIn,
+                                    )
+                                },
+                    ) {
+                        content(overlayContentPadding)
+                    }
                 }
             } else if (constrainContentWidth) {
                 // 명세 4절: Expanded에서 콘텐츠 최대폭 720dp. 태블릿에서 한 줄이 화면 끝까지
@@ -262,6 +360,96 @@ private fun AppScaffold(
             }
         },
     )
+}
+
+// 상단 플로팅 알약 바. **하단 바와 같은 규격을 쓴다** — 좌우 `screenMargin`, `ShapeLarge` 18dp,
+// 같은 haze 스타일, 1dp `outlineVariant` 테두리. 둘이 다른 반경이나 다른 틴트를 쓰면 한 화면에
+// 다른 시스템이 둘 있는 것으로 보인다.
+//
+// **틴트가 하단보다 진하다(0.42 → 0.58).** 상단은 스크롤이 시작되는 쪽이라 사진의 밝은 윗부분이
+// 지나갈 확률이 높고, 여기 얹히는 것은 아이콘이 아니라 **타이틀 텍스트**다. 텍스트는 아이콘보다
+// 대비가 조금만 흔들려도 먼저 읽히지 않는다(명세 2절 AAA 7:1).
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DDFloatingTopAppBar(
+    title: String,
+    onBackClick: (() -> Unit)?,
+    actions: @Composable RowScope.() -> Unit,
+    hazeState: HazeState?,
+    floating: Boolean,
+) {
+    // 0 = 도킹(평범한 앱바), 1 = 알약이 완전히 자란 상태. 사이 값은 모핑 중이다.
+    val t by animateFloatAsState(
+        targetValue = if (floating) 1f else 0f,
+        animationSpec = tween(durationMillis = 220),
+        label = "topBarMorph",
+    )
+    val shape = MaterialTheme.shapes.large
+
+    Box(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .statusBarsPadding()
+                .padding(horizontal = LocalDDScreenMargin.current, vertical = DrinkDiarySpacing.xs)
+                .height(DDTopAppBarHeight - DrinkDiarySpacing.xs * 2),
+        contentAlignment = Alignment.CenterStart,
+    ) {
+        // **알약은 화면 폭이 아니라 제 내용만큼만 차지한다**(`wrapContentWidth`).
+        // 플로팅의 기조가 콘텐츠를 최대한 보여 주는 것이라, 바가 가리는 면적은 글자가 차지하는
+        // 만큼이 상한이다. 전폭 알약은 도킹 바를 모서리만 깎아 놓은 것과 다르지 않다.
+        Row(
+            modifier =
+                Modifier
+                    .wrapContentWidth()
+                    .fillMaxHeight()
+                    .clip(shape)
+                    .then(
+                        // 도킹 상태(t=0)에서는 크롬을 아예 그리지 않는다 — 배경도 테두리도 없는
+                        // 맨 타이틀이라 그게 곧 '겹치지 않은 상태'의 시각적 뜻이다.
+                        if (hazeState != null && t > 0.01f) {
+                            Modifier.hazeChild(
+                                state = hazeState,
+                                shape = shape,
+                                style =
+                                    HazeStyle(
+                                        tint = MaterialTheme.colorScheme.surface.copy(alpha = 0.58f * t),
+                                        // 블러도 함께 자란다. 0에서 시작해야 알약이 '켜지는' 대신
+                                        // '맺히는' 것으로 보인다.
+                                        blurRadius = 32.dp * t,
+                                    ),
+                            )
+                        } else {
+                            Modifier
+                        },
+                    ).border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = t),
+                        shape = shape,
+                    )
+                    // 안쪽 여백도 함께 자란다. t=0일 때 0이라 타이틀이 도킹 앱바와 **같은 자리**에
+                    // 서고, 알약은 글자를 밀어내지 않고 글자 주위로 부풀어 오른다.
+                    .padding(horizontal = DrinkDiarySpacing.sm * t),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            if (onBackClick != null) {
+                DDIconButton(
+                    onClick = onBackClick,
+                    contentDescription = stringResource(R.string.back),
+                ) {
+                    Icon(painter = painterResource(R.drawable.ic_back), contentDescription = null)
+                }
+            }
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            actions()
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

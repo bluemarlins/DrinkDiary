@@ -405,7 +405,8 @@ private fun ScreenContent(
             ProfileScreen(
                 state = profile,
                 onScopeChange = profileViewModel::selectScope,
-                modifier = modifier.padding(padding),
+                contentPadding = padding,
+                modifier = modifier,
             )
         }
 

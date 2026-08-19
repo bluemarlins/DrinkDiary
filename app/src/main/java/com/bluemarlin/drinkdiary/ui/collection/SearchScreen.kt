@@ -19,10 +19,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.unit.dp
 import com.bluemarlin.drinkdiary.domain.model.DrinkRecord
 import com.bluemarlin.drinkdiary.ui.component.DDDrinkRecordCard
 import com.bluemarlin.drinkdiary.ui.component.DDEmptyContent
+import com.bluemarlin.drinkdiary.ui.navigation.DDBottomNavigationBarHeight
 import com.bluemarlin.drinkdiary.ui.navigation.LocalDDScreenMargin
 import com.bluemarlin.drinkdiary.ui.theme.DrinkDiarySpacing
 
@@ -58,7 +58,8 @@ fun SearchScreen(
             records.filter { it.name.contains(trimmed, ignoreCase = true) }
         }
 
-    Column(modifier = modifier.fillMaxSize().padding(contentPadding)) {
+    // 인셋은 바깥 padding이 아니라 각 요소가 받는다 — 콘텐츠가 플로팅 바 뒤로 흘러야 한다.
+    Column(modifier = modifier.fillMaxSize()) {
         OutlinedTextField(
             value = query,
             onValueChange = { query = it },
@@ -69,6 +70,7 @@ fun SearchScreen(
             modifier =
                 Modifier
                     .fillMaxWidth()
+                    .padding(top = contentPadding.calculateTopPadding())
                     .padding(
                         horizontal = LocalDDScreenMargin.current,
                         vertical = DrinkDiarySpacing.sm,
@@ -119,7 +121,7 @@ fun SearchScreen(
                             start = LocalDDScreenMargin.current,
                             end = LocalDDScreenMargin.current,
                             top = DrinkDiarySpacing.xs,
-                            bottom = 96.dp,
+                            bottom = DDBottomNavigationBarHeight + LocalDDScreenMargin.current,
                         ),
                     verticalArrangement = Arrangement.spacedBy(DrinkDiarySpacing.sm),
                 ) {
