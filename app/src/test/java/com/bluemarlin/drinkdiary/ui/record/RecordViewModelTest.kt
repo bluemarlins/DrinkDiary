@@ -9,6 +9,7 @@ import com.bluemarlin.drinkdiary.domain.model.Origin
 import com.bluemarlin.drinkdiary.domain.model.TagCategory
 import com.bluemarlin.drinkdiary.domain.model.Trait
 import com.bluemarlin.drinkdiary.domain.model.TraitAnswer
+import com.bluemarlin.drinkdiary.domain.model.WhiskyStyle
 import com.bluemarlin.drinkdiary.domain.model.WineColor
 import com.bluemarlin.drinkdiary.domain.repository.DrinkRecordRepository
 import com.bluemarlin.drinkdiary.domain.repository.PhotoRepository
@@ -88,6 +89,58 @@ class RecordViewModelTest {
             assertEquals(WineColor.Natural, savedRecord.tags.wineColor)
             assertEquals(4.5, savedRecord.rating, 0.01)
             assertEquals(5, savedRecord.taste.answers.size)
+        }
+
+    @Test
+    fun `whiskey recording flow saves record with Korean origin and blended malt style`() =
+        runBlocking {
+            val recordRepo = FakeRecordRepository()
+            val photoRepo = FakePhotoRepository()
+            val prefRepo = FakePreferencesRepository()
+            val viewModel =
+                RecordViewModel(
+                    repository = recordRepo,
+                    preferences = prefRepo,
+                    importPhoto = ImportPhotoUseCase(photoRepo),
+                    deletePhoto = DeletePhotoUseCase(photoRepo),
+                )
+
+            // Step 1: Drink & Style
+            viewModel.pickDrink(DrinkType.Whiskey, DrinkTags(whiskyStyle = WhiskyStyle.BlendedMalt))
+            assertEquals(DrinkType.Whiskey, viewModel.uiState.value.type)
+
+            // Step 2: Origin
+            viewModel.pickOrigin(Origin.Korea)
+            assertEquals(Origin.Korea, viewModel.uiState.value.form.tags.origin)
+
+            // Step 3-5: Info & Rating
+            viewModel.updateForm(
+                viewModel.uiState.value.form.copy(
+                    name = "기원 배치 1",
+                    rating = 4.8,
+                    collectionStatus = CollectionStatus.Repurchase,
+                ),
+            )
+
+            // Step 6: 5 axes probes
+            viewModel.answer(Trait.Sweetness, TraitAnswer.Mid)
+            viewModel.answer(Trait.Body, TraitAnswer.High)
+            viewModel.answer(Trait.Peat, TraitAnswer.Low)
+            viewModel.answer(Trait.AlcoholBurn, TraitAnswer.VeryLow)
+            viewModel.answer(Trait.Aftertaste, TraitAnswer.VeryHigh)
+
+            viewModel.save()
+            ShadowLooper.idleMainLooper()
+
+            val state = viewModel.uiState.first { it.savedId != null }
+            assertNotNull(state.savedId)
+
+            val savedRecord = recordRepo.savedRecords.first()
+            assertEquals("기원 배치 1", savedRecord.name)
+            assertEquals(DrinkType.Whiskey, savedRecord.type)
+            assertEquals(Origin.Korea, savedRecord.tags.origin)
+            assertEquals(WhiskyStyle.BlendedMalt, savedRecord.tags.whiskyStyle)
+            assertEquals(TraitAnswer.VeryHigh, savedRecord.taste[Trait.Aftertaste])
         }
 
     private class FakeRecordRepository : DrinkRecordRepository {

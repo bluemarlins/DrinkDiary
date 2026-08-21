@@ -56,7 +56,7 @@ val TagCategory.gapCandidates: List<String>
             TagCategory.WineStyle -> WineStyle.entries.map { it.name }
         }
 
-enum class WhiskyStyle { SingleMalt, Blended, Bourbon, Rye, Other }
+enum class WhiskyStyle { SingleMalt, BlendedMalt, Blended, Bourbon, Rye, Other }
 
 enum class PeatTag { Peated, Unpeated }
 
@@ -82,7 +82,9 @@ enum class Origin {
     Scotland,
     Ireland,
     Japan,
+    Canada,
     Taiwan,
+    Korea,
     Other,
     ;
 
@@ -104,7 +106,7 @@ enum class Origin {
             )
 
         val whiskyOrigins: List<Origin> =
-            listOf(Scotland, USA, Ireland, Japan, Taiwan, Other)
+            listOf(Scotland, USA, Ireland, Japan, Canada, Taiwan, Korea, Other)
 
         fun of(type: DrinkType): List<Origin> =
             when (type) {

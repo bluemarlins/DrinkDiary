@@ -16,10 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.bluemarlin.drinkdiary.domain.model.DrinkType
-import com.bluemarlin.drinkdiary.domain.model.ServingStyle
 import com.bluemarlin.drinkdiary.domain.model.TagCategory
-import com.bluemarlin.drinkdiary.ui.DrinkLabels
-import com.bluemarlin.drinkdiary.ui.component.DDChip
 import com.bluemarlin.drinkdiary.ui.component.DDPrimaryButton
 import com.bluemarlin.drinkdiary.ui.component.DDSecondaryButton
 import com.bluemarlin.drinkdiary.ui.navigation.LocalDDScreenMargin
@@ -55,35 +52,16 @@ fun RecordOptionalDetailStep(
             )
         }
 
-        when (type) {
-            DrinkType.Wine -> {
-                OutlinedTextField(
-                    value = form.vintage,
-                    onValueChange = { onFormChange(form.copy(vintage = it.filter { ch -> ch.isDigit() })) },
-                    label = { Text("빈티지 (생산 연도)") },
-                    placeholder = { Text("예: 2020") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
-            DrinkType.Whiskey -> {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("어떻게 드셨나요?", style = MaterialTheme.typography.titleMedium)
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        ServingStyle.entries.forEach { style ->
-                            DDChip(
-                                label = DrinkLabels.servingStyle(style),
-                                selected = form.servingStyle == style,
-                                onClick = {
-                                    val next = if (form.servingStyle == style) null else style
-                                    onFormChange(form.copy(servingStyle = next))
-                                },
-                            )
-                        }
-                    }
-                }
-            }
+        if (type == DrinkType.Wine) {
+            OutlinedTextField(
+                value = form.vintage,
+                onValueChange = { onFormChange(form.copy(vintage = it.filter { ch -> ch.isDigit() })) },
+                label = { Text("빈티지 (생산 연도)") },
+                placeholder = { Text("예: 2020") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
         }
 
         OutlinedTextField(

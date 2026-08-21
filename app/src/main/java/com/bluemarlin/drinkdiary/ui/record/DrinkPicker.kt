@@ -66,10 +66,11 @@ private val whiskeyChoices =
             label =
                 when (style) {
                     WhiskyStyle.SingleMalt -> "싱글몰트"
+                    WhiskyStyle.BlendedMalt -> "블렌디드 몰트"
                     WhiskyStyle.Blended -> "블렌디드"
                     WhiskyStyle.Bourbon -> "버번"
                     WhiskyStyle.Rye -> "라이"
-                    WhiskyStyle.Other -> "기타·모름"
+                    WhiskyStyle.Other -> "그 외"
                 },
             tags = DrinkTags(whiskyStyle = style),
         )

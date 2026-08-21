@@ -117,6 +117,7 @@ object DrinkLabels {
             TagCategory.WhiskyStyle ->
                 when (value) {
                     WhiskyStyle.SingleMalt.name -> "싱글몰트"
+                    WhiskyStyle.BlendedMalt.name -> "블렌디드 몰트"
                     WhiskyStyle.Blended.name -> "블렌디드"
                     WhiskyStyle.Bourbon.name -> "버번"
                     WhiskyStyle.Rye.name -> "라이"
@@ -161,7 +162,9 @@ object DrinkLabels {
                     Origin.Scotland.name -> "스코틀랜드"
                     Origin.Ireland.name -> "아일랜드"
                     Origin.Japan.name -> "일본"
+                    Origin.Canada.name -> "캐나다"
                     Origin.Taiwan.name -> "대만"
+                    Origin.Korea.name -> "한국"
                     Origin.Other.name -> "기타·모름"
                     "OldWorld" -> "구대륙"
                     "NewWorld" -> "신대륙"

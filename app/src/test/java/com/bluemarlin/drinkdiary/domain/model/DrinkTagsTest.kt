@@ -72,4 +72,14 @@ class DrinkTagsTest {
         assertNull(tags.peat)
         assertEquals(Origin.France, tags.origin)
     }
+
+    @Test
+    fun `whisky origins and styles contain new additions`() {
+        val whiskyOrigins = Origin.of(DrinkType.Whiskey)
+        assertTrue(whiskyOrigins.contains(Origin.Canada))
+        assertTrue(whiskyOrigins.contains(Origin.Korea))
+
+        val whiskyStyles = TagCategory.WhiskyStyle.gapCandidates
+        assertTrue(whiskyStyles.contains(WhiskyStyle.BlendedMalt.name))
+    }
 }
