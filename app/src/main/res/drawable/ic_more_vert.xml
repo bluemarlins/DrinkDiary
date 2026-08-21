@@ -1,0 +1,16 @@
+<!-- 더보기(overflow). 명세 2절 4번: 24dp 그리드, 2dp 선 굵기, 라운드 캡으로 자체 제작한다.
+     점은 길이 0인 선분이라 strokeLineCap="round"가 지름 2dp의 원을 그린다 — 채움 원을 따로
+     쓰지 않는 이유는 같은 파일 안에서 굵기 규칙이 갈리지 않게 하기 위해서다. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="@android:color/transparent"
+        android:pathData="M12,6 L12,6 M12,12 L12,12 M12,18 L12,18"
+        android:strokeWidth="3"
+        android:strokeColor="#FF000000"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+</vector>

@@ -31,7 +31,6 @@ import com.bluemarlin.drinkdiary.domain.model.TagValueRating
 import com.bluemarlin.drinkdiary.domain.model.TasteProfile
 import com.bluemarlin.drinkdiary.domain.model.TypeScope
 import com.bluemarlin.drinkdiary.ui.DrinkLabels
-import com.bluemarlin.drinkdiary.ui.component.DDChip
 import com.bluemarlin.drinkdiary.ui.component.DDDrinkHighlightRow
 import com.bluemarlin.drinkdiary.ui.component.DDMonthlySummaryCard
 import com.bluemarlin.drinkdiary.ui.component.DDProfileProgressCard
@@ -52,7 +51,6 @@ import com.bluemarlin.drinkdiary.ui.theme.DrinkDiarySpacing
 @Composable
 fun ProfileScreen(
     state: ProfileUiState,
-    onScopeChange: (TypeScope) -> Unit,
     contentPadding: PaddingValues = PaddingValues(),
     modifier: Modifier = Modifier,
 ) {
@@ -81,7 +79,7 @@ fun ProfileScreen(
                         ),
                 verticalArrangement = Arrangement.spacedBy(DrinkDiarySpacing.xl),
             ) {
-                SummarySection(state = state, onScopeChange = onScopeChange)
+                SummarySection(state = state)
                 DDMonthlySummaryCard(summary = state.monthly)
                 TraitSections(state = state)
             }
@@ -104,7 +102,6 @@ fun ProfileScreen(
     ) {
         SummarySection(
             state = state,
-            onScopeChange = onScopeChange,
             modifier = Modifier.weight(0.4f).verticalScroll(rememberScrollState()),
         )
         // FAB는 오른쪽 아래에 뜬다. 가릴 내용이 있는 쪽은 이 칸뿐이다.
@@ -122,14 +119,12 @@ fun ProfileScreen(
 @Composable
 private fun SummarySection(
     state: ProfileUiState,
-    onScopeChange: (TypeScope) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(DrinkDiarySpacing.xl),
     ) {
-        ScopeSelector(selected = state.scope, onSelect = onScopeChange)
         SummaryHeadline(
             readiness = state.readiness,
             profile = state.profile,
@@ -210,26 +205,6 @@ private fun drinkTypeOf(scope: TypeScope): DrinkType? =
         TypeScope.Whiskey -> DrinkType.Whiskey
         TypeScope.Combined -> null
     }
-
-@Composable
-private fun ScopeSelector(
-    selected: TypeScope,
-    onSelect: (TypeScope) -> Unit,
-) {
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        listOf(
-            TypeScope.Wine to "와인",
-            TypeScope.Whiskey to "위스키",
-            TypeScope.Combined to "통합",
-        ).forEach { (scope, label) ->
-            DDChip(
-                label = label,
-                selected = selected == scope,
-                onClick = { onSelect(scope) },
-            )
-        }
-    }
-}
 
 @Composable
 private fun SummaryHeadline(

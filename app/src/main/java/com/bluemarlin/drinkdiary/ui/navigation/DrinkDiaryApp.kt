@@ -12,10 +12,14 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -32,6 +36,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.bluemarlin.drinkdiary.AppContainer
 import com.bluemarlin.drinkdiary.DrinkDiaryApplication
 import com.bluemarlin.drinkdiary.R
+import com.bluemarlin.drinkdiary.domain.model.TypeScope
 import com.bluemarlin.drinkdiary.ui.DrinkLabels
 import com.bluemarlin.drinkdiary.ui.collection.CollectionListDetail
 import com.bluemarlin.drinkdiary.ui.collection.CollectionScreen
@@ -43,6 +48,7 @@ import com.bluemarlin.drinkdiary.ui.component.DDBatchActionBar
 import com.bluemarlin.drinkdiary.ui.component.DDConfirmDialog
 import com.bluemarlin.drinkdiary.ui.component.DDIconButton
 import com.bluemarlin.drinkdiary.ui.profile.ProfileScreen
+import com.bluemarlin.drinkdiary.ui.profile.ProfileUiState
 import com.bluemarlin.drinkdiary.ui.profile.ProfileViewModel
 import com.bluemarlin.drinkdiary.ui.record.EditRecordScreen
 import com.bluemarlin.drinkdiary.ui.record.EditRecordViewModel
@@ -109,6 +115,25 @@ fun DrinkDiaryApp(modifier: Modifier = Modifier) {
                 ),
         )
     val collection by collectionViewModel.uiState.collectAsState()
+
+    // **앱바가 스코프를 바꾸므로 이 VM은 화면보다 위에 있어야 한다**(2026-08-20).
+    // 이전에는 `ScreenContent` 안에서 만들었는데, 그러면 툴바에서 손이 닿지 않는다.
+    // `collectionViewModel`이 이미 여기 있는 것과 같은 이유다.
+    val profileViewModel: ProfileViewModel =
+        viewModel(
+            factory =
+                ProfileViewModel.Factory(
+                    appContainer.observeTasteProfileUseCase,
+                    appContainer.observeTagPreferenceUseCase,
+                    appContainer.resolveProfileReadinessUseCase,
+                    appContainer.observeMonthlySummaryUseCase,
+                    appContainer.observeRecentTrendUseCase,
+                    appContainer.observeTastingGapsUseCase,
+                    appContainer.observeAnswerReflectionUseCase,
+                    appContainer.observeDrinkHighlightsUseCase,
+                ),
+        )
+    val profile by profileViewModel.uiState.collectAsState()
 
     // 삭제 실패를 조용히 넘기면 목록이 그대로라 사용자는 지워진 줄 안다(harness.md §7).
     LaunchedEffect(collection.error) {
@@ -255,18 +280,40 @@ fun DrinkDiaryApp(modifier: Modifier = Modifier) {
                 null
             }
 
-        val toolbarActions: @Composable RowScope.() -> Unit = {
-            if (selecting) {
-                DDIconButton(
-                    onClick = collectionViewModel::clearSelection,
-                    contentDescription = "선택 해제",
-                ) {
-                    Icon(painter = painterResource(R.drawable.ic_close), contentDescription = null)
+        // **비어 있는 람다를 넘기지 않는다.** 내용이 없어도 람다가 non-null이면 앱바가
+        // "액션이 있다"고 보고 빈 원을 그린다(2026-08-20 실기기에서 확인된 결함).
+        // 그릴 것이 없으면 `null`이어야 원 자체가 생기지 않는다.
+        val toolbarActions: (@Composable RowScope.() -> Unit)? =
+            when {
+                selecting -> {
+                    {
+                        DDIconButton(
+                            onClick = collectionViewModel::clearSelection,
+                            contentDescription = "선택 해제",
+                        ) {
+                            Icon(painter = painterResource(R.drawable.ic_close), contentDescription = null)
+                        }
+                    }
                 }
+                screen == Screen.Dashboard -> {
+                    {
+                        // 주종 스코프를 **칩에서 더보기 메뉴로 옮겼다**(2026-08-20 사용자 확정).
+                        // 칩 줄은 본문 맨 위에서 세로 공간을 늘 먹었는데, 스코프는 한 번 고르면 잘
+                        // 안 바꾸는 값이라 늘 펼쳐 둘 이유가 없다 — 플로팅의 기조가 콘텐츠를 최대한
+                        // 보여 주는 것이므로 상시 노출은 그 기조와 맞지 않는다.
+                        //
+                        // 이 아이콘은 앱바 알약의 `actions` 슬롯에 들어가므로 **스크롤 모핑을 그대로 탄다** —
+                        // 따로 배선하지 않는다.
+                        DDScopeOverflowMenu(
+                            selected = profile.scope,
+                            onSelect = profileViewModel::selectScope,
+                        )
+                    }
+                }
+                // 설정 아이콘은 툴바에서 걷어냈다(2026-08-19 사용자 확정). 하단 탭이 설정의
+                // 진입점이며, 진입점이 둘이면 어느 쪽이 정본인지 알 수 없고 선택 상태도 어긋난다.
+                else -> null
             }
-            // 설정 아이콘을 툴바에서 걷어냈다(2026-08-19 사용자 확정). 이제 하단 탭이 설정의
-            // 진입점이며, 진입점이 둘이면 어느 쪽이 정본인지 알 수 없고 선택 상태도 어긋난다.
-        }
 
         DDScreenScaffold(
             title = title,
@@ -310,6 +357,7 @@ fun DrinkDiaryApp(modifier: Modifier = Modifier) {
                                 appContainer = appContainer,
                                 collection = collection,
                                 collectionViewModel = collectionViewModel,
+                                profile = profile,
                                 snackbar = snackbar,
                                 onNavigate = { screen = it },
                                 listDetail = isListDetail(tabScreen, windowSize),
@@ -322,6 +370,7 @@ fun DrinkDiaryApp(modifier: Modifier = Modifier) {
                             appContainer = appContainer,
                             collection = collection,
                             collectionViewModel = collectionViewModel,
+                            profile = profile,
                             snackbar = snackbar,
                             onNavigate = { screen = it },
                             listDetail = false,
@@ -372,6 +421,53 @@ fun DrinkDiaryApp(modifier: Modifier = Modifier) {
     }
 }
 
+// 대시보드의 주종 스코프 선택(와인 / 위스키 / 통합).
+//
+// **선택된 값을 아이콘 옆에 적지 않는다.** 적으면 알약이 그만큼 길어져 콘텐츠를 더 가리는데,
+// 지금 무엇을 보고 있는지는 화면 내용 자체가 이미 말하고 있다. 메뉴를 열면 체크로 보인다.
+@Composable
+private fun DDScopeOverflowMenu(
+    selected: TypeScope,
+    onSelect: (TypeScope) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Box {
+        DDIconButton(
+            onClick = { expanded = true },
+            contentDescription = "주종 고르기",
+        ) {
+            Icon(painter = painterResource(R.drawable.ic_more_vert), contentDescription = null)
+        }
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            listOf(
+                TypeScope.Wine to "와인",
+                TypeScope.Whiskey to "위스키",
+                TypeScope.Combined to "통합",
+            ).forEach { (scope, label) ->
+                DropdownMenuItem(
+                    text = { Text(label) },
+                    onClick = {
+                        onSelect(scope)
+                        expanded = false
+                    },
+                    // 선택 표시를 색이 아니라 **체크 아이콘**으로 한다. 색만으로 상태를 말하면
+                    // 색각 이상에서 무엇이 골라져 있는지 알 수 없다(명세 2절).
+                    trailingIcon = {
+                        if (scope == selected) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_check),
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                            )
+                        }
+                    },
+                )
+            }
+        }
+    }
+}
+
 @Composable
 private fun ScreenContent(
     screen: Screen,
@@ -379,36 +475,19 @@ private fun ScreenContent(
     appContainer: AppContainer,
     collection: CollectionUiState,
     collectionViewModel: CollectionViewModel,
+    profile: ProfileUiState,
     snackbar: SnackbarHostState,
     onNavigate: (Screen) -> Unit,
     listDetail: Boolean,
     modifier: Modifier = Modifier,
 ) {
     when (screen) {
-        Screen.Dashboard -> {
-            val profileViewModel: ProfileViewModel =
-                viewModel(
-                    factory =
-                        ProfileViewModel.Factory(
-                            appContainer.observeTasteProfileUseCase,
-                            appContainer.observeTagPreferenceUseCase,
-                            appContainer.resolveProfileReadinessUseCase,
-                            appContainer.observeMonthlySummaryUseCase,
-                            appContainer.observeRecentTrendUseCase,
-                            appContainer.observeTastingGapsUseCase,
-                            appContainer.observeAnswerReflectionUseCase,
-                            appContainer.observeDrinkHighlightsUseCase,
-                        ),
-                )
-            val profile by profileViewModel.uiState.collectAsState()
-
+        Screen.Dashboard ->
             ProfileScreen(
                 state = profile,
-                onScopeChange = profileViewModel::selectScope,
                 contentPadding = padding,
                 modifier = modifier,
             )
-        }
 
         Screen.Collection ->
             if (listDetail) {

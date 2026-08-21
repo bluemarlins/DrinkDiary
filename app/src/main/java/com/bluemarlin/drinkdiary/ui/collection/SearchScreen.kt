@@ -59,6 +59,10 @@ fun SearchScreen(
         }
 
     // 인셋은 바깥 padding이 아니라 각 요소가 받는다 — 콘텐츠가 플로팅 바 뒤로 흘러야 한다.
+    //
+    // **입력창은 목록 안으로 넣지 않는다.** 매장에서 이름을 고쳐 치는 화면이라(F5) 스크롤하다
+    // 입력창이 사라지면 다시 위로 올라와야 한다 — 그게 F5가 없애려던 전환 비용이다.
+    // 그래서 여기서 바 뒤로 흐르는 것은 결과 목록이고, 입력창은 그 위에 남는다.
     Column(modifier = modifier.fillMaxSize()) {
         OutlinedTextField(
             value = query,

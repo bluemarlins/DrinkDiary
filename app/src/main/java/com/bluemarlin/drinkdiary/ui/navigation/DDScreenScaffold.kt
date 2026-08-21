@@ -4,6 +4,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,21 +23,19 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
-import androidx.compose.material3.NavigationDrawerItem
-import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.NavigationRailItemDefaults
-import androidx.compose.material3.PermanentDrawerSheet
-import androidx.compose.material3.PermanentNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -43,6 +43,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
@@ -115,6 +116,17 @@ val DDBottomNavigationBarHeight = 80.dp
 // 블러가 비출 것이 없어진다 — 플로팅이 아니라 그냥 떠 있는 불투명 막대가 된다.
 val DDTopAppBarHeight = 72.dp
 
+// 하단 플로팅 바의 폭. **화면 폭의 60%**를 기본으로 하되 dp로 위아래를 막는다
+// (2026-08-19 사용자 확정).
+//
+// - **최소 280dp**: 탭 4개 × 70dp다. "대시보드"는 한글 4글자라 항목당 70dp 아래로 내려가면
+//   레이블이 줄거나 잘린다. 320dp짜리 최협 화면에서도 좌우 마진 32dp를 빼고 들어간다.
+// - **최대 480dp**: 탭 4개 × 120dp. 그 이상 넓히면 아이템 사이가 벌어져 바가 '빈 슬래브'로
+//   읽히고, 엄지가 닿지 않는 가장자리에 탭이 놓인다.
+val DDBottomBarWidthFraction = 0.6f
+val DDBottomBarMinWidth = 280.dp
+val DDBottomBarMaxWidth = 480.dp
+
 // T4에서는 읽는 곳이 없어 지웠던 값이다. 명세 4절 마지막 열(화면별 적응형 레이아웃)을 구현하면서
 // 화면이 자기 구간을 알아야 할 이유가 생겨 되살린다.
 val LocalDDWindowSize = staticCompositionLocalOf { DDWindowSize.Compact }
@@ -131,7 +143,7 @@ fun DDScreenScaffold(
     onSettingsClick: (() -> Unit)? = null,
     onBackClick: (() -> Unit)? = null,
     floatingActionButton: @Composable (() -> Unit)? = null,
-    toolbarActions: @Composable RowScope.() -> Unit = {},
+    toolbarActions: (@Composable RowScope.() -> Unit)? = null,
     snackbarHost: @Composable (() -> Unit)? = null,
     content: @Composable (PaddingValues) -> Unit,
 ) {
@@ -183,7 +195,16 @@ fun DDScreenScaffold(
             when (windowSize) {
                 DDWindowSize.Compact -> scaffold(true, hazeState)
 
-                DDWindowSize.Medium ->
+                // **Medium과 Expanded가 같은 레일을 쓴다**(2026-08-20 사용자 확정).
+                //
+                // 이전에는 Expanded에서 `PermanentNavigationDrawer`를 썼는데, M3 드로어 시트의
+                // 기본 폭이 360dp다. 876dp짜리 가로 화면에서 **왼쪽이 41%를 먹고** 본문이
+                // 516dp만 남았다 — 태블릿에서 더 보여 주려고 넓힌 화면을 목적지 이름 넉 줄로
+                // 되돌려준 셈이다.
+                //
+                // 레일은 80dp다. **화면 폭에 비례시키지 않는다** — 아이콘 하나의 터치 타깃은
+                // 화면이 넓어진다고 커질 이유가 없고, 비례시키면 넓은 화면일수록 더 낭비한다.
+                DDWindowSize.Medium, DDWindowSize.Expanded ->
                     Row(modifier = Modifier.fillMaxSize()) {
                         AppNavigationRail(
                             selectedTab = selectedTab,
@@ -192,21 +213,6 @@ fun DDScreenScaffold(
                             onSearchClick = onSearchClick,
                             onSettingsClick = onSettingsClick,
                         )
-                        scaffold(false, null)
-                    }
-
-                DDWindowSize.Expanded ->
-                    PermanentNavigationDrawer(
-                        drawerContent = {
-                            AppNavigationDrawerSheet(
-                                selectedTab = selectedTab,
-                                onDashboardClick = onDashboardClick,
-                                onCollectionClick = onCollectionClick,
-                                onSearchClick = onSearchClick,
-                                onSettingsClick = onSettingsClick,
-                            )
-                        },
-                    ) {
                         scaffold(false, null)
                     }
             }
@@ -228,7 +234,7 @@ private fun AppScaffold(
     onBackClick: (() -> Unit)?,
     hazeState: HazeState?,
     floatingActionButton: @Composable (() -> Unit)?,
-    toolbarActions: @Composable RowScope.() -> Unit,
+    toolbarActions: (@Composable RowScope.() -> Unit)?,
     snackbarHost: @Composable (() -> Unit),
     content: @Composable (PaddingValues) -> Unit,
 ) {
@@ -254,6 +260,10 @@ private fun AppScaffold(
                 }
             }
         }
+    // **탭을 옮기면 누적을 지운다.** 안 지우면 대시보드에서 내려 읽다가 설정으로 가도 알약이
+    // 뜬 채로 남는다 — 그 화면은 아직 겹친 적이 없는데도 겹친 모양을 하고 있게 된다.
+    LaunchedEffect(selectedTab) { scrolledPx = 0f }
+
     // 손가락 떨림으로 알약이 깜박이지 않게 하는 최소 문턱이다.
     val overlapped = scrolledPx > with(LocalDensity.current) { 4.dp.toPx() }
 
@@ -374,7 +384,7 @@ private fun AppScaffold(
 fun DDFloatingTopAppBar(
     title: String,
     onBackClick: (() -> Unit)?,
-    actions: @Composable RowScope.() -> Unit,
+    actions: (@Composable RowScope.() -> Unit)?,
     hazeState: HazeState?,
     floating: Boolean,
 ) {
@@ -447,7 +457,48 @@ fun DDFloatingTopAppBar(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-            actions()
+        }
+
+        // **더보기는 타이틀 알약에서 떼어 오른쪽 끝에 따로 둔다**(2026-08-20 사용자 확정).
+        // 한 알약에 같이 담으면 알약이 아이콘만큼 더 길어지고, 그만큼 콘텐츠를 더 가린다.
+        //
+        // **모양이 다르다 — 이쪽은 원이다.** 타이틀은 가로로 긴 글자라 알약이 맞고, 아이콘은
+        // 사방이 같은 크기라 원이 맞다. 같은 `ShapeLarge`를 주면 정사각에 모서리만 깎인 모양이
+        // 되어 알약도 원도 아니게 된다.
+        if (actions != null) {
+            Row(
+                modifier =
+                    Modifier
+                        .align(Alignment.CenterEnd)
+                        .fillMaxHeight()
+                        // 아이콘 하나면 정사각이라 `CircleShape`가 정확히 원이 된다.
+                        // 둘 이상이면 자연히 알약으로 늘어난다 — 깨지지 않고 물러난다.
+                        .defaultMinSize(minWidth = DDTopAppBarHeight - DrinkDiarySpacing.xs * 2)
+                        .clip(CircleShape)
+                        .then(
+                            if (hazeState != null && t > 0.01f) {
+                                Modifier.hazeChild(
+                                    state = hazeState,
+                                    shape = CircleShape,
+                                    style =
+                                        HazeStyle(
+                                            tint = MaterialTheme.colorScheme.surface.copy(alpha = 0.58f * t),
+                                            blurRadius = 32.dp * t,
+                                        ),
+                                )
+                            } else {
+                                Modifier
+                            },
+                        ).border(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = t),
+                            shape = CircleShape,
+                        ),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                actions()
+            }
         }
     }
 }
@@ -457,7 +508,7 @@ fun DDFloatingTopAppBar(
 fun DDTopAppBar(
     title: String,
     onBackClick: (() -> Unit)? = null,
-    actions: @Composable RowScope.() -> Unit = {},
+    actions: (@Composable RowScope.() -> Unit)? = null,
 ) {
     TopAppBar(
         title = { Text(title) },
@@ -473,7 +524,7 @@ fun DDTopAppBar(
                 }
             }
         },
-        actions = actions,
+        actions = { actions?.invoke(this) },
     )
 }
 
@@ -487,49 +538,67 @@ fun DDBottomNavigationBar(
     hazeState: HazeState? = null,
 ) {
     val shape = MaterialTheme.shapes.large
-    Box(
+    BoxWithConstraints(
         modifier =
             Modifier
                 .fillMaxWidth()
                 .navigationBarsPadding()
-                .padding(horizontal = DrinkDiarySpacing.md, vertical = DrinkDiarySpacing.xs)
-                .height(DDBottomNavigationBarHeight - DrinkDiarySpacing.xs * 2)
-                .clip(shape)
-                .then(
-                    if (hazeState != null) {
-                        Modifier.hazeChild(
-                            state = hazeState,
-                            shape = shape,
-                            style =
-                                HazeStyle(
-                                    tint = MaterialTheme.colorScheme.surface.copy(alpha = 0.42f),
-                                    blurRadius = 32.dp,
-                                ),
-                        )
-                    } else {
-                        Modifier.background(MaterialTheme.colorScheme.surface.copy(alpha = 0.88f), shape)
-                    },
-                ).border(
-                    // 흰색 그라데이션 테두리를 걷어냈다. 하드코딩 색이라 테마에 반응하지 않아
-                    // 다크에서 흰 테두리가 그대로 빛났고(명세 2-6 "빛나는 네온 테두리 금지"),
-                    // 명세 2-1의 "임의 Hex 하드코딩 금지"에도 걸렸다.
-                    width = 1.dp,
-                    color = MaterialTheme.colorScheme.outlineVariant,
-                    shape = shape,
-                ),
+                .padding(vertical = DrinkDiarySpacing.xs),
+        contentAlignment = Alignment.Center,
     ) {
-        NavigationBar(
-            modifier = Modifier.fillMaxSize(),
-            containerColor = Color.Transparent,
-            tonalElevation = 0.dp,
+        // 화면 폭의 60%를 기본으로 하되 위아래를 dp로 막는다. 비율만 쓰면 좁은 화면에서
+        // 레이블이 잘리고 넓은 화면에서 빈 슬래브가 된다.
+        //
+        // **마지막 `coerceAtMost`가 실제 안전장치다.** 분할 화면처럼 아주 좁은 창에서는
+        // 최소폭조차 들어가지 않는데, 그때는 최소폭을 어기더라도 화면 밖으로 나가지 않는 쪽이 맞다.
+        val available = maxWidth - LocalDDScreenMargin.current * 2
+        val barWidth =
+            (maxWidth * DDBottomBarWidthFraction)
+                .coerceIn(DDBottomBarMinWidth, DDBottomBarMaxWidth)
+                .coerceAtMost(available)
+
+        Box(
+            modifier =
+                Modifier
+                    .width(barWidth)
+                    .height(DDBottomNavigationBarHeight - DrinkDiarySpacing.xs * 2)
+                    .clip(shape)
+                    .then(
+                        if (hazeState != null) {
+                            Modifier.hazeChild(
+                                state = hazeState,
+                                shape = shape,
+                                style =
+                                    HazeStyle(
+                                        tint = MaterialTheme.colorScheme.surface.copy(alpha = 0.42f),
+                                        blurRadius = 32.dp,
+                                    ),
+                            )
+                        } else {
+                            Modifier.background(MaterialTheme.colorScheme.surface.copy(alpha = 0.88f), shape)
+                        },
+                    ).border(
+                        // 흰색 그라데이션 테두리를 걷어냈다. 하드코딩 색이라 테마에 반응하지 않아
+                        // 다크에서 흰 테두리가 그대로 빛났고(명세 2-6 "빛나는 네온 테두리 금지"),
+                        // 명세 2-1의 "임의 Hex 하드코딩 금지"에도 걸렸다.
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outlineVariant,
+                        shape = shape,
+                    ),
         ) {
-            AppNavigationItems(
-                selectedTab = selectedTab,
-                onDashboardClick = onDashboardClick,
-                onCollectionClick = onCollectionClick,
-                onSearchClick = onSearchClick,
-                onSettingsClick = onSettingsClick,
-            )
+            NavigationBar(
+                modifier = Modifier.fillMaxSize(),
+                containerColor = Color.Transparent,
+                tonalElevation = 0.dp,
+            ) {
+                AppNavigationItems(
+                    selectedTab = selectedTab,
+                    onDashboardClick = onDashboardClick,
+                    onCollectionClick = onCollectionClick,
+                    onSearchClick = onSearchClick,
+                    onSettingsClick = onSettingsClick,
+                )
+            }
         }
     }
 }
@@ -584,62 +653,6 @@ private fun AppNavigationRail(
                 onClick = onClick,
                 icon = { Icon(painter = painterResource(R.drawable.ic_settings), contentDescription = null) },
                 label = { Text(stringResource(R.string.nav_settings)) },
-                colors = itemColors,
-            )
-        }
-    }
-}
-
-@Composable
-private fun AppNavigationDrawerSheet(
-    selectedTab: DDTopLevelTab?,
-    onDashboardClick: (() -> Unit)?,
-    onCollectionClick: (() -> Unit)?,
-    onSearchClick: (() -> Unit)?,
-    onSettingsClick: (() -> Unit)?,
-) {
-    PermanentDrawerSheet {
-        val itemColors =
-            NavigationDrawerItemDefaults.colors(
-                selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                selectedTextColor = MaterialTheme.colorScheme.primary,
-                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-
-        onDashboardClick?.let { onClick ->
-            NavigationDrawerItem(
-                icon = { Icon(painter = painterResource(R.drawable.ic_nav_dashboard), contentDescription = null) },
-                label = { Text(stringResource(R.string.nav_dashboard)) },
-                selected = selectedTab == DDTopLevelTab.Dashboard,
-                onClick = onClick,
-                colors = itemColors,
-            )
-        }
-        onSearchClick?.let { onClick ->
-            NavigationDrawerItem(
-                icon = { Icon(painter = painterResource(R.drawable.ic_nav_search), contentDescription = null) },
-                label = { Text(stringResource(R.string.nav_search)) },
-                selected = selectedTab == DDTopLevelTab.Search,
-                onClick = onClick,
-                colors = itemColors,
-            )
-        }
-        onCollectionClick?.let { onClick ->
-            NavigationDrawerItem(
-                icon = { Icon(painter = painterResource(R.drawable.ic_nav_collection), contentDescription = null) },
-                label = { Text(stringResource(R.string.nav_collection)) },
-                selected = selectedTab == DDTopLevelTab.Collection,
-                onClick = onClick,
-                colors = itemColors,
-            )
-        }
-
-        onSettingsClick?.let { onClick ->
-            NavigationDrawerItem(
-                icon = { Icon(painter = painterResource(R.drawable.ic_settings), contentDescription = null) },
-                label = { Text(stringResource(R.string.nav_settings)) },
-                selected = selectedTab == DDTopLevelTab.Settings,
-                onClick = onClick,
                 colors = itemColors,
             )
         }

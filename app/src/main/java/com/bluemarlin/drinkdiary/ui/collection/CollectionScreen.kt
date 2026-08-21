@@ -28,27 +28,10 @@ fun CollectionScreen(
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
 ) {
-    // **바깥 padding으로 인셋을 먹지 않는다.** 그러면 콘텐츠가 플로팅 바 뒤로 흐르지 않아
-    // 블러가 비출 것이 없어진다. 위쪽은 필터 줄이, 아래쪽은 목록이 각자 비운다.
+    // **필터 줄을 목록 밖에 고정하지 않는다**(2026-08-20). 고정하면 바 뒤로 흐르는 것이
+    // 아무것도 없어서 상단 알약이 빈 배경만 blur하게 된다 — 모양만 플로팅이고 뜻이 없다.
+    // 목록의 첫 항목으로 넣어 함께 흐르게 한다.
     Column(modifier = modifier.fillMaxSize()) {
-        Row(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(top = contentPadding.calculateTopPadding())
-                    .padding(horizontal = LocalDDScreenMargin.current, vertical = 12.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            listOf(null to "전체", DrinkType.Wine to "와인", DrinkType.Whiskey to "위스키")
-                .forEach { (type, label) ->
-                    DDChip(
-                        label = label,
-                        selected = state.filter == type,
-                        onClick = { onFilterChange(type) },
-                    )
-                }
-        }
-
         // 아직 한 번도 읽지 않은 상태를 "기록이 없다"로 말하지 않는다 — 로딩과 빈 목록은 다르다.
         if (state.loaded && state.records.isEmpty()) {
             val filtered = state.filter != null
@@ -65,11 +48,27 @@ fun CollectionScreen(
             contentPadding =
                 PaddingValues(
                     start = LocalDDScreenMargin.current,
+                    top = contentPadding.calculateTopPadding(),
                     end = LocalDDScreenMargin.current,
                     bottom = DDBottomNavigationBarHeight + LocalDDScreenMargin.current,
                 ),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+            item(key = "filters") {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    listOf(null to "전체", DrinkType.Wine to "와인", DrinkType.Whiskey to "위스키")
+                        .forEach { (type, label) ->
+                            DDChip(
+                                label = label,
+                                selected = state.filter == type,
+                                onClick = { onFilterChange(type) },
+                            )
+                        }
+                }
+            }
             items(state.records, key = { it.id }) { record ->
                 DDDrinkRecordCard(
                     record = record,
