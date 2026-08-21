@@ -53,10 +53,13 @@ object TasteTypeCopy {
         val high = preference == TastePreference.High
         return when (trait) {
             Trait.Sweetness -> if (high) "달콤한" else "드라이한"
+            Trait.Acidity -> if (high) "산미 있는" else "부드러운"
+            Trait.Tannin -> if (high) "탄닌감 있는" else "떫지 않은"
             Trait.Body -> if (high) "묵직한" else "가벼운"
+            Trait.Peat -> if (high) "스모키한" else "피트 없는"
+            Trait.AlcoholBurn -> if (high) "타격감 있는" else "순한"
             Trait.Intensity -> if (high) "진한" else "은은한"
             Trait.Aftertaste -> if (high) "여운이 긴" else "산뜻한"
-            else -> DrinkLabels.trait(trait)
         }
     }
 
@@ -67,10 +70,13 @@ object TasteTypeCopy {
         val high = preference == TastePreference.High
         return when (trait) {
             Trait.Sweetness -> if (high) "달콤하고" else "드라이하고"
+            Trait.Acidity -> if (high) "산미가 산뜻하며" else "산미가 부드러우며"
+            Trait.Tannin -> if (high) "탄닌이 묵직하고" else "탄닌이 부드럽고"
             Trait.Body -> if (high) "묵직하며" else "가벼우며"
+            Trait.Peat -> if (high) "피트향이 스모키하고" else "피트향이 깔끔하고"
+            Trait.AlcoholBurn -> if (high) "알코올 타격감이 있고" else "자극 없이 순하고"
             Trait.Intensity -> if (high) "향이 진하고" else "향이 은은하고"
             Trait.Aftertaste -> if (high) "여운이 길고" else "산뜻하게 끝나고"
-            else -> DrinkLabels.trait(trait)
         }
     }
 
@@ -81,10 +87,13 @@ object TasteTypeCopy {
         val high = preference == TastePreference.High
         return when (trait) {
             Trait.Sweetness -> if (high) "달콤해요" else "드라이해요"
+            Trait.Acidity -> if (high) "산미가 살아있어요" else "산미가 부드러워요"
+            Trait.Tannin -> if (high) "탄닌감이 풍부해요" else "탄닌이 부드러워요"
             Trait.Body -> if (high) "묵직해요" else "가벼워요"
+            Trait.Peat -> if (high) "스모키한 피트감이 강해요" else "피트향 없이 깔끔해요"
+            Trait.AlcoholBurn -> if (high) "화끈한 타격감이 있어요" else "자극 없이 순하게 넘어가요"
             Trait.Intensity -> if (high) "향이 진해요" else "향이 은은해요"
             Trait.Aftertaste -> if (high) "여운이 길어요" else "산뜻하게 끝나요"
-            else -> DrinkLabels.trait(trait)
         }
     }
 }
