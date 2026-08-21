@@ -11,7 +11,7 @@ composeBom = "2024.09.00"
 ksp = "2.0.21-1.0.28"
 room = "2.7.2"
 navigation3 = "1.0.0"
-haze = "0.7.0"
+haze = "1.7.2"
 ktlint = "14.2.0"
 robolectric = "4.16.1"
 androidxTestCore = "1.7.0"
@@ -35,7 +35,7 @@ androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-te
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-navigation3-runtime = { group = "androidx.navigation3", name = "navigation3-runtime", version.ref = "navigation3" }
 androidx-navigation3-ui = { group = "androidx.navigation3", name = "navigation3-ui", version.ref = "navigation3" }
-chrisbanes-haze = { group = "dev.chrisbanes.haze", name = "haze-jetpack-compose", version.ref = "haze" }
+chrisbanes-haze = { group = "dev.chrisbanes.haze", name = "haze", version.ref = "haze" }
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }

@@ -73,8 +73,9 @@ import com.bluemarlin.drinkdiary.ui.component.DDIconButton
 import com.bluemarlin.drinkdiary.ui.theme.DrinkDiarySpacing
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
-import dev.chrisbanes.haze.haze
-import dev.chrisbanes.haze.hazeChild
+import dev.chrisbanes.haze.HazeTint
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.hazeSource
 
 enum class DDScreenType {
     TopLevel,
@@ -318,14 +319,7 @@ private fun AppScaffold(
                         Modifier
                             .fillMaxSize()
                             .nestedScroll(overlapConnection)
-                            .haze(
-                                state = hazeState,
-                                style =
-                                    HazeStyle(
-                                        tint = MaterialTheme.colorScheme.surface.copy(alpha = 0.08f),
-                                        blurRadius = 32.dp,
-                                    ),
-                            ),
+                            .hazeSource(state = hazeState),
                 ) {
                     // **페이딩 엣지.** 콘텐츠가 화면 끝에서 뚝 잘리는 대신 알파로 사라진다.
                     // 잘린 글자 반 줄은 "여기가 끝"이 아니라 "덜 그려졌다"로 읽힌다.
@@ -418,15 +412,20 @@ fun DDFloatingTopAppBar(
                         // 도킹 상태(t=0)에서는 크롬을 아예 그리지 않는다 — 배경도 테두리도 없는
                         // 맨 타이틀이라 그게 곧 '겹치지 않은 상태'의 시각적 뜻이다.
                         if (hazeState != null && t > 0.01f) {
-                            Modifier.hazeChild(
+                            Modifier.hazeEffect(
                                 state = hazeState,
-                                shape = shape,
                                 style =
                                     HazeStyle(
-                                        tint = MaterialTheme.colorScheme.surface.copy(alpha = 0.58f * t),
+                                        backgroundColor = MaterialTheme.colorScheme.surface,
+                                        tint = HazeTint(MaterialTheme.colorScheme.surface.copy(alpha = 0.58f * t)),
+                                        // 56dp 알약 높이에 맞춰 블러 반경을 20dp(높이의 약 35%)로 최적화한다.
+                                        // 32dp는 요소 높이의 절반을 넘어 배경 맥락이 단색처럼 뭉개졌고,
+                                        // 20dp에서 품격 있는 유리 질감과 텍스트 가독성, GPU 효율을 동시에 얻는다.
                                         // 블러도 함께 자란다. 0에서 시작해야 알약이 '켜지는' 대신
                                         // '맺히는' 것으로 보인다.
-                                        blurRadius = 32.dp * t,
+                                        blurRadius = 20.dp * t,
+                                        // 에디토리얼 저널 무드의 미세한 질감을 더하고 사진 위 컬러 밴딩을 방지한다.
+                                        noiseFactor = 0.08f * t,
                                     ),
                             )
                         } else {
@@ -477,13 +476,14 @@ fun DDFloatingTopAppBar(
                         .clip(CircleShape)
                         .then(
                             if (hazeState != null && t > 0.01f) {
-                                Modifier.hazeChild(
+                                Modifier.hazeEffect(
                                     state = hazeState,
-                                    shape = CircleShape,
                                     style =
                                         HazeStyle(
-                                            tint = MaterialTheme.colorScheme.surface.copy(alpha = 0.58f * t),
-                                            blurRadius = 32.dp * t,
+                                            backgroundColor = MaterialTheme.colorScheme.surface,
+                                            tint = HazeTint(MaterialTheme.colorScheme.surface.copy(alpha = 0.58f * t)),
+                                            blurRadius = 20.dp * t,
+                                            noiseFactor = 0.08f * t,
                                         ),
                                 )
                             } else {
@@ -565,13 +565,18 @@ fun DDBottomNavigationBar(
                     .clip(shape)
                     .then(
                         if (hazeState != null) {
-                            Modifier.hazeChild(
+                            Modifier.hazeEffect(
                                 state = hazeState,
-                                shape = shape,
                                 style =
                                     HazeStyle(
-                                        tint = MaterialTheme.colorScheme.surface.copy(alpha = 0.42f),
-                                        blurRadius = 32.dp,
+                                        backgroundColor = MaterialTheme.colorScheme.surface,
+                                        tint = HazeTint(MaterialTheme.colorScheme.surface.copy(alpha = 0.42f)),
+                                        // 64dp 바 높이에 맞춰 블러 반경을 24dp(높이의 약 37.5%)로 최적화한다.
+                                        // 32dp는 요소 높이의 절반에 달해 배경의 맥락을 지나치게 뭉개고,
+                                        // 24dp에서 아이콘 가독성을 유지하면서도 뒤 콘텐츠의 형태감을 자연스럽게 투영한다.
+                                        blurRadius = 24.dp,
+                                        // 에디토리얼 저널 무드의 미세한 질감을 더하고 사진 위 컬러 밴딩을 방지한다.
+                                        noiseFactor = 0.08f,
                                     ),
                             )
                         } else {
