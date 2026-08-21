@@ -8,6 +8,11 @@ import com.bluemarlin.drinkdiary.data.local.MIGRATION_2_3
 import com.bluemarlin.drinkdiary.data.repository.DrinkRecordRepositoryImpl
 import com.bluemarlin.drinkdiary.data.repository.PhotoRepositoryImpl
 import com.bluemarlin.drinkdiary.data.repository.UserPreferencesRepositoryImpl
+import com.bluemarlin.drinkdiary.domain.model.PeatTag
+import com.bluemarlin.drinkdiary.domain.model.SampleData
+import com.bluemarlin.drinkdiary.domain.model.Trait
+import com.bluemarlin.drinkdiary.domain.model.TraitAnswer
+import com.bluemarlin.drinkdiary.domain.model.WineColor
 import com.bluemarlin.drinkdiary.domain.repository.BottleDictionary
 import com.bluemarlin.drinkdiary.domain.repository.BottleMatcher
 import com.bluemarlin.drinkdiary.domain.repository.DrinkRecordRepository
@@ -24,6 +29,10 @@ import com.bluemarlin.drinkdiary.domain.usecase.ObserveTagPreferenceUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveTasteProfileUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ObserveTastingGapsUseCase
 import com.bluemarlin.drinkdiary.domain.usecase.ResolveProfileReadinessUseCase
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 class DrinkDiaryApplication : Application() {
     lateinit var appContainer: AppContainer
@@ -32,6 +41,73 @@ class DrinkDiaryApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         appContainer = AppContainer(this)
+        CoroutineScope(Dispatchers.IO).launch {
+            val records = appContainer.drinkRecordRepository.observeRecords().first()
+
+            // 1. 기존 데이터 중 5축 누락 항목 보정
+            records.forEach { record ->
+                val expectedTraits = Trait.of(record.type)
+                val missingTraits = expectedTraits.filter { it !in record.taste.answers }
+                if (missingTraits.isNotEmpty()) {
+                    var updatedTaste = record.taste
+                    missingTraits.forEach { trait ->
+                        val defaultAnswer =
+                            when (trait) {
+                                Trait.Acidity ->
+                                    if (record.tags.wineColor ==
+                                        WineColor.White
+                                    ) {
+                                        TraitAnswer.High
+                                    } else {
+                                        TraitAnswer.Mid
+                                    }
+                                Trait.Tannin ->
+                                    if (record.tags.wineColor ==
+                                        WineColor.White
+                                    ) {
+                                        TraitAnswer.VeryLow
+                                    } else {
+                                        TraitAnswer.High
+                                    }
+                                Trait.Peat ->
+                                    if (record.tags.peat == PeatTag.Peated ||
+                                        record.name.contains("라프로익") ||
+                                        record.name.contains("아드벡") ||
+                                        record.name.contains("탈리스커")
+                                    ) {
+                                        TraitAnswer.High
+                                    } else {
+                                        TraitAnswer.VeryLow
+                                    }
+                                Trait.AlcoholBurn ->
+                                    if (record.name.contains("CS") ||
+                                        record.name.contains("Proof") ||
+                                        record.name.contains("버번")
+                                    ) {
+                                        TraitAnswer.High
+                                    } else {
+                                        TraitAnswer.Low
+                                    }
+                                Trait.Sweetness -> TraitAnswer.Mid
+                                Trait.Body -> TraitAnswer.Mid
+                                Trait.Aftertaste -> TraitAnswer.Mid
+                                else -> TraitAnswer.Mid
+                            }
+                        updatedTaste = updatedTaste.with(trait, defaultAnswer)
+                    }
+                    appContainer.drinkRecordRepository.save(record.copy(taste = updatedTaste))
+                }
+            }
+
+            // 2. SampleData 중 DB에 없는 항목들을 채워넣기
+            val currentRecords = appContainer.drinkRecordRepository.observeRecords().first()
+            val existingNames = currentRecords.map { it.name.trim() }.toSet()
+            SampleData.allRecords.forEach { sample ->
+                if (sample.name.trim() !in existingNames) {
+                    appContainer.drinkRecordRepository.save(sample.copy(id = 0L))
+                }
+            }
+        }
     }
 }
 

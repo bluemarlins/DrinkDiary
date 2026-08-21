@@ -1,4 +1,4 @@
-﻿package com.bluemarlin.drinkdiary.domain.model
+package com.bluemarlin.drinkdiary.domain.model
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -11,8 +11,8 @@ class SampleDataTest {
         val whiskeys = SampleData.whiskeyRecords
 
         assertEquals(12, wines.size)
-        assertEquals(10, whiskeys.size)
-        assertEquals(22, SampleData.allRecords.size)
+        assertEquals(11, whiskeys.size)
+        assertEquals(23, SampleData.allRecords.size)
 
         // 와인 5축 (Sweetness, Acidity, Tannin, Body, Aftertaste) 전수 포함 확인
         wines.forEach { record ->

@@ -1,4 +1,4 @@
-﻿package com.bluemarlin.drinkdiary.domain.model
+package com.bluemarlin.drinkdiary.domain.model
 
 /**
  * 5축 5단계 척도(VeryLow~VeryHigh), 12개국 와인 산지, 8개국 위스키 산지, 6대 분류 체계에 맞춘
@@ -249,6 +249,25 @@ object SampleData {
 
     val whiskeyRecords: List<DrinkRecord> =
         listOf(
+            DrinkRecord(
+                id = 100L,
+                type = DrinkType.Whiskey,
+                name = "글렌피딕 12년",
+                tags = DrinkTags(whiskyStyle = WhiskyStyle.SingleMalt, origin = Origin.Scotland),
+                taste =
+                    TasteInput()
+                        .with(Trait.Sweetness, TraitAnswer.Mid)
+                        .with(Trait.Body, TraitAnswer.Mid)
+                        .with(Trait.Peat, TraitAnswer.VeryLow)
+                        .with(Trait.AlcoholBurn, TraitAnswer.Low)
+                        .with(Trait.Aftertaste, TraitAnswer.Mid),
+                rating = 4.2,
+                collectionStatus = CollectionStatus.Repurchase,
+                price = 85000L,
+                place = "바틀샵",
+                memo = "풋사과와 서양배의 상큼한 과실향, 가볍고 산뜻한 데일리 싱글몰트.",
+                recordedAtMillis = System.currentTimeMillis() - 86400000L * 1,
+            ),
             DrinkRecord(
                 id = 101L,
                 type = DrinkType.Whiskey,
