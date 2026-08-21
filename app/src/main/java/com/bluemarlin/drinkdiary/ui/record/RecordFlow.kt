@@ -2,18 +2,11 @@ package com.bluemarlin.drinkdiary.ui.record
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Card
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -25,7 +18,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.bluemarlin.drinkdiary.DrinkDiaryApplication
 import com.bluemarlin.drinkdiary.domain.model.DrinkType
-import com.bluemarlin.drinkdiary.domain.model.TagCategory
 
 private enum class Step {
     PickDrink,
@@ -35,11 +27,13 @@ private enum class Step {
     InputRating,
     Probes,
     OptionalDetail,
-    Saved,
 }
 
 @Composable
-fun RecordFlow(modifier: Modifier = Modifier) {
+fun RecordFlow(
+    onSaved: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val appContainer = (LocalContext.current.applicationContext as DrinkDiaryApplication).appContainer
     val viewModel: RecordViewModel =
         viewModel(
@@ -54,9 +48,13 @@ fun RecordFlow(modifier: Modifier = Modifier) {
     val state by viewModel.uiState.collectAsState()
     var step by remember { mutableStateOf(Step.PickDrink) }
 
-    if (state.savedId != null && step != Step.Saved) step = Step.Saved
+    LaunchedEffect(state.savedId) {
+        if (state.savedId != null) {
+            onSaved()
+        }
+    }
 
-    BackHandler(enabled = step != Step.PickDrink && step != Step.Saved) {
+    BackHandler(enabled = step != Step.PickDrink) {
         step =
             when (step) {
                 Step.PickOrigin -> Step.PickDrink
@@ -65,7 +63,7 @@ fun RecordFlow(modifier: Modifier = Modifier) {
                 Step.InputRating -> Step.InputName
                 Step.Probes -> Step.InputRating
                 Step.OptionalDetail -> Step.Probes
-                Step.PickDrink, Step.Saved -> step
+                Step.PickDrink -> step
             }
     }
 
@@ -142,67 +140,11 @@ fun RecordFlow(modifier: Modifier = Modifier) {
                     modifier = modifier,
                     errorMessage = state.error,
                 )
-
-            Step.Saved ->
-                RecordSaved(
-                    taps = state.taps,
-                    leaning = state.taste.leaningCount,
-                    askTagPreference = state.askTagPreference,
-                    onChooseTags = viewModel::chooseAlwaysAskTags,
-                    onRestart = {
-                        viewModel.startOver()
-                        step = Step.PickDrink
-                    },
-                    modifier = modifier,
-                )
         }
     }
 
     state.error?.let {
         // 저장 실패는 조용히 넘기지 않는다(harness.md §7).
         Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(20.dp))
-    }
-}
-
-@Composable
-private fun RecordSaved(
-    taps: Int,
-    leaning: Int,
-    askTagPreference: Boolean,
-    onChooseTags: (Set<TagCategory>) -> Unit,
-    onRestart: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Column(
-        modifier =
-            modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Text("기록했어요.", style = MaterialTheme.typography.titleLarge)
-        Text("취향 입력은 탭 ${taps}번으로 끝났어요.", style = MaterialTheme.typography.bodyLarge)
-        Text(
-            // '보통'을 뺀 개수를 말하되 그것이 버려졌다는 인상을 주지 않는다 — 판정에는 다 쓰인다.
-            text = "뚜렷한 인상을 남긴 축 ${leaning}개.",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Text(
-            text = "유형은 한 잔으로 나오지 않아요. 기록이 쌓여 대비가 생겨야 나와요.",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        // 첫 기록 직후 한 번만. 이미 가치를 받은 뒤라 마찰로 느껴지지 않고,
-        // 이 시점의 사용자는 방금 흐름을 겪어서 무엇을 묻는 건지 안다(prd.md S1).
-        if (askTagPreference) {
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-            TagPreferencePrompt(onConfirm = onChooseTags)
-        } else {
-            Card(onClick = onRestart, modifier = Modifier.fillMaxWidth()) {
-                Text("한 잔 더 기록하기", modifier = Modifier.padding(20.dp))
-            }
-        }
     }
 }

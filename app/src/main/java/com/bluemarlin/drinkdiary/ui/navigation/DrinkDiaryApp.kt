@@ -574,7 +574,11 @@ private fun ScreenContent(
                 modifier = modifier,
             )
 
-        Screen.Record -> RecordFlow(modifier = modifier.padding(padding))
+        Screen.Record ->
+            RecordFlow(
+                onSaved = { onNavigate(Screen.Collection) },
+                modifier = modifier.padding(padding),
+            )
 
         is Screen.Detail ->
             if (listDetail) {
