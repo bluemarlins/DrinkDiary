@@ -1,4 +1,4 @@
-﻿package com.bluemarlin.drinkdiary.data.local
+package com.bluemarlin.drinkdiary.data.local
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -16,6 +16,7 @@ import java.io.FileOutputStream
 
 object SamplePhotoGenerator {
     fun ensureSamplePhotos(context: Context): Map<String, String> {
+        if (android.os.Build.FINGERPRINT == "robolectric") return emptyMap()
         val directory = File(context.filesDir, "photos").apply { mkdirs() }
         val result = mutableMapOf<String, String>()
 
@@ -268,8 +269,10 @@ object SamplePhotoGenerator {
         val shortName = if (spec.name.length > 8) spec.name.take(8) + ".." else spec.name
         canvas.drawText(shortName, centerX, 480f, textPaint)
 
-        FileOutputStream(file).use { out ->
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 92, out)
+        runCatching {
+            FileOutputStream(file).use { out ->
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+            }
         }
     }
 }
