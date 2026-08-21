@@ -10,7 +10,6 @@ import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.bluemarlin.drinkdiary.domain.model.DrinkType
 import com.bluemarlin.drinkdiary.ui.component.DDEmptyContent
 
 // 명세 4절 마지막 열 — Medium의 "2-Column 분할 (좌 40% : 우 60%)"과 Expanded의 "List-Detail".
@@ -22,7 +21,6 @@ import com.bluemarlin.drinkdiary.ui.component.DDEmptyContent
 fun CollectionListDetail(
     state: CollectionUiState,
     selectedId: Long?,
-    onFilterChange: (DrinkType?) -> Unit,
     onSelect: (Long) -> Unit,
     onToggleSelect: (Long) -> Unit,
     onEdit: (Long) -> Unit,
@@ -33,7 +31,6 @@ fun CollectionListDetail(
     Row(modifier = modifier.fillMaxSize()) {
         CollectionScreen(
             state = state,
-            onFilterChange = onFilterChange,
             onOpen = onSelect,
             onToggleSelect = onToggleSelect,
             contentPadding = contentPadding,

@@ -36,6 +36,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.bluemarlin.drinkdiary.AppContainer
 import com.bluemarlin.drinkdiary.DrinkDiaryApplication
 import com.bluemarlin.drinkdiary.R
+import com.bluemarlin.drinkdiary.domain.model.DrinkType
 import com.bluemarlin.drinkdiary.domain.model.TypeScope
 import com.bluemarlin.drinkdiary.ui.DrinkLabels
 import com.bluemarlin.drinkdiary.ui.collection.CollectionListDetail
@@ -310,6 +311,15 @@ fun DrinkDiaryApp(modifier: Modifier = Modifier) {
                         )
                     }
                 }
+                inCollection -> {
+                    {
+                        // 컬렉션에서도 주종 필터를 상단 More 메뉴(와인/위스키/통합)로 제공한다.
+                        DDCollectionFilterOverflowMenu(
+                            selected = collection.filter,
+                            onSelect = collectionViewModel::selectFilter,
+                        )
+                    }
+                }
                 // 설정 아이콘은 툴바에서 걷어냈다(2026-08-19 사용자 확정). 하단 탭이 설정의
                 // 진입점이며, 진입점이 둘이면 어느 쪽이 정본인지 알 수 없고 선택 상태도 어긋난다.
                 else -> null
@@ -468,6 +478,48 @@ private fun DDScopeOverflowMenu(
     }
 }
 
+// 컬렉션의 주종 필터 선택(와인 / 위스키 / 통합).
+@Composable
+private fun DDCollectionFilterOverflowMenu(
+    selected: DrinkType?,
+    onSelect: (DrinkType?) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Box {
+        DDIconButton(
+            onClick = { expanded = true },
+            contentDescription = "주종 필터",
+        ) {
+            Icon(painter = painterResource(R.drawable.ic_more_vert), contentDescription = null)
+        }
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            listOf(
+                DrinkType.Wine to "와인",
+                DrinkType.Whiskey to "위스키",
+                null to "통합",
+            ).forEach { (type, label) ->
+                DropdownMenuItem(
+                    text = { Text(label) },
+                    onClick = {
+                        onSelect(type)
+                        expanded = false
+                    },
+                    trailingIcon = {
+                        if (type == selected) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_check),
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                            )
+                        }
+                    },
+                )
+            }
+        }
+    }
+}
+
 @Composable
 private fun ScreenContent(
     screen: Screen,
@@ -494,7 +546,6 @@ private fun ScreenContent(
                 CollectionListDetail(
                     state = collection,
                     selectedId = null,
-                    onFilterChange = collectionViewModel::selectFilter,
                     onSelect = { onNavigate(Screen.Detail(it)) },
                     onToggleSelect = collectionViewModel::toggleSelection,
                     onEdit = { onNavigate(Screen.Edit(it)) },
@@ -508,7 +559,6 @@ private fun ScreenContent(
             } else {
                 CollectionScreen(
                     state = collection,
-                    onFilterChange = collectionViewModel::selectFilter,
                     onOpen = { onNavigate(Screen.Detail(it)) },
                     onToggleSelect = collectionViewModel::toggleSelection,
                     contentPadding = padding,
@@ -533,7 +583,6 @@ private fun ScreenContent(
                 CollectionListDetail(
                     state = collection,
                     selectedId = screen.id,
-                    onFilterChange = collectionViewModel::selectFilter,
                     onSelect = { onNavigate(Screen.Detail(it)) },
                     onToggleSelect = collectionViewModel::toggleSelection,
                     onEdit = { onNavigate(Screen.Edit(it)) },
