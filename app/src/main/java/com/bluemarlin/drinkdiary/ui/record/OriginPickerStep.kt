@@ -1,12 +1,16 @@
-﻿package com.bluemarlin.drinkdiary.ui.record
+package com.bluemarlin.drinkdiary.ui.record
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -18,19 +22,25 @@ import com.bluemarlin.drinkdiary.domain.model.DrinkType
 import com.bluemarlin.drinkdiary.domain.model.Origin
 import com.bluemarlin.drinkdiary.domain.model.TagCategory
 import com.bluemarlin.drinkdiary.ui.DrinkLabels
+import com.bluemarlin.drinkdiary.ui.component.DDSecondaryButton
 import com.bluemarlin.drinkdiary.ui.theme.DrinkDiarySpacing
 
 @Composable
 fun OriginPickerStep(
     type: DrinkType,
     onPick: (Origin) -> Unit,
+    onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val origins = Origin.of(type)
 
     Column(
-        modifier = modifier.fillMaxSize().padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp),
+        modifier =
+            modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(24.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text("어디서 만들어졌나요?", style = MaterialTheme.typography.titleLarge)
@@ -66,5 +76,13 @@ fun OriginPickerStep(
                 }
             }
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        DDSecondaryButton(
+            text = "이전",
+            onClick = onBack,
+            modifier = Modifier.fillMaxWidth(),
+        )
     }
 }

@@ -171,7 +171,7 @@ class ObserveTasteProfileUseCaseTest {
     fun `wine scope carries its own traits and not the whiskey ones`() {
         val traits = profileOf(emptyList(), TypeScope.Wine).preferences.map { it.trait }
 
-        assertTrue(traits.containsAll(Trait.shared))
+        assertEquals(Trait.of(DrinkType.Wine), traits)
         assertTrue(traits.contains(Trait.Tannin))
         assertFalse(traits.contains(Trait.Peat))
     }

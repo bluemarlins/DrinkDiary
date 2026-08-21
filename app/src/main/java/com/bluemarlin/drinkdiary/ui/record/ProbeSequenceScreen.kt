@@ -3,9 +3,13 @@ package com.bluemarlin.drinkdiary.ui.record
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -22,6 +26,7 @@ import com.bluemarlin.drinkdiary.domain.model.Trait
 import com.bluemarlin.drinkdiary.domain.model.TraitAnswer
 import com.bluemarlin.drinkdiary.ui.component.DDProbeProgress
 import com.bluemarlin.drinkdiary.ui.component.DDProbeQuestion
+import com.bluemarlin.drinkdiary.ui.component.DDSecondaryButton
 
 @Composable
 fun ProbeSequenceScreen(
@@ -29,6 +34,7 @@ fun ProbeSequenceScreen(
     answers: TasteInput,
     onAnswer: (Trait, TraitAnswer) -> Unit,
     onComplete: () -> Unit,
+    onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     // 주종별 5축(와인: 당도·산미·탄닌·바디·여운 / 위스키: 단맛·바디·피트·알코올·여운)을 순차적으로 묻는다.
@@ -45,8 +51,9 @@ fun ProbeSequenceScreen(
         modifier =
             modifier
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
                 .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
         DDProbeProgress(
             current = safeIndex + 1,
@@ -75,6 +82,20 @@ fun ProbeSequenceScreen(
                 },
             )
         }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        DDSecondaryButton(
+            text = "이전",
+            onClick = {
+                if (safeIndex > 0) {
+                    currentIndex = safeIndex - 1
+                } else {
+                    onBack()
+                }
+            },
+            modifier = Modifier.fillMaxWidth(),
+        )
     }
 }
 
@@ -88,6 +109,7 @@ private fun ProbeSequenceScreenPreview() {
                 answers = TasteInput(),
                 onAnswer = { _, _ -> },
                 onComplete = {},
+                onBack = {},
             )
         }
     }

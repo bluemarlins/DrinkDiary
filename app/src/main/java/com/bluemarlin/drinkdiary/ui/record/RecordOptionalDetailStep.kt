@@ -1,4 +1,4 @@
-﻿package com.bluemarlin.drinkdiary.ui.record
+package com.bluemarlin.drinkdiary.ui.record
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -21,6 +21,7 @@ import com.bluemarlin.drinkdiary.domain.model.TagCategory
 import com.bluemarlin.drinkdiary.ui.DrinkLabels
 import com.bluemarlin.drinkdiary.ui.component.DDChip
 import com.bluemarlin.drinkdiary.ui.component.DDPrimaryButton
+import com.bluemarlin.drinkdiary.ui.component.DDSecondaryButton
 import com.bluemarlin.drinkdiary.ui.navigation.LocalDDScreenMargin
 
 @Composable
@@ -30,6 +31,7 @@ fun RecordOptionalDetailStep(
     alwaysAskTags: Set<TagCategory>,
     onFormChange: (RecordForm) -> Unit,
     onSave: () -> Unit,
+    onBack: () -> Unit,
     saving: Boolean,
     modifier: Modifier = Modifier,
     errorMessage: String? = null,
@@ -129,11 +131,21 @@ fun RecordOptionalDetailStep(
             )
         }
 
-        DDPrimaryButton(
-            text = if (saving) "저장 중..." else "기록 완료하기",
-            onClick = onSave,
-            enabled = form.isSavable && !saving,
+        Row(
             modifier = Modifier.fillMaxWidth(),
-        )
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            DDSecondaryButton(
+                text = "이전",
+                onClick = onBack,
+                modifier = Modifier.weight(1f),
+            )
+            DDPrimaryButton(
+                text = if (saving) "저장 중..." else "기록 완료하기",
+                onClick = onSave,
+                enabled = form.isSavable && !saving,
+                modifier = Modifier.weight(1.5f),
+            )
+        }
     }
 }

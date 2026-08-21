@@ -53,6 +53,7 @@ private val wineChoices =
                     WineColor.Sparkling -> "스파클링"
                     WineColor.Natural -> "내추럴"
                     WineColor.Port -> "포트"
+                    WineColor.Other -> "그 외"
                 },
             tags = DrinkTags(wineColor = color),
         )

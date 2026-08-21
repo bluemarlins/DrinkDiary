@@ -49,7 +49,7 @@ val TagCategory.gapCandidates: List<String>
         when (this) {
             TagCategory.WhiskyStyle -> WhiskyStyle.entries.filter { it != WhiskyStyle.Other }.map { it.name }
             TagCategory.Peat -> PeatTag.entries.map { it.name }
-            TagCategory.WineColor -> WineColor.entries.map { it.name }
+            TagCategory.WineColor -> WineColor.entries.filter { it != WineColor.Other }.map { it.name }
             TagCategory.AbvBand -> AbvBand.entries.map { it.name }
             TagCategory.Origin -> Origin.entries.filter { it != Origin.Other }.map { it.name }
             TagCategory.Cask -> CaskGroup.entries.filter { it != CaskGroup.Mixed }.map { it.name }
@@ -60,8 +60,8 @@ enum class WhiskyStyle { SingleMalt, Blended, Bourbon, Rye, Other }
 
 enum class PeatTag { Peated, Unpeated }
 
-// 와인 5대 분류 (레드, 화이트, 스파클링, 내추럴, 포트/주정강화)
-enum class WineColor { Red, White, Sparkling, Natural, Port }
+// 와인 분류 (레드, 화이트, 스파클링, 내추럴, 포트/주정강화, 그 외: 로제/기타)
+enum class WineColor { Red, White, Sparkling, Natural, Port, Other }
 
 // 구간의 실제 경계는 주종마다 다르다(위스키 40%대 / 43~45 / 46+, 와인 12 이하 / 13~14 / 15+).
 // 도메인은 구간의 순서만 알고, 경계 문구는 UI가 주종에 맞춰 붙인다.
@@ -71,10 +71,14 @@ enum class Origin {
     France,
     Italy,
     Spain,
+    Germany,
+    Portugal,
     USA,
     Chile,
+    Argentina,
     Australia,
     NewZealand,
+    SouthAfrica,
     Scotland,
     Ireland,
     Japan,
@@ -84,7 +88,20 @@ enum class Origin {
 
     companion object {
         val wineOrigins: List<Origin> =
-            listOf(France, Italy, Spain, USA, Chile, Australia, NewZealand, Other)
+            listOf(
+                France,
+                Italy,
+                Spain,
+                Germany,
+                Portugal,
+                USA,
+                Chile,
+                Argentina,
+                Australia,
+                NewZealand,
+                SouthAfrica,
+                Other,
+            )
 
         val whiskyOrigins: List<Origin> =
             listOf(Scotland, USA, Ireland, Japan, Taiwan, Other)

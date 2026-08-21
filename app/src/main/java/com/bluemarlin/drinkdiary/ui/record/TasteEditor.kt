@@ -41,7 +41,7 @@ fun TasteEditor(
                 // 취소를 두지 않는다. 답을 비우면 그 축은 판정에서 빠지는데,
                 // 편집 화면에서 그걸 의도적으로 하고 싶은 경우가 없다.
                 DDTagChipGroup(
-                    options = listOf(TraitAnswer.Low, TraitAnswer.Mid, TraitAnswer.High),
+                    options = TraitAnswer.entries,
                     selected = taste[trait],
                     onSelect = { answer -> onAnswer(trait, answer) },
                     label = { answer -> DrinkLabels.answer(trait, answer) },

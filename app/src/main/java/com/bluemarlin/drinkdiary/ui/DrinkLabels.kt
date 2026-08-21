@@ -73,9 +73,11 @@ object DrinkLabels {
         answer: TraitAnswer,
     ): String =
         when (answer) {
-            TraitAnswer.High -> poles(trait).second
+            TraitAnswer.VeryLow -> "매우 " + poles(trait).first
             TraitAnswer.Low -> poles(trait).first
             TraitAnswer.Mid -> "보통"
+            TraitAnswer.High -> poles(trait).second
+            TraitAnswer.VeryHigh -> "매우 " + poles(trait).second
         }
 
     private fun poles(trait: Trait): Pair<String, String> {
@@ -136,6 +138,7 @@ object DrinkLabels {
                     WineColor.Sparkling.name -> "스파클링"
                     WineColor.Natural.name -> "내추럴"
                     WineColor.Port.name -> "포트/주정강화"
+                    WineColor.Other.name -> "그 외"
                     else -> value
                 }
 
@@ -147,10 +150,14 @@ object DrinkLabels {
                     Origin.France.name -> "프랑스"
                     Origin.Italy.name -> "이탈리아"
                     Origin.Spain.name -> "스페인"
+                    Origin.Germany.name -> "독일"
+                    Origin.Portugal.name -> "포르투갈"
                     Origin.USA.name -> "미국"
                     Origin.Chile.name -> "칠레"
+                    Origin.Argentina.name -> "아르헨티나"
                     Origin.Australia.name -> "호주"
                     Origin.NewZealand.name -> "뉴질랜드"
+                    Origin.SouthAfrica.name -> "남아공"
                     Origin.Scotland.name -> "스코틀랜드"
                     Origin.Ireland.name -> "아일랜드"
                     Origin.Japan.name -> "일본"

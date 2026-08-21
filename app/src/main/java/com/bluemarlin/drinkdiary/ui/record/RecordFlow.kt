@@ -30,7 +30,9 @@ import com.bluemarlin.drinkdiary.domain.model.TagCategory
 private enum class Step {
     PickDrink,
     PickOrigin,
-    BasicInfo,
+    PickPhoto,
+    InputName,
+    InputRating,
     Probes,
     OptionalDetail,
     Saved,
@@ -58,8 +60,10 @@ fun RecordFlow(modifier: Modifier = Modifier) {
         step =
             when (step) {
                 Step.PickOrigin -> Step.PickDrink
-                Step.BasicInfo -> Step.PickOrigin
-                Step.Probes -> Step.BasicInfo
+                Step.PickPhoto -> Step.PickOrigin
+                Step.InputName -> Step.PickPhoto
+                Step.InputRating -> Step.InputName
+                Step.Probes -> Step.InputRating
                 Step.OptionalDetail -> Step.Probes
                 Step.PickDrink, Step.Saved -> step
             }
@@ -81,22 +85,38 @@ fun RecordFlow(modifier: Modifier = Modifier) {
                     type = state.type ?: DrinkType.Wine,
                     onPick = { origin ->
                         viewModel.pickOrigin(origin)
-                        step = Step.BasicInfo
+                        step = Step.PickPhoto
                     },
+                    onBack = { step = Step.PickDrink },
                     modifier = modifier,
                 )
 
-            Step.BasicInfo ->
-                DrinkBasicInfoStep(
+            Step.PickPhoto ->
+                DrinkPhotoStep(
                     imageUri = state.form.imageUri,
+                    onPhotoPicked = viewModel::pickPhoto,
+                    onNext = { step = Step.InputName },
+                    onBack = { step = Step.PickOrigin },
+                    modifier = modifier,
+                )
+
+            Step.InputName ->
+                DrinkNameStep(
                     name = state.form.name,
+                    onNameChange = { viewModel.updateForm(state.form.copy(name = it)) },
+                    onNext = { step = Step.InputRating },
+                    onBack = { step = Step.PickPhoto },
+                    modifier = modifier,
+                )
+
+            Step.InputRating ->
+                DrinkRatingStep(
                     rating = state.form.rating,
                     collectionStatus = state.form.collectionStatus,
-                    onPhotoPicked = viewModel::pickPhoto,
-                    onNameChange = { viewModel.updateForm(state.form.copy(name = it)) },
                     onRatingChange = { viewModel.updateForm(state.form.copy(rating = it)) },
                     onCollectionStatusChange = { viewModel.updateForm(state.form.copy(collectionStatus = it)) },
                     onNext = { step = Step.Probes },
+                    onBack = { step = Step.InputName },
                     modifier = modifier,
                 )
 
@@ -106,6 +126,7 @@ fun RecordFlow(modifier: Modifier = Modifier) {
                     answers = state.taste,
                     onAnswer = viewModel::answer,
                     onComplete = { step = Step.OptionalDetail },
+                    onBack = { step = Step.InputRating },
                     modifier = modifier,
                 )
 
@@ -116,6 +137,7 @@ fun RecordFlow(modifier: Modifier = Modifier) {
                     alwaysAskTags = state.alwaysAskTags,
                     onFormChange = viewModel::updateForm,
                     onSave = viewModel::save,
+                    onBack = { step = Step.Probes },
                     saving = state.saving,
                     modifier = modifier,
                     errorMessage = state.error,
