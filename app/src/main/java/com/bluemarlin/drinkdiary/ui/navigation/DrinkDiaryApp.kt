@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
@@ -47,6 +46,7 @@ import com.bluemarlin.drinkdiary.ui.collection.RecordDetailScreen
 import com.bluemarlin.drinkdiary.ui.collection.SearchScreen
 import com.bluemarlin.drinkdiary.ui.component.DDBatchActionBar
 import com.bluemarlin.drinkdiary.ui.component.DDConfirmDialog
+import com.bluemarlin.drinkdiary.ui.component.DDFloatingAddButton
 import com.bluemarlin.drinkdiary.ui.component.DDIconButton
 import com.bluemarlin.drinkdiary.ui.profile.ProfileScreen
 import com.bluemarlin.drinkdiary.ui.profile.ProfileUiState
@@ -273,9 +273,7 @@ fun DrinkDiaryApp(modifier: Modifier = Modifier) {
         val floatingActionButton: (@Composable () -> Unit)? =
             if (fabHost && !selecting) {
                 {
-                    FloatingActionButton(onClick = { screen = Screen.Record }) {
-                        Icon(painter = painterResource(R.drawable.ic_add), contentDescription = "기록 추가")
-                    }
+                    DDFloatingAddButton(onClick = { screen = Screen.Record })
                 }
             } else {
                 null

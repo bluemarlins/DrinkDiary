@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -44,6 +45,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
@@ -132,11 +134,13 @@ val DDBottomBarMaxWidth = 480.dp
 // 화면이 자기 구간을 알아야 할 이유가 생겨 되살린다.
 val LocalDDWindowSize = staticCompositionLocalOf { DDWindowSize.Compact }
 
+val LocalHazeState = compositionLocalOf<HazeState?> { null }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DDScreenScaffold(
     title: String,
-    screenType: DDScreenType,
+    screenType: DDScreenType = DDScreenType.TopLevel,
     selectedTab: DDTopLevelTab? = null,
     onDashboardClick: (() -> Unit)? = null,
     onCollectionClick: (() -> Unit)? = null,
@@ -167,6 +171,8 @@ fun DDScreenScaffold(
         CompositionLocalProvider(
             LocalDDWindowSize provides windowSize,
             LocalDDScreenMargin provides screenMargin,
+            LocalHazeState provides
+                (if (screenType == DDScreenType.TopLevel && windowSize == DDWindowSize.Compact) hazeState else null),
         ) {
             val host = snackbarHost ?: { SnackbarHost(hostState = defaultSnackbarHostState) }
             val scaffold: @Composable (Boolean, HazeState?) -> Unit = { showBottomBar, haze ->
@@ -213,6 +219,7 @@ fun DDScreenScaffold(
                             onCollectionClick = onCollectionClick,
                             onSearchClick = onSearchClick,
                             onSettingsClick = onSettingsClick,
+                            header = floatingActionButton,
                         )
                         scaffold(false, null)
                     }
@@ -297,11 +304,16 @@ private fun AppScaffold(
                     onCollectionClick = onCollectionClick,
                     onSearchClick = onSearchClick,
                     onSettingsClick = onSettingsClick,
+                    floatingActionButton = floatingActionButton,
                     hazeState = hazeState,
                 )
             }
         },
-        floatingActionButton = floatingActionButton ?: {},
+        floatingActionButton = {
+            if (!showBottomBar) {
+                floatingActionButton?.invoke()
+            }
+        },
         snackbarHost = snackbarHost,
         content = { padding ->
             if (hazeState != null) {
@@ -535,6 +547,7 @@ fun DDBottomNavigationBar(
     onCollectionClick: (() -> Unit)?,
     onSearchClick: (() -> Unit)?,
     onSettingsClick: (() -> Unit)?,
+    floatingActionButton: @Composable (() -> Unit)? = null,
     hazeState: HazeState? = null,
 ) {
     val shape = MaterialTheme.shapes.large
@@ -546,63 +559,80 @@ fun DDBottomNavigationBar(
                 .padding(vertical = DrinkDiarySpacing.xs),
         contentAlignment = Alignment.Center,
     ) {
-        // 화면 폭의 60%를 기본으로 하되 위아래를 dp로 막는다. 비율만 쓰면 좁은 화면에서
-        // 레이블이 잘리고 넓은 화면에서 빈 슬래브가 된다.
-        //
-        // **마지막 `coerceAtMost`가 실제 안전장치다.** 분할 화면처럼 아주 좁은 창에서는
-        // 최소폭조차 들어가지 않는데, 그때는 최소폭을 어기더라도 화면 밖으로 나가지 않는 쪽이 맞다.
-        val available = maxWidth - LocalDDScreenMargin.current * 2
+        // FAB가 있으면 FAB 크기(56dp) + 간격(8dp)만큼 바가 차지할 가용 폭에서 제외한다.
+        val fabSpacing = if (floatingActionButton != null) DrinkDiarySpacing.sm else 0.dp
+        val fabSize =
+            if (floatingActionButton !=
+                null
+            ) {
+                (DDBottomNavigationBarHeight - DrinkDiarySpacing.xs * 2)
+            } else {
+                0.dp
+            }
+        val totalFabOccupied = if (floatingActionButton != null) (fabSize + fabSpacing) else 0.dp
+
+        val available = maxWidth - LocalDDScreenMargin.current * 2 - totalFabOccupied
         val barWidth =
             (maxWidth * DDBottomBarWidthFraction)
                 .coerceIn(DDBottomBarMinWidth, DDBottomBarMaxWidth)
                 .coerceAtMost(available)
 
-        Box(
-            modifier =
-                Modifier
-                    .width(barWidth)
-                    .height(DDBottomNavigationBarHeight - DrinkDiarySpacing.xs * 2)
-                    .clip(shape)
-                    .then(
-                        if (hazeState != null) {
-                            Modifier.hazeEffect(
-                                state = hazeState,
-                                style =
-                                    HazeStyle(
-                                        backgroundColor = MaterialTheme.colorScheme.surface,
-                                        tint = HazeTint(MaterialTheme.colorScheme.surface.copy(alpha = 0.42f)),
-                                        // 64dp 바 높이에 맞춰 블러 반경을 24dp(높이의 약 37.5%)로 최적화한다.
-                                        // 32dp는 요소 높이의 절반에 달해 배경의 맥락을 지나치게 뭉개고,
-                                        // 24dp에서 아이콘 가독성을 유지하면서도 뒤 콘텐츠의 형태감을 자연스럽게 투영한다.
-                                        blurRadius = 24.dp,
-                                        // 에디토리얼 저널 무드의 미세한 질감을 더하고 사진 위 컬러 밴딩을 방지한다.
-                                        noiseFactor = 0.08f,
-                                    ),
-                            )
-                        } else {
-                            Modifier.background(MaterialTheme.colorScheme.surface.copy(alpha = 0.88f), shape)
-                        },
-                    ).border(
-                        // 흰색 그라데이션 테두리를 걷어냈다. 하드코딩 색이라 테마에 반응하지 않아
-                        // 다크에서 흰 테두리가 그대로 빛났고(명세 2-6 "빛나는 네온 테두리 금지"),
-                        // 명세 2-1의 "임의 Hex 하드코딩 금지"에도 걸렸다.
-                        width = 1.dp,
-                        color = MaterialTheme.colorScheme.outlineVariant,
-                        shape = shape,
-                    ),
+        Row(
+            modifier = Modifier.wrapContentSize(),
+            horizontalArrangement = Arrangement.spacedBy(DrinkDiarySpacing.sm),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            NavigationBar(
-                modifier = Modifier.fillMaxSize(),
-                containerColor = Color.Transparent,
-                tonalElevation = 0.dp,
+            Box(
+                modifier =
+                    Modifier
+                        .width(barWidth)
+                        .height(DDBottomNavigationBarHeight - DrinkDiarySpacing.xs * 2)
+                        .clip(shape)
+                        .then(
+                            if (hazeState != null) {
+                                Modifier.hazeEffect(
+                                    state = hazeState,
+                                    style =
+                                        HazeStyle(
+                                            backgroundColor = MaterialTheme.colorScheme.surface,
+                                            tint = HazeTint(MaterialTheme.colorScheme.surface.copy(alpha = 0.42f)),
+                                            // 64dp 바 높이에 맞춰 블러 반경을 24dp(높이의 약 37.5%)로 최적화한다.
+                                            // 32dp는 요소 높이의 절반에 달해 배경의 맥락을 지나치게 뭉개고,
+                                            // 24dp에서 아이콘 가독성을 유지하면서도 뒤 콘텐츠의 형태감을 자연스럽게 투영한다.
+                                            blurRadius = 24.dp,
+                                            // 에디토리얼 저널 무드의 미세한 질감을 더하고 사진 위 컬러 밴딩을 방지한다.
+                                            noiseFactor = 0.08f,
+                                        ),
+                                )
+                            } else {
+                                Modifier.background(MaterialTheme.colorScheme.surface.copy(alpha = 0.88f), shape)
+                            },
+                        ).border(
+                            // 흰색 그라데이션 테두리를 걷어냈다. 하드코딩 색이라 테마에 반응하지 않아
+                            // 다크에서 흰 테두리가 그대로 빛났고(명세 2-6 "빛나는 네온 테두리 금지"),
+                            // 명세 2-1의 "임의 Hex 하드코딩 금지"에도 걸렸다.
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.outlineVariant,
+                            shape = shape,
+                        ),
             ) {
-                AppNavigationItems(
-                    selectedTab = selectedTab,
-                    onDashboardClick = onDashboardClick,
-                    onCollectionClick = onCollectionClick,
-                    onSearchClick = onSearchClick,
-                    onSettingsClick = onSettingsClick,
-                )
+                NavigationBar(
+                    modifier = Modifier.fillMaxSize(),
+                    containerColor = Color.Transparent,
+                    tonalElevation = 0.dp,
+                ) {
+                    AppNavigationItems(
+                        selectedTab = selectedTab,
+                        onDashboardClick = onDashboardClick,
+                        onCollectionClick = onCollectionClick,
+                        onSearchClick = onSearchClick,
+                        onSettingsClick = onSettingsClick,
+                    )
+                }
+            }
+
+            if (floatingActionButton != null) {
+                floatingActionButton()
             }
         }
     }
@@ -615,6 +645,7 @@ private fun AppNavigationRail(
     onCollectionClick: (() -> Unit)?,
     onSearchClick: (() -> Unit)?,
     onSettingsClick: (() -> Unit)?,
+    header: (@Composable () -> Unit)? = null,
 ) {
     val itemColors =
         NavigationRailItemDefaults.colors(
@@ -623,7 +654,14 @@ private fun AppNavigationRail(
             indicatorColor = MaterialTheme.colorScheme.primaryContainer,
         )
 
-    NavigationRail {
+    NavigationRail(
+        header =
+            if (header != null) {
+                { header() }
+            } else {
+                null
+            },
+    ) {
         onDashboardClick?.let { onClick ->
             NavigationRailItem(
                 selected = selectedTab == DDTopLevelTab.Dashboard,
