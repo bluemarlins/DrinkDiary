@@ -95,7 +95,8 @@ class ObserveTastingGapsUseCaseTest {
     @Test
     fun `catch-all values are never named as a gap`() {
         assertFalse(CaskGroup.Mixed.name in TagCategory.Cask.gapCandidates)
-        assertFalse("Other" in TagCategory.WineColor.gapCandidates)
+        assertFalse(WhiskyStyle.Other.name in TagCategory.WhiskyStyle.gapCandidates)
+        assertFalse(Origin.Other.name in TagCategory.Origin.gapCandidates)
     }
 
     // 사전이 채운 값도 사용자 태그와 똑같이 다룬다. 한쪽만 사전을 보면 같은 화면에
@@ -129,7 +130,7 @@ class ObserveTastingGapsUseCaseTest {
                 record(DrinkTags(peat = PeatTag.Peated, whiskyStyle = WhiskyStyle.SingleMalt))
             } +
                 List(5) {
-                    record(DrinkTags(whiskyStyle = WhiskyStyle.SingleMalt, origin = Origin.OldWorld))
+                    record(DrinkTags(whiskyStyle = WhiskyStyle.SingleMalt, origin = Origin.Scotland))
                 }
 
         val result = gaps(records)

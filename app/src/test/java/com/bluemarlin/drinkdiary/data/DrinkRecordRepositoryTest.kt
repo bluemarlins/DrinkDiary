@@ -147,7 +147,7 @@ class DrinkRecordRepositoryTest {
             val id =
                 saveId(
                     wine().copy(
-                        tags = DrinkTags(wineColor = WineColor.Red, abvBand = AbvBand.Mid, origin = Origin.OldWorld),
+                        tags = DrinkTags(wineColor = WineColor.Red, abvBand = AbvBand.Mid, origin = Origin.France),
                     ),
                 )
 
@@ -155,24 +155,24 @@ class DrinkRecordRepositoryTest {
 
             assertEquals(WineColor.Red, loaded.tags.wineColor)
             assertEquals(AbvBand.Mid, loaded.tags.abvBand)
-            assertEquals(Origin.OldWorld, loaded.tags.origin)
+            assertEquals(Origin.France, loaded.tags.origin)
             assertNull(loaded.tags.peat)
         }
 
     @Test
     fun `re-saving a record replaces its tags instead of piling them up`() =
         runBlocking {
-            val id = saveId(wine().copy(tags = DrinkTags(origin = Origin.OldWorld)))
+            val id = saveId(wine().copy(tags = DrinkTags(origin = Origin.France)))
 
             val edited =
                 repository.observeRecord(id).first()!!.copy(
-                    tags = DrinkTags(origin = Origin.NewWorld),
+                    tags = DrinkTags(origin = Origin.USA),
                 )
             repository.save(edited)
 
             val reloaded = repository.observeRecord(id).first()!!
             assertEquals(1, reloaded.tags.entries.size)
-            assertEquals(Origin.NewWorld, reloaded.tags.origin)
+            assertEquals(Origin.USA, reloaded.tags.origin)
         }
 
     @Test

@@ -117,6 +117,8 @@ object DrinkLabels {
                     WhiskyStyle.SingleMalt.name -> "싱글몰트"
                     WhiskyStyle.Blended.name -> "블렌디드"
                     WhiskyStyle.Bourbon.name -> "버번"
+                    WhiskyStyle.Rye.name -> "라이"
+                    WhiskyStyle.Other.name -> "기타·모름"
                     else -> value
                 }
 
@@ -132,7 +134,8 @@ object DrinkLabels {
                     WineColor.Red.name -> "레드"
                     WineColor.White.name -> "화이트"
                     WineColor.Sparkling.name -> "스파클링"
-                    WineColor.Other.name -> "그 외"
+                    WineColor.Natural.name -> "내추럴"
+                    WineColor.Port.name -> "포트/주정강화"
                     else -> value
                 }
 
@@ -141,8 +144,20 @@ object DrinkLabels {
 
             TagCategory.Origin ->
                 when (value) {
-                    Origin.OldWorld.name -> "구대륙"
-                    Origin.NewWorld.name -> "신대륙"
+                    Origin.France.name -> "프랑스"
+                    Origin.Italy.name -> "이탈리아"
+                    Origin.Spain.name -> "스페인"
+                    Origin.USA.name -> "미국"
+                    Origin.Chile.name -> "칠레"
+                    Origin.Australia.name -> "호주"
+                    Origin.NewZealand.name -> "뉴질랜드"
+                    Origin.Scotland.name -> "스코틀랜드"
+                    Origin.Ireland.name -> "아일랜드"
+                    Origin.Japan.name -> "일본"
+                    Origin.Taiwan.name -> "대만"
+                    Origin.Other.name -> "기타·모름"
+                    "OldWorld" -> "구대륙"
+                    "NewWorld" -> "신대륙"
                     else -> value
                 }
 

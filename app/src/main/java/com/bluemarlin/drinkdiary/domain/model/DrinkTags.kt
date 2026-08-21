@@ -47,27 +47,55 @@ enum class TagCategory(
 val TagCategory.gapCandidates: List<String>
     get() =
         when (this) {
-            TagCategory.WhiskyStyle -> WhiskyStyle.entries.map { it.name }
+            TagCategory.WhiskyStyle -> WhiskyStyle.entries.filter { it != WhiskyStyle.Other }.map { it.name }
             TagCategory.Peat -> PeatTag.entries.map { it.name }
-            TagCategory.WineColor -> WineColor.entries.filter { it != WineColor.Other }.map { it.name }
+            TagCategory.WineColor -> WineColor.entries.map { it.name }
             TagCategory.AbvBand -> AbvBand.entries.map { it.name }
-            TagCategory.Origin -> Origin.entries.map { it.name }
+            TagCategory.Origin -> Origin.entries.filter { it != Origin.Other }.map { it.name }
             TagCategory.Cask -> CaskGroup.entries.filter { it != CaskGroup.Mixed }.map { it.name }
             TagCategory.WineStyle -> WineStyle.entries.map { it.name }
         }
 
-enum class WhiskyStyle { SingleMalt, Blended, Bourbon }
+enum class WhiskyStyle { SingleMalt, Blended, Bourbon, Rye, Other }
 
 enum class PeatTag { Peated, Unpeated }
 
-// 잔만 봐도 아는 값이라 "모름"이 없다. 그 외는 로제·주정강화처럼 실제로 존재하는 분류다.
-enum class WineColor { Red, White, Sparkling, Other }
+// 와인 5대 분류 (레드, 화이트, 스파클링, 내추럴, 포트/주정강화)
+enum class WineColor { Red, White, Sparkling, Natural, Port }
 
 // 구간의 실제 경계는 주종마다 다르다(위스키 40%대 / 43~45 / 46+, 와인 12 이하 / 13~14 / 15+).
 // 도메인은 구간의 순서만 알고, 경계 문구는 UI가 주종에 맞춰 붙인다.
 enum class AbvBand { Low, Mid, High }
 
-enum class Origin { OldWorld, NewWorld }
+enum class Origin {
+    France,
+    Italy,
+    Spain,
+    USA,
+    Chile,
+    Australia,
+    NewZealand,
+    Scotland,
+    Ireland,
+    Japan,
+    Taiwan,
+    Other,
+    ;
+
+    companion object {
+        val wineOrigins: List<Origin> =
+            listOf(France, Italy, Spain, USA, Chile, Australia, NewZealand, Other)
+
+        val whiskyOrigins: List<Origin> =
+            listOf(Scotland, USA, Ireland, Japan, Taiwan, Other)
+
+        fun of(type: DrinkType): List<Origin> =
+            when (type) {
+                DrinkType.Wine -> wineOrigins
+                DrinkType.Whiskey -> whiskyOrigins
+            }
+    }
+}
 
 data class DrinkTags(
     val whiskyStyle: WhiskyStyle? = null,
@@ -103,7 +131,14 @@ data class DrinkTags(
                 peat = stored[TagCategory.Peat]?.let { name -> PeatTag.entries.find { it.name == name } },
                 wineColor = stored[TagCategory.WineColor]?.let { name -> WineColor.entries.find { it.name == name } },
                 abvBand = stored[TagCategory.AbvBand]?.let { name -> AbvBand.entries.find { it.name == name } },
-                origin = stored[TagCategory.Origin]?.let { name -> Origin.entries.find { it.name == name } },
+                origin =
+                    stored[TagCategory.Origin]?.let { name ->
+                        Origin.entries.find { it.name == name }
+                            ?: when (name) {
+                                "OldWorld", "NewWorld" -> Origin.Other
+                                else -> null
+                            }
+                    },
             )
     }
 }

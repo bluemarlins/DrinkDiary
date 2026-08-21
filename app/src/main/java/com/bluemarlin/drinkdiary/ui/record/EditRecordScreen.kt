@@ -52,7 +52,7 @@ fun EditRecordScreen(
         saveLabel = "수정 완료",
         tasteSection = {
             HorizontalDivider()
-            TasteEditor(taste = state.taste, onAnswer = onAnswer)
+            TasteEditor(type = state.type, taste = state.taste, onAnswer = onAnswer)
         },
     )
 }

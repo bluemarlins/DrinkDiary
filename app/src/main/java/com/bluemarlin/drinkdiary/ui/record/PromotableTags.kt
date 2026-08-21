@@ -10,6 +10,5 @@ import com.bluemarlin.drinkdiary.domain.model.TagCategory
 val promotableTags: List<Pair<TagCategory, String>> =
     listOf(
         TagCategory.Peat to "스모키한지 — 위스키를 가장 크게 나누는 기준이에요",
-        TagCategory.AbvBand to "라벨에 늘 적혀 있어요",
-        TagCategory.Origin to "구대륙 / 신대륙",
+        TagCategory.AbvBand to "알코올 도수 — 라벨에 늘 적혀 있어요",
     )

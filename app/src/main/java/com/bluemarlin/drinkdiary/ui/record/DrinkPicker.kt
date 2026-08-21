@@ -38,8 +38,8 @@ data class DrinkChoice(
 // 첫 화면이 이미 물은 태그. TagPicker는 이걸 빼고 보여준다 — 아니면 같은 것을 두 번 묻게 된다.
 fun promotedTags(type: DrinkType): Set<TagCategory> =
     when (type) {
-        DrinkType.Wine -> setOf(TagCategory.WineColor)
-        DrinkType.Whiskey -> setOf(TagCategory.WhiskyStyle)
+        DrinkType.Wine -> setOf(TagCategory.WineColor, TagCategory.Origin)
+        DrinkType.Whiskey -> setOf(TagCategory.WhiskyStyle, TagCategory.Origin)
     }
 
 private val wineChoices =
@@ -51,7 +51,8 @@ private val wineChoices =
                     WineColor.Red -> "레드"
                     WineColor.White -> "화이트"
                     WineColor.Sparkling -> "스파클링"
-                    WineColor.Other -> "그 외"
+                    WineColor.Natural -> "내추럴"
+                    WineColor.Port -> "포트"
                 },
             tags = DrinkTags(wineColor = color),
         )
@@ -66,11 +67,12 @@ private val whiskeyChoices =
                     WhiskyStyle.SingleMalt -> "싱글몰트"
                     WhiskyStyle.Blended -> "블렌디드"
                     WhiskyStyle.Bourbon -> "버번"
+                    WhiskyStyle.Rye -> "라이"
+                    WhiskyStyle.Other -> "기타·모름"
                 },
             tags = DrinkTags(whiskyStyle = style),
         )
-        // "잘 모름"은 값이 아니라 태그 없음이다. 모르는 것을 사실로 저장하지 않는다.
-    } + DrinkChoice(DrinkType.Whiskey, "잘 모름", DrinkTags())
+    }
 
 @Composable
 fun DrinkPicker(

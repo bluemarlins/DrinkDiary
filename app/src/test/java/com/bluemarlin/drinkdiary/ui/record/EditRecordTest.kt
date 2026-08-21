@@ -25,7 +25,7 @@ class EditRecordTest {
                     .with(Trait.Body, TraitAnswer.High)
                     // 편집 화면이 보여주지 않는 고유 축.
                     .with(Trait.Peat, TraitAnswer.High),
-            tags = DrinkTags(origin = Origin.OldWorld),
+            tags = DrinkTags(origin = Origin.Scotland),
             rating = 4.0,
             collectionStatus = CollectionStatus.Repurchase,
             price = 90_000L,

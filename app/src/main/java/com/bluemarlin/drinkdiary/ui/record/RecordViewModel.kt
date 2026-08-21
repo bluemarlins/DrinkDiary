@@ -8,6 +8,7 @@ import com.bluemarlin.drinkdiary.domain.model.CollectionStatus
 import com.bluemarlin.drinkdiary.domain.model.DrinkRecord
 import com.bluemarlin.drinkdiary.domain.model.DrinkTags
 import com.bluemarlin.drinkdiary.domain.model.DrinkType
+import com.bluemarlin.drinkdiary.domain.model.Origin
 import com.bluemarlin.drinkdiary.domain.model.ServingStyle
 import com.bluemarlin.drinkdiary.domain.model.TagCategory
 import com.bluemarlin.drinkdiary.domain.model.TasteInput
@@ -109,6 +110,14 @@ class RecordViewModel(
             taps = it.taps + 1,
         )
     }
+
+    fun pickOrigin(origin: Origin) =
+        _uiState.update {
+            it.copy(
+                form = it.form.copy(tags = it.form.tags.copy(origin = origin)),
+                taps = it.taps + 1,
+            )
+        }
 
     fun answer(
         trait: Trait,

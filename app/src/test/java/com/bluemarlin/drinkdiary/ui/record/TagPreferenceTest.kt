@@ -32,9 +32,9 @@ class TagPreferenceTest {
     // 위스키에서 피트를 골라도 와인 기록에는 없는 항목이다.
     @Test
     fun `a choice never adds a tag the drink does not have`() {
-        val (always, _) = split(DrinkType.Wine, setOf(TagCategory.Peat, TagCategory.Origin))
+        val (always, _) = split(DrinkType.Wine, setOf(TagCategory.Peat, TagCategory.AbvBand))
 
-        assertEquals(listOf(TagCategory.Origin), always)
+        assertEquals(listOf(TagCategory.AbvBand), always)
     }
 
     // 첫 화면이 물은 것은 어떤 선택으로도 되살아나지 않는다.

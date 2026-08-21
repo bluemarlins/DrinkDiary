@@ -52,7 +52,7 @@ class DrinkTagsTest {
                 peat = PeatTag.Unpeated,
                 wineColor = WineColor.Red,
                 abvBand = AbvBand.Mid,
-                origin = Origin.NewWorld,
+                origin = Origin.France,
             )
 
         assertEquals(tags, DrinkTags.from(tags.entries.toMap()))
@@ -65,11 +65,11 @@ class DrinkTagsTest {
             DrinkTags.from(
                 mapOf(
                     TagCategory.Peat to "Smoky",
-                    TagCategory.Origin to Origin.OldWorld.name,
+                    TagCategory.Origin to Origin.France.name,
                 ),
             )
 
         assertNull(tags.peat)
-        assertEquals(Origin.OldWorld, tags.origin)
+        assertEquals(Origin.France, tags.origin)
     }
 }

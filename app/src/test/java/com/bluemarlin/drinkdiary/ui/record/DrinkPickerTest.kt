@@ -24,8 +24,8 @@ class DrinkPickerTest {
 
     @Test
     fun `promoted tags belong to the drink that is asked`() {
-        assertEquals(setOf(TagCategory.WineColor), promotedTags(DrinkType.Wine))
-        assertEquals(setOf(TagCategory.WhiskyStyle), promotedTags(DrinkType.Whiskey))
+        assertEquals(setOf(TagCategory.WineColor, TagCategory.Origin), promotedTags(DrinkType.Wine))
+        assertEquals(setOf(TagCategory.WhiskyStyle, TagCategory.Origin), promotedTags(DrinkType.Whiskey))
 
         // 승격 대상은 그 주종에 해당하는 태그여야 한다.
         DrinkType.entries.forEach { type ->
@@ -35,13 +35,13 @@ class DrinkPickerTest {
         }
     }
 
-    // 도수·산지·피트는 여전히 선택이다 — 기본 경로는 첫 질문 1탭 + 공통 축 4탭으로 끝난다.
+    // 도수·피트는 여전히 선택이다.
     @Test
     fun `optional tags stay optional`() {
         val wine = TagCategory.of(DrinkType.Wine).filterNot { it in promotedTags(DrinkType.Wine) }
         val whiskey = TagCategory.of(DrinkType.Whiskey).filterNot { it in promotedTags(DrinkType.Whiskey) }
 
-        assertEquals(listOf(TagCategory.AbvBand, TagCategory.Origin), wine)
-        assertEquals(listOf(TagCategory.Peat, TagCategory.AbvBand, TagCategory.Origin), whiskey)
+        assertEquals(listOf(TagCategory.AbvBand), wine)
+        assertEquals(listOf(TagCategory.Peat, TagCategory.AbvBand), whiskey)
     }
 }

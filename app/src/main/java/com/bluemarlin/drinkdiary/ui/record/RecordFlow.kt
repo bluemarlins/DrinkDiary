@@ -1,5 +1,6 @@
 package com.bluemarlin.drinkdiary.ui.record
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -26,7 +27,14 @@ import com.bluemarlin.drinkdiary.DrinkDiaryApplication
 import com.bluemarlin.drinkdiary.domain.model.DrinkType
 import com.bluemarlin.drinkdiary.domain.model.TagCategory
 
-private enum class Step { PickDrink, Probes, Detail, Saved }
+private enum class Step {
+    PickDrink,
+    PickOrigin,
+    BasicInfo,
+    Probes,
+    OptionalDetail,
+    Saved,
+}
 
 @Composable
 fun RecordFlow(modifier: Modifier = Modifier) {
@@ -46,14 +54,49 @@ fun RecordFlow(modifier: Modifier = Modifier) {
 
     if (state.savedId != null && step != Step.Saved) step = Step.Saved
 
+    BackHandler(enabled = step != Step.PickDrink && step != Step.Saved) {
+        step =
+            when (step) {
+                Step.PickOrigin -> Step.PickDrink
+                Step.BasicInfo -> Step.PickOrigin
+                Step.Probes -> Step.BasicInfo
+                Step.OptionalDetail -> Step.Probes
+                Step.PickDrink, Step.Saved -> step
+            }
+    }
+
     Crossfade(targetState = step, label = "record-step") { current ->
         when (current) {
             Step.PickDrink ->
                 DrinkPicker(
                     onPick = { choice ->
                         viewModel.pickDrink(choice.type, choice.tags)
-                        step = Step.Probes
+                        step = Step.PickOrigin
                     },
+                    modifier = modifier,
+                )
+
+            Step.PickOrigin ->
+                OriginPickerStep(
+                    type = state.type ?: DrinkType.Wine,
+                    onPick = { origin ->
+                        viewModel.pickOrigin(origin)
+                        step = Step.BasicInfo
+                    },
+                    modifier = modifier,
+                )
+
+            Step.BasicInfo ->
+                DrinkBasicInfoStep(
+                    imageUri = state.form.imageUri,
+                    name = state.form.name,
+                    rating = state.form.rating,
+                    collectionStatus = state.form.collectionStatus,
+                    onPhotoPicked = viewModel::pickPhoto,
+                    onNameChange = { viewModel.updateForm(state.form.copy(name = it)) },
+                    onRatingChange = { viewModel.updateForm(state.form.copy(rating = it)) },
+                    onCollectionStatusChange = { viewModel.updateForm(state.form.copy(collectionStatus = it)) },
+                    onNext = { step = Step.Probes },
                     modifier = modifier,
                 )
 
@@ -62,17 +105,16 @@ fun RecordFlow(modifier: Modifier = Modifier) {
                     type = state.type ?: DrinkType.Wine,
                     answers = state.taste,
                     onAnswer = viewModel::answer,
-                    onComplete = { step = Step.Detail },
+                    onComplete = { step = Step.OptionalDetail },
                     modifier = modifier,
                 )
 
-            Step.Detail ->
-                RecordDetailStep(
+            Step.OptionalDetail ->
+                RecordOptionalDetailStep(
                     type = state.type ?: DrinkType.Wine,
                     form = state.form,
                     alwaysAskTags = state.alwaysAskTags,
                     onFormChange = viewModel::updateForm,
-                    onPhotoPicked = viewModel::pickPhoto,
                     onSave = viewModel::save,
                     saving = state.saving,
                     modifier = modifier,

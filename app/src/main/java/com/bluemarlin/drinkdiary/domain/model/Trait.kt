@@ -6,7 +6,6 @@ enum class Trait(
 ) {
     Sweetness(shared = true),
     Body(shared = true),
-    Intensity(shared = true),
     Aftertaste(shared = true),
 
     Acidity(shared = false),
@@ -14,16 +13,20 @@ enum class Trait(
 
     Peat(shared = false),
     AlcoholBurn(shared = false),
+
+    Intensity(shared = true),
     ;
 
     companion object {
-        val shared: List<Trait> = entries.filter { it.shared }
+        val shared: List<Trait> = listOf(Sweetness, Body, Intensity, Aftertaste)
+
+        val wineTraits: List<Trait> = listOf(Sweetness, Acidity, Tannin, Body, Aftertaste)
+        val whiskyTraits: List<Trait> = listOf(Sweetness, Body, Peat, AlcoholBurn, Aftertaste)
 
         fun of(type: DrinkType): List<Trait> =
-            shared +
-                when (type) {
-                    DrinkType.Wine -> listOf(Acidity, Tannin)
-                    DrinkType.Whiskey -> listOf(Peat, AlcoholBurn)
-                }
+            when (type) {
+                DrinkType.Wine -> wineTraits
+                DrinkType.Whiskey -> whiskyTraits
+            }
     }
 }

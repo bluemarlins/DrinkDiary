@@ -31,11 +31,8 @@ fun ProbeSequenceScreen(
     onComplete: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // 기본 경로는 공통 축 4개만 묻는다. 주종 고유 축(산미·탄닌·피트·알코올)을 여기 넣으면
-    // 와인 기준 탭이 7회가 되어 PRD F2의 5회 상한을 넘긴다(실기기에서 확인).
-    // 고유 축은 선택 입력인 확장 경로로 보낸다 — mvp-scope.md F2, design-principles.md 쟁점 4.
-    // 유형(TasteType)도 공통 축만으로 성립하므로 기본 경로에서 빠져도 손실이 없다.
-    val traits = Trait.shared
+    // 주종별 5축(와인: 당도·산미·탄닌·바디·여운 / 위스키: 단맛·바디·피트·알코올·여운)을 순차적으로 묻는다.
+    val traits = Trait.of(type)
     var currentIndex by remember { mutableStateOf(0) }
 
     if (traits.isEmpty()) {

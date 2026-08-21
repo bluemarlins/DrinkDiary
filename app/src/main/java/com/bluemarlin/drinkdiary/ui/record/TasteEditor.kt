@@ -22,6 +22,7 @@ import com.bluemarlin.drinkdiary.ui.component.DDTagChipGroup
 // 저장이 답을 통째로 갈아끼우므로, 안 보이는 축의 답은 ViewModel이 그대로 들고 있다가 함께 쓴다.
 @Composable
 fun TasteEditor(
+    type: com.bluemarlin.drinkdiary.domain.model.DrinkType,
     taste: TasteInput,
     onAnswer: (Trait, TraitAnswer) -> Unit,
     modifier: Modifier = Modifier,
@@ -29,7 +30,7 @@ fun TasteEditor(
     Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Text("그때 남긴 취향", style = MaterialTheme.typography.titleMedium)
 
-        Trait.shared.forEach { trait ->
+        Trait.of(type).forEach { trait ->
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
                     text = DrinkLabels.trait(trait),
