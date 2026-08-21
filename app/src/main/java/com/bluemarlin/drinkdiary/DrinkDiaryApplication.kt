@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.bluemarlin.drinkdiary.data.local.AssetBottleDictionary
 import com.bluemarlin.drinkdiary.data.local.DrinkDiaryDatabase
 import com.bluemarlin.drinkdiary.data.local.MIGRATION_2_3
+import com.bluemarlin.drinkdiary.data.local.SamplePhotoGenerator
 import com.bluemarlin.drinkdiary.data.repository.DrinkRecordRepositoryImpl
 import com.bluemarlin.drinkdiary.data.repository.PhotoRepositoryImpl
 import com.bluemarlin.drinkdiary.data.repository.UserPreferencesRepositoryImpl
@@ -42,13 +43,17 @@ class DrinkDiaryApplication : Application() {
         super.onCreate()
         appContainer = AppContainer(this)
         CoroutineScope(Dispatchers.IO).launch {
+            val photoMap = SamplePhotoGenerator.ensureSamplePhotos(this@DrinkDiaryApplication)
             val records = appContainer.drinkRecordRepository.observeRecords().first()
 
-            // 1. 기존 데이터 중 5축 누락 항목 보정
+            // 1. 기존 데이터 중 5축 누락 항목 보정 및 누락된 사진 채우기
             records.forEach { record ->
                 val expectedTraits = Trait.of(record.type)
                 val missingTraits = expectedTraits.filter { it !in record.taste.answers }
-                if (missingTraits.isNotEmpty()) {
+                val targetPhoto = if (record.imageUri == null) photoMap[record.name.trim()] else record.imageUri
+                val needsPhotoUpdate = record.imageUri == null && targetPhoto != null
+
+                if (missingTraits.isNotEmpty() || needsPhotoUpdate) {
                     var updatedTaste = record.taste
                     missingTraits.forEach { trait ->
                         val defaultAnswer =
@@ -95,16 +100,19 @@ class DrinkDiaryApplication : Application() {
                             }
                         updatedTaste = updatedTaste.with(trait, defaultAnswer)
                     }
-                    appContainer.drinkRecordRepository.save(record.copy(taste = updatedTaste))
+                    appContainer.drinkRecordRepository.save(
+                        record.copy(taste = updatedTaste, imageUri = targetPhoto ?: record.imageUri),
+                    )
                 }
             }
 
-            // 2. SampleData 중 DB에 없는 항목들을 채워넣기
+            // 2. SampleData 중 DB에 없는 항목들을 채워넣기 (사진 포함)
             val currentRecords = appContainer.drinkRecordRepository.observeRecords().first()
             val existingNames = currentRecords.map { it.name.trim() }.toSet()
             SampleData.allRecords.forEach { sample ->
                 if (sample.name.trim() !in existingNames) {
-                    appContainer.drinkRecordRepository.save(sample.copy(id = 0L))
+                    val photoUri = photoMap[sample.name.trim()]
+                    appContainer.drinkRecordRepository.save(sample.copy(id = 0L, imageUri = photoUri))
                 }
             }
         }
