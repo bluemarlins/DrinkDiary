@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -46,7 +47,18 @@ fun RecordDetailScreen(
 ) {
     if (record == null) {
         // 삭제 직후에도 잠깐 지나가는 상태다. "없어졌다"고 단정하지 않는다.
-        Column(modifier = modifier.fillMaxWidth().padding(contentPadding).padding(LocalDDScreenMargin.current)) {
+        Column(
+            modifier =
+                modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(
+                        start = LocalDDScreenMargin.current,
+                        top = contentPadding.calculateTopPadding() + DrinkDiarySpacing.sm,
+                        end = LocalDDScreenMargin.current,
+                        bottom = contentPadding.calculateBottomPadding() + LocalDDScreenMargin.current,
+                    ),
+        ) {
             Text("기록을 불러오는 중이에요.", style = MaterialTheme.typography.bodyLarge)
         }
         return
@@ -57,10 +69,14 @@ fun RecordDetailScreen(
     Column(
         modifier =
             modifier
-                .fillMaxWidth()
-                .padding(contentPadding)
+                .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(LocalDDScreenMargin.current),
+                .padding(
+                    start = LocalDDScreenMargin.current,
+                    top = contentPadding.calculateTopPadding() + DrinkDiarySpacing.xs,
+                    end = LocalDDScreenMargin.current,
+                    bottom = contentPadding.calculateBottomPadding() + LocalDDScreenMargin.current,
+                ),
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
         record.imageUri?.let {
