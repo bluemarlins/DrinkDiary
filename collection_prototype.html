@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Taste Archive - 컬렉션 뷰 프로토타입 (List vs Grid)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-base: #0F0F12;
+      --bg-surface: #18181D;
+      --bg-elevated: #22222B;
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-focus: rgba(212, 140, 70, 0.4);
+      --text-main: #F4F4F6;
+      --text-sub: #A0A0B0;
+      --text-muted: #686878;
+      --wine-accent: #E05375;
+      --whisky-accent: #F4B266;
+      --accent-green: #4EBA87;
+      --accent-gold: #E5C07B;
+      --card-radius: 16px;
+      --card-radius-sm: 10px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      padding: 20px 16px 80px 16px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    header {
+      margin-bottom: 16px;
+    }
+
+    .top-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .header-title {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .count-badge {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: var(--bg-surface);
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid var(--border-subtle);
+    }
+
+    /* View Switcher Bar */
+    .view-mode-bar {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 6px;
+      display: flex;
+      gap: 4px;
+      margin-bottom: 12px;
+    }
+
+    .mode-btn {
+      flex: 1;
+      border: none;
+      background: transparent;
+      color: var(--text-sub);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 8px 0;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      transition: all 0.2s;
+    }
+
+    .mode-btn.active {
+      background: var(--bg-elevated);
+      color: #FFF;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    /* Filter & Sort Chips */
+    .filter-bar {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+      margin-bottom: 16px;
+      scrollbar-width: none;
+    }
+    .filter-bar::-webkit-scrollbar { display: none; }
+
+    .filter-chip {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-sub);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 20px;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .filter-chip.active {
+      background: var(--text-main);
+      color: var(--bg-base);
+      border-color: var(--text-main);
+    }
+
+    /* =======================================================
+       1. LIST VIEW STYLES
+       ======================================================= */
+    .list-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* Style 1: Detailed Standard Row */
+    .list-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--card-radius);
+      padding: 12px;
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      transition: transform 0.15s, border-color 0.15s;
+      cursor: pointer;
+    }
+    .list-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255,255,255,0.15);
+    }
+
+    .thumb-4-5 {
+      width: 56px;
+      height: 70px;
+      border-radius: 8px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .list-info {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .list-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: #FFF;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .list-meta {
+      font-size: 11px;
+      color: var(--text-sub);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .list-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 4px;
+    }
+
+    .rating-badge {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--accent-gold);
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .repurchase-tag {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--accent-green);
+      background: rgba(78, 186, 135, 0.12);
+      border: 1px solid rgba(78, 186, 135, 0.3);
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+
+    /* Style 2: Compact High-Density Row */
+    .compact-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 8px 12px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      cursor: pointer;
+    }
+    .thumb-1-1 {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    /* =======================================================
+       2. GRID VIEW STYLES
+       ======================================================= */
+    
+    /* Style A: 2-Column Gallery Grid (Instagram/Vivino style) */
+    .grid-2-col {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .grid-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--card-radius);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.15s, border-color 0.15s;
+      cursor: pointer;
+    }
+    .grid-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(255,255,255,0.2);
+    }
+
+    .grid-thumb-box {
+      width: 100%;
+      aspect-ratio: 4 / 4.8;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      overflow: hidden;
+    }
+
+    .grid-floating-badges {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      right: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .pill-blur {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 7px;
+      border-radius: 12px;
+      background: rgba(15, 15, 18, 0.75);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #FFF;
+    }
+
+    .grid-body {
+      padding: 10px 12px 12px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .grid-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #FFF;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .grid-origin {
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    .grid-tags {
+      display: flex;
+      gap: 4px;
+      margin-top: 4px;
+      flex-wrap: wrap;
+    }
+
+    .tag-chip {
+      font-size: 9px;
+      font-weight: 600;
+      color: var(--text-sub);
+      background: var(--bg-elevated);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    /* Style B: 3-Column Dense Photo Grid */
+    .grid-3-col {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+
+    .grid-3-item {
+      aspect-ratio: 3 / 4;
+      border-radius: 10px;
+      border: 1px solid var(--border-subtle);
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      cursor: pointer;
+    }
+
+    .grid-3-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 16px 6px 6px 6px;
+      background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .grid-3-name {
+      font-size: 10px;
+      font-weight: 700;
+      color: #FFF;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .grid-3-star {
+      font-size: 9px;
+      font-weight: 800;
+      color: var(--accent-gold);
+    }
+
+    /* Floating selection banner */
+    .comparison-card {
+      background: var(--bg-surface);
+      border: 1px dashed var(--border-subtle);
+      border-radius: 14px;
+      padding: 12px;
+      margin-top: 24px;
+      font-size: 12px;
+      color: var(--text-sub);
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- Top Header -->
+    <header>
+      <div class="top-nav">
+        <h1 class="header-title">컬렉션 아카이브</h1>
+        <span class="count-badge" id="totalCountBadge">총 23잔</span>
+      </div>
+
+      <!-- View Mode Switcher -->
+      <div class="view-mode-bar">
+        <button class="mode-btn active" id="btn-grid-2" onclick="switchView('grid-2')">
+          <span>▦</span> 2열 갤러리 그리드
+        </button>
+        <button class="mode-btn" id="btn-list-std" onclick="switchView('list-std')">
+          <span>▤</span> 상세 리스트 뷰
+        </button>
+        <button class="mode-btn" id="btn-grid-3" onclick="switchView('grid-3')">
+          <span>▨</span> 3열 포토 앨범
+        </button>
+        <button class="mode-btn" id="btn-list-compact" onclick="switchView('list-compact')">
+          <span>☰</span> 컴팩트 리스트
+        </button>
+      </div>
+
+      <!-- Filters -->
+      <div class="filter-bar">
+        <button class="filter-chip active" onclick="setFilter('all')">전체보기</button>
+        <button class="filter-chip" onclick="setFilter('wine')">🍷 와인만 (12)</button>
+        <button class="filter-chip" onclick="setFilter('whisky')">🥃 위스키만 (11)</button>
+        <button class="filter-chip" onclick="setFilter('repurchase')">💚 또 살래요 (18)</button>
+        <button class="filter-chip" onclick="setFilter('top')">★ 5.0 최고점</button>
+      </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main id="viewContainer">
+      <!-- Dynamically Rendered -->
+    </main>
+
+    <!-- Comparison Feedback Box -->
+    <div class="comparison-card">
+      <strong style="color: #FFF;">💡 UI 리서치 및 뷰 모드 비교 가이드:</strong><br>
+      • <strong>2열 갤러리 그리드 (추천):</strong> 바틀 사진의 시각적 매력을 극대화하면서도 평점, 산지, 맛 태그를 한눈에 볼 수 있어 와인/위스키 수집가들이 가장 선호하는 방식입니다.<br>
+      • <strong>상세 리스트 뷰:</strong> 이름과 메모, 테이스팅 기록을 텍스트 중심으로 꼼꼼하게 읽고 검색할 때 최적입니다.<br>
+      • <strong>3열 포토 앨범:</strong> 수십 잔 이상의 아카이브를 사진 위주로 압축하여 빠르게 스크롤 탐색할 때 좋습니다.
+    </div>
+
+  </div>
+
+  <script>
+    const sampleRecords = [
+      { id: 1, type: 'wine', name: '샤또 마고 2018', origin: '프랑스 보르도', rating: 5.0, repurchase: true, color: '#4A0E17', price: '120만', tags: ['#탄닌', '#드라이', '#풀바디'], emoji: '🍷' },
+      { id: 2, type: 'whiskey', name: '글렌알라키 10년 CS 배치 8', origin: '스코틀랜드 스페이사이드', rating: 5.0, repurchase: true, color: '#5A251D', price: '16.5만', tags: ['#셰리단맛', '#고도수타격감'], emoji: '🥃' },
+      { id: 3, type: 'wine', name: '도멘 드 라 로마네 꽁띠 2017', origin: '프랑스 부르고뉴', rating: 5.0, repurchase: true, color: '#58111A', price: '250만', tags: ['#실키한탄닌', '#우아한산미'], emoji: '🍷' },
+      { id: 4, type: 'whiskey', name: '카발란 솔리스트 비노바리끄', origin: '대만', rating: 4.9, repurchase: true, color: '#631D27', price: '28만', tags: ['#폭발적과일향', '#짙은오크'], emoji: '🥃' },
+      { id: 5, type: 'wine', name: '돔 페리뇽 2013', origin: '프랑스 샹파뉴', rating: 5.0, repurchase: true, color: '#384030', price: '35만', tags: ['#섬세한기포', '#브리오슈'], emoji: '🍾' },
+      { id: 6, type: 'whiskey', name: '라프로익 10년 셰리 오크', origin: '스코틀랜드 아일라', rating: 4.8, repurchase: true, color: '#243E36', price: '9.5만', tags: ['#스모키피트', '#요오드'], emoji: '🥃' },
+      { id: 7, type: 'wine', name: '루이 자도 샤블리 2021', origin: '프랑스 샤블리', rating: 4.5, repurchase: true, color: '#4A4228', price: '6.8만', tags: ['#미네랄', '#경쾌한산미'], emoji: '🥂' },
+      { id: 8, type: 'whiskey', name: '와일드터키 레어브리드', origin: '미국 켄터키', rating: 4.7, repurchase: true, color: '#8C4722', price: '8.9만', tags: ['#바닐라', '#강한타격감'], emoji: '🥃' },
+      { id: 9, type: 'wine', name: '반피 브루넬로 디 몬탈치노 2016', origin: '이탈리아 토스카나', rating: 4.8, repurchase: true, color: '#50141E', price: '14만', tags: ['#산지오베제', '#긴여운'], emoji: '🍷' },
+      { id: 10, type: 'whiskey', name: '발베니 12년 더블우드', origin: '스코틀랜드 스페이사이드', rating: 4.6, repurchase: true, color: '#663B18', price: '11.5만', tags: ['#부드러운꿀향', '#바닐라'], emoji: '🥃' },
+      { id: 11, type: 'wine', name: '루시 마고 와일드맨 블랑 2022', origin: '호주', rating: 3.8, repurchase: false, color: '#593D22', price: '7.2만', tags: ['#내추럴', '#쿰쿰한효모'], emoji: '🍷' },
+      { id: 12, type: 'whiskey', name: '글렌피딕 12년', origin: '스코틀랜드 스페이사이드', rating: 4.3, repurchase: true, color: '#2B4436', price: '8.2만', tags: ['#청사과', '#산뜻함'], emoji: '🥃' }
+    ];
+
+    let currentMode = 'grid-2';
+    let currentFilter = 'all';
+
+    function switchView(mode) {
+      currentMode = mode;
+      document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('btn-' + mode).classList.add('active');
+      render();
+    }
+
+    function setFilter(filter) {
+      currentFilter = filter;
+      document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+      render();
+    }
+
+    function getFilteredRecords() {
+      return sampleRecords.filter(r => {
+        if (currentFilter === 'wine') return r.type === 'wine';
+        if (currentFilter === 'whisky') return r.type === 'whiskey';
+        if (currentFilter === 'repurchase') return r.repurchase;
+        if (currentFilter === 'top') return r.rating >= 5.0;
+        return true;
+      });
+    }
+
+    function render() {
+      const records = getFilteredRecords();
+      const container = document.getElementById('viewContainer');
+      document.getElementById('totalCountBadge').textContent = `총 ${records.length}잔`;
+
+      if (currentMode === 'grid-2') {
+        container.innerHTML = `
+          <div class="grid-2-col">
+            ${records.map(r => `
+              <div class="grid-card">
+                <div class="grid-thumb-box" style="background: linear-gradient(145deg, ${r.color}, #121215);">
+                  <div class="grid-floating-badges">
+                    <span class="pill-blur">${r.emoji} ${r.type === 'wine' ? '와인' : '위스키'}</span>
+                    ${r.repurchase ? '<span class="pill-blur" style="color:var(--accent-green);">또 살래요</span>' : ''}
+                  </div>
+                  <span>${r.emoji}</span>
+                </div>
+                <div class="grid-body">
+                  <div class="grid-name">${r.name}</div>
+                  <div class="grid-origin">${r.origin}</div>
+                  <div class="list-footer" style="margin-top:2px;">
+                    <span class="rating-badge">★ ${r.rating.toFixed(1)}</span>
+                    <span style="font-size:10px; color:var(--text-muted);">${r.price}</span>
+                  </div>
+                  <div class="grid-tags">
+                    ${r.tags.map(t => `<span class="tag-chip">${t}</span>`).join('')}
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      } else if (currentMode === 'list-std') {
+        container.innerHTML = `
+          <div class="list-container">
+            ${records.map(r => `
+              <div class="list-card">
+                <div class="thumb-4-5" style="background: linear-gradient(145deg, ${r.color}, #121215);">
+                  <span>${r.emoji}</span>
+                </div>
+                <div class="list-info">
+                  <div class="list-name">${r.name}</div>
+                  <div class="list-meta">
+                    <span>${r.origin}</span>
+                    <span>·</span>
+                    <span style="color:var(--text-muted);">${r.price}</span>
+                  </div>
+                  <div class="list-footer">
+                    <span class="rating-badge">★ ${r.rating.toFixed(1)}</span>
+                    ${r.repurchase ? '<span class="repurchase-tag">또 살래요</span>' : '<span style="font-size:10px; color:var(--text-muted);">보통</span>'}
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      } else if (currentMode === 'grid-3') {
+        container.innerHTML = `
+          <div class="grid-3-col">
+            ${records.map(r => `
+              <div class="grid-3-item" style="background: linear-gradient(145deg, ${r.color}, #101014);">
+                <span>${r.emoji}</span>
+                <div class="grid-3-overlay">
+                  <span class="grid-3-name">${r.name}</span>
+                  <span class="grid-3-star">★ ${r.rating.toFixed(1)}</span>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      } else if (currentMode === 'list-compact') {
+        container.innerHTML = `
+          <div class="list-container" style="gap: 6px;">
+            ${records.map(r => `
+              <div class="compact-card">
+                <div class="thumb-1-1" style="background: linear-gradient(145deg, ${r.color}, #121215);">
+                  <span>${r.emoji}</span>
+                </div>
+                <div class="list-info" style="gap: 2px;">
+                  <div class="list-name" style="font-size: 13px;">${r.name}</div>
+                  <div class="list-meta" style="font-size: 10px;">${r.origin}</div>
+                </div>
+                <div style="text-align: right; flex-shrink: 0;">
+                  <div class="rating-badge">★ ${r.rating.toFixed(1)}</div>
+                  <div style="font-size: 10px; color: var(--text-muted);">${r.price}</div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
+    }
+
+    window.onload = function() {
+      render();
+    };
+  </script>
+</body>
+</html>
