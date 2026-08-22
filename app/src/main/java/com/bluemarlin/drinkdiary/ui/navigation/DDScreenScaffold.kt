@@ -402,6 +402,7 @@ fun DDFloatingTopAppBar(
         label = "topBarMorph",
     )
     val shape = MaterialTheme.shapes.large
+    val buttonSize = DDTopAppBarHeight - DrinkDiarySpacing.xs * 2
 
     Box(
         modifier =
@@ -409,15 +410,56 @@ fun DDFloatingTopAppBar(
                 .fillMaxWidth()
                 .statusBarsPadding()
                 .padding(horizontal = LocalDDScreenMargin.current, vertical = DrinkDiarySpacing.xs)
-                .height(DDTopAppBarHeight - DrinkDiarySpacing.xs * 2),
+                .height(buttonSize),
         contentAlignment = Alignment.CenterStart,
     ) {
-        // **알약은 화면 폭이 아니라 제 내용만큼만 차지한다**(`wrapContentWidth`).
-        // 플로팅의 기조가 콘텐츠를 최대한 보여 주는 것이라, 바가 가리는 면적은 글자가 차지하는
-        // 만큼이 상한이다. 전폭 알약은 도킹 바를 모서리만 깎아 놓은 것과 다르지 않다.
+        // 1. 뒤로가기 버튼: 원형 플로팅으로 독립 분리
+        if (onBackClick != null) {
+            Row(
+                modifier =
+                    Modifier
+                        .align(Alignment.CenterStart)
+                        .fillMaxHeight()
+                        .defaultMinSize(minWidth = buttonSize)
+                        .clip(CircleShape)
+                        .then(
+                            if (hazeState != null && t > 0.01f) {
+                                Modifier.hazeEffect(
+                                    state = hazeState,
+                                    style =
+                                        HazeStyle(
+                                            backgroundColor = MaterialTheme.colorScheme.surface,
+                                            tint = HazeTint(MaterialTheme.colorScheme.surface.copy(alpha = 0.58f * t)),
+                                            blurRadius = 20.dp * t,
+                                            noiseFactor = 0.08f * t,
+                                        ),
+                                )
+                            } else {
+                                Modifier
+                            },
+                        ).border(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = t),
+                            shape = CircleShape,
+                        ),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                DDIconButton(
+                    onClick = onBackClick,
+                    contentDescription = stringResource(R.string.back),
+                ) {
+                    Icon(painter = painterResource(R.drawable.ic_back), contentDescription = null)
+                }
+            }
+        }
+
+        // 2. 타이틀 영역: 독립된 알약 형태로 플로팅
         Row(
             modifier =
                 Modifier
+                    .align(Alignment.CenterStart)
+                    .padding(start = if (onBackClick != null) (buttonSize + DrinkDiarySpacing.xs) else 0.dp)
                     .wrapContentWidth()
                     .fillMaxHeight()
                     .clip(shape)
@@ -432,12 +474,7 @@ fun DDFloatingTopAppBar(
                                         backgroundColor = MaterialTheme.colorScheme.surface,
                                         tint = HazeTint(MaterialTheme.colorScheme.surface.copy(alpha = 0.58f * t)),
                                         // 56dp 알약 높이에 맞춰 블러 반경을 20dp(높이의 약 35%)로 최적화한다.
-                                        // 32dp는 요소 높이의 절반을 넘어 배경 맥락이 단색처럼 뭉개졌고,
-                                        // 20dp에서 품격 있는 유리 질감과 텍스트 가독성, GPU 효율을 동시에 얻는다.
-                                        // 블러도 함께 자란다. 0에서 시작해야 알약이 '켜지는' 대신
-                                        // '맺히는' 것으로 보인다.
                                         blurRadius = 20.dp * t,
-                                        // 에디토리얼 저널 무드의 미세한 질감을 더하고 사진 위 컬러 밴딩을 방지한다.
                                         noiseFactor = 0.08f * t,
                                     ),
                             )
@@ -449,19 +486,10 @@ fun DDFloatingTopAppBar(
                         color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = t),
                         shape = shape,
                     )
-                    // 안쪽 여백도 함께 자란다. t=0일 때 0이라 타이틀이 도킹 앱바와 **같은 자리**에
-                    // 서고, 알약은 글자를 밀어내지 않고 글자 주위로 부풀어 오른다.
-                    .padding(horizontal = DrinkDiarySpacing.sm * t),
+                    // 안쪽 여백도 함께 자란다.
+                    .padding(horizontal = if (onBackClick != null) DrinkDiarySpacing.md else DrinkDiarySpacing.sm * t),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            if (onBackClick != null) {
-                DDIconButton(
-                    onClick = onBackClick,
-                    contentDescription = stringResource(R.string.back),
-                ) {
-                    Icon(painter = painterResource(R.drawable.ic_back), contentDescription = null)
-                }
-            }
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleLarge,
@@ -471,12 +499,7 @@ fun DDFloatingTopAppBar(
             )
         }
 
-        // **더보기는 타이틀 알약에서 떼어 오른쪽 끝에 따로 둔다**(2026-08-20 사용자 확정).
-        // 한 알약에 같이 담으면 알약이 아이콘만큼 더 길어지고, 그만큼 콘텐츠를 더 가린다.
-        //
-        // **모양이 다르다 — 이쪽은 원이다.** 타이틀은 가로로 긴 글자라 알약이 맞고, 아이콘은
-        // 사방이 같은 크기라 원이 맞다. 같은 `ShapeLarge`를 주면 정사각에 모서리만 깎인 모양이
-        // 되어 알약도 원도 아니게 된다.
+        // 3. 더보기/액션: 오른쪽 끝에 독립된 원형 플로팅
         if (actions != null) {
             Row(
                 modifier =
@@ -485,7 +508,7 @@ fun DDFloatingTopAppBar(
                         .fillMaxHeight()
                         // 아이콘 하나면 정사각이라 `CircleShape`가 정확히 원이 된다.
                         // 둘 이상이면 자연히 알약으로 늘어난다 — 깨지지 않고 물러난다.
-                        .defaultMinSize(minWidth = DDTopAppBarHeight - DrinkDiarySpacing.xs * 2)
+                        .defaultMinSize(minWidth = buttonSize)
                         .clip(CircleShape)
                         .then(
                             if (hazeState != null && t > 0.01f) {
