@@ -173,7 +173,7 @@ fun DDScreenScaffold(
             LocalDDWindowSize provides windowSize,
             LocalDDScreenMargin provides screenMargin,
             LocalHazeState provides
-                (if (screenType == DDScreenType.TopLevel && windowSize == DDWindowSize.Compact) hazeState else null),
+                (if (windowSize == DDWindowSize.Compact) hazeState else null),
         ) {
             val host = snackbarHost ?: { SnackbarHost(hostState = defaultSnackbarHostState) }
             val scaffold: @Composable (Boolean, HazeState?) -> Unit = { showBottomBar, haze ->
@@ -196,7 +196,7 @@ fun DDScreenScaffold(
             }
 
             if (screenType != DDScreenType.TopLevel) {
-                scaffold(false, null)
+                scaffold(false, if (windowSize == DDWindowSize.Compact) hazeState else null)
                 return@CompositionLocalProvider
             }
 
@@ -269,9 +269,9 @@ private fun AppScaffold(
                 }
             }
         }
-    // **탭을 옮기면 누적을 지운다.** 안 지우면 대시보드에서 내려 읽다가 설정으로 가도 알약이
+    // **화면이나 탭을 옮기면 누적을 지운다.** 안 지우면 대시보드에서 내려 읽다가 설정으로 가도 알약이
     // 뜬 채로 남는다 — 그 화면은 아직 겹친 적이 없는데도 겹친 모양을 하고 있게 된다.
-    LaunchedEffect(selectedTab) { scrolledPx = 0f }
+    LaunchedEffect(title, selectedTab) { scrolledPx = 0f }
 
     // 손가락 떨림으로 알약이 깜박이지 않게 하는 최소 문턱이다.
     val overlapped = scrolledPx > with(LocalDensity.current) { 4.dp.toPx() }
@@ -279,7 +279,7 @@ private fun AppScaffold(
     Scaffold(
         topBar = {
             // 플로팅은 **콘텐츠가 뒤로 흐르는 자리에서만** 성립한다. `hazeState`가 있는 구간이
-            // 정확히 그 자리다(Compact + 최상위). 상세·편집처럼 흐르지 않는 화면에 알약을 얹으면
+            // 정확히 그 자리다(Compact). 흐르지 않는 화면에 알약을 얹으면
             // 블러가 비출 것이 없어서 그냥 떠 있는 불투명 막대가 된다.
             if (hazeState != null) {
                 DDFloatingTopAppBar(
@@ -323,7 +323,7 @@ private fun AppScaffold(
                         start = padding.calculateStartPadding(layoutDirection),
                         top = padding.calculateTopPadding(),
                         end = padding.calculateEndPadding(layoutDirection),
-                        bottom = 0.dp,
+                        bottom = if (showBottomBar) 0.dp else padding.calculateBottomPadding(),
                     )
                 val topFade = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
                 val bottomFade = DrinkDiarySpacing.xl
