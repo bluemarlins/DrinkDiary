@@ -52,10 +52,18 @@ class ObserveTasteProfileUseCase(
         pairs: List<Pair<TraitAnswer, Double>>,
     ): TraitPreference {
         val midSamples = pairs.count { it.first == TraitAnswer.Mid }
+        val avgLevel = if (pairs.isNotEmpty()) pairs.map { it.first.level }.average() else 0.0
 
         // 표본 부족은 "취향이 없다"가 아니라 "아직 모른다"다. preference = null 로 구분한다.
         if (pairs.size < TasteThresholds.MIN_SAMPLES) {
-            return TraitPreference(trait, null, pairs.size, 0.0, midSamples)
+            return TraitPreference(
+                trait = trait,
+                preference = null,
+                samples = pairs.size,
+                strength = 0.0,
+                midSamples = midSamples,
+                averageLevel = avgLevel,
+            )
         }
 
         val correlation = correlationOf(pairs)
@@ -76,6 +84,7 @@ class ObserveTasteProfileUseCase(
             samples = pairs.size,
             strength = correlation?.let(::abs) ?: 0.0,
             midSamples = midSamples,
+            averageLevel = avgLevel,
         )
     }
 

@@ -11,6 +11,8 @@ data class TraitPreference(
     // '보통'으로 답한 수. 압도적으로 크면 그 축은 입문자가 지각하지 못하는 축이라는 신호다
     // (Unsure를 없애면서 잃은 진단을 이걸로 갈음한다 — prd.md F2).
     val midSamples: Int,
+    // 5축 1~5단계 척도 평균 점수 (레이더 차트용).
+    val averageLevel: Double = 0.0,
 ) {
     val evaluated: Boolean get() = preference != null
 

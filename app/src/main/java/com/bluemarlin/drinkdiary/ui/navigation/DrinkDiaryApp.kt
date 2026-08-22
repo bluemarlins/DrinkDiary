@@ -366,6 +366,7 @@ fun DrinkDiaryApp(modifier: Modifier = Modifier) {
                                 collection = collection,
                                 collectionViewModel = collectionViewModel,
                                 profile = profile,
+                                onSelectProfileScope = profileViewModel::selectScope,
                                 snackbar = snackbar,
                                 onNavigate = { screen = it },
                                 listDetail = isListDetail(tabScreen, windowSize),
@@ -379,6 +380,7 @@ fun DrinkDiaryApp(modifier: Modifier = Modifier) {
                             collection = collection,
                             collectionViewModel = collectionViewModel,
                             profile = profile,
+                            onSelectProfileScope = profileViewModel::selectScope,
                             snackbar = snackbar,
                             onNavigate = { screen = it },
                             listDetail = false,
@@ -526,6 +528,7 @@ private fun ScreenContent(
     collection: CollectionUiState,
     collectionViewModel: CollectionViewModel,
     profile: ProfileUiState,
+    onSelectProfileScope: (TypeScope) -> Unit,
     snackbar: SnackbarHostState,
     onNavigate: (Screen) -> Unit,
     listDetail: Boolean,
@@ -535,6 +538,7 @@ private fun ScreenContent(
         Screen.Dashboard ->
             ProfileScreen(
                 state = profile,
+                onSelectScope = onSelectProfileScope,
                 contentPadding = padding,
                 modifier = modifier,
             )

@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Taste Archive - 대시보드 위젯 프로토타입</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-base: #0D0D11;
+      --bg-surface: #17171C;
+      --bg-elevated: #212129;
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --text-main: #F5F5F7;
+      --text-sub: #A0A0B2;
+      --text-muted: #666678;
+      --wine-primary: #9E2A48;
+      --wine-accent: #E05375;
+      --whisky-primary: #D48C46;
+      --whisky-accent: #F4B266;
+      --accent-green: #4EBA87;
+      --accent-blue: #5C9DF5;
+      --accent-gold: #E5C07B;
+      --card-radius: 20px;
+      --card-radius-sm: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      padding: 24px 16px 80px 16px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    header {
+      margin-bottom: 20px;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .app-title {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #FFF 40%, var(--whisky-accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .badge-live {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--whisky-primary);
+      background: rgba(212, 140, 70, 0.15);
+      border: 1px solid rgba(212, 140, 70, 0.3);
+      padding: 4px 8px;
+      border-radius: 20px;
+    }
+
+    /* Scope Tabs */
+    .scope-selector {
+      display: flex;
+      background: var(--bg-surface);
+      border-radius: 12px;
+      padding: 4px;
+      gap: 4px;
+      border: 1px solid var(--border-subtle);
+      margin-bottom: 16px;
+    }
+
+    .scope-btn {
+      flex: 1;
+      border: none;
+      background: transparent;
+      color: var(--text-sub);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 0;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .scope-btn.active {
+      background: var(--bg-elevated);
+      color: var(--text-main);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    .scope-btn.wine.active {
+      color: var(--wine-accent);
+      background: rgba(158, 42, 72, 0.25);
+      border: 1px solid rgba(158, 42, 72, 0.4);
+    }
+
+    .scope-btn.whisky.active {
+      color: var(--whisky-accent);
+      background: rgba(212, 140, 70, 0.25);
+      border: 1px solid rgba(212, 140, 70, 0.4);
+    }
+
+    /* Preset Switcher Banner */
+    .preset-section {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 20px;
+    }
+
+    .preset-title {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .preset-chips {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      scrollbar-width: none;
+    }
+    .preset-chips::-webkit-scrollbar { display: none; }
+
+    .preset-chip {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-sub);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 20px;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .preset-chip:hover {
+      background: rgba(255,255,255,0.08);
+      color: var(--text-main);
+    }
+
+    .preset-chip.active {
+      background: var(--text-main);
+      color: var(--bg-base);
+      border-color: var(--text-main);
+    }
+
+    /* Customizer Drawer / Toggle */
+    .customizer-box {
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px dashed var(--border-subtle);
+      display: none;
+    }
+    .customizer-box.open { display: block; }
+
+    .widget-toggles {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      font-size: 11px;
+    }
+
+    .toggle-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-sub);
+      cursor: pointer;
+    }
+
+    /* Grid Layout */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    /* Base Card Style */
+    .widget-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--card-radius);
+      padding: 16px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .widget-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      border-color: rgba(255,255,255,0.15);
+    }
+
+    .widget-card.col-1 { grid-column: span 1; }
+    .widget-card.col-2 { grid-column: span 2; }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .card-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-sub);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .card-icon {
+      font-size: 14px;
+    }
+
+    .card-badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.06);
+      color: var(--text-muted);
+    }
+
+    /* 1. Hero Identity Card (2x1) */
+    .identity-hero {
+      background: linear-gradient(145deg, #241A20 0%, #17151C 100%);
+      border: 1px solid rgba(224, 83, 117, 0.2);
+    }
+    .whisky-theme .identity-hero {
+      background: linear-gradient(145deg, #2A1F16 0%, #191714 100%);
+      border: 1px solid rgba(212, 140, 70, 0.25);
+    }
+
+    .identity-type-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: var(--wine-accent);
+      background: rgba(224, 83, 117, 0.15);
+      padding: 3px 8px;
+      border-radius: 6px;
+      margin-bottom: 6px;
+    }
+    .whisky-theme .identity-type-badge {
+      color: var(--whisky-accent);
+      background: rgba(212, 140, 70, 0.15);
+    }
+
+    .identity-headline {
+      font-size: 18px;
+      font-weight: 800;
+      color: #FFF;
+      line-height: 1.35;
+      margin-bottom: 8px;
+    }
+
+    .identity-sentence {
+      font-size: 13px;
+      color: var(--text-sub);
+      line-height: 1.45;
+    }
+
+    /* 2. Radar Chart Card (2x2) */
+    .radar-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      padding: 6px 0;
+    }
+
+    canvas#radarCanvas {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .radar-legend {
+      display: flex;
+      justify-content: space-around;
+      width: 100%;
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px solid var(--border-subtle);
+      font-size: 11px;
+    }
+
+    .legend-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    .legend-trait { color: var(--text-muted); font-size: 10px; }
+    .legend-val { font-weight: 700; color: var(--text-main); }
+
+    /* 3. Stat Cards (1x1) */
+    .stat-number {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin: 4px 0;
+      color: #FFF;
+    }
+
+    .stat-delta {
+      font-size: 11px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .stat-delta.up { color: var(--accent-green); }
+    .stat-delta.gold { color: var(--accent-gold); }
+    .stat-delta.neutral { color: var(--text-muted); }
+
+    .mini-bar-track {
+      height: 4px;
+      background: var(--bg-elevated);
+      border-radius: 2px;
+      margin-top: 10px;
+      overflow: hidden;
+    }
+    .mini-bar-fill {
+      height: 100%;
+      background: var(--whisky-primary);
+      border-radius: 2px;
+    }
+    .wine-theme .mini-bar-fill { background: var(--wine-accent); }
+
+    /* 4. Top Rated Highlights (2x1 Carousel Card) */
+    .highlight-card-row {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: none;
+    }
+    .highlight-card-row::-webkit-scrollbar { display: none; }
+
+    .highlight-item {
+      flex: 0 0 130px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--card-radius-sm);
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .highlight-thumb {
+      width: 100%;
+      height: 70px;
+      border-radius: 8px;
+      background: #111;
+      margin-bottom: 8px;
+      object-fit: cover;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: #555;
+    }
+
+    .highlight-name {
+      font-size: 12px;
+      font-weight: 700;
+      color: #FFF;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 2px;
+    }
+
+    .highlight-meta {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .highlight-rating {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--accent-gold);
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    /* 5. Preference Contrast Bar (2x1) */
+    .contrast-row {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .contrast-item {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .contrast-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .contrast-track {
+      height: 8px;
+      background: var(--bg-elevated);
+      border-radius: 4px;
+      display: flex;
+      overflow: hidden;
+    }
+
+    .contrast-fill {
+      height: 100%;
+      border-radius: 4px;
+    }
+
+    /* 6. Tasting Gap Card (2x1) */
+    .gap-card {
+      background: rgba(92, 157, 245, 0.06);
+      border: 1px dashed rgba(92, 157, 245, 0.3);
+    }
+    .gap-content {
+      font-size: 12px;
+      color: var(--text-sub);
+      line-height: 1.45;
+    }
+    .gap-highlight {
+      color: var(--accent-blue);
+      font-weight: 700;
+    }
+
+    /* 7. Spending Chart (2x1) */
+    .bar-chart-container {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      height: 90px;
+      padding-top: 14px;
+      gap: 8px;
+    }
+
+    .bar-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      height: 100%;
+      justify-content: flex-end;
+    }
+
+    .bar-body {
+      width: 100%;
+      background: var(--bg-elevated);
+      border-radius: 6px 6px 2px 2px;
+      transition: height 0.4s ease, background-color 0.2s;
+      min-height: 4px;
+    }
+
+    .bar-body.active {
+      background: var(--whisky-primary);
+    }
+    .wine-theme .bar-body.active {
+      background: var(--wine-accent);
+    }
+
+    .bar-label {
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    /* Floating bottom action bar */
+    .bottom-cta {
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 32px);
+      max-width: 440px;
+      background: rgba(24, 24, 29, 0.88);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 28px;
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    .cta-text {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-sub);
+    }
+
+    .cta-btn {
+      background: #FFF;
+      color: #000;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 8px 14px;
+      border-radius: 20px;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body class="wine-theme">
+  <div class="app-container">
+    
+    <!-- Top Header -->
+    <header>
+      <div class="top-bar">
+        <h1 class="app-title">Taste Archive</h1>
+        <span class="badge-live">⚡ 5축 5단계 대시보드</span>
+      </div>
+
+      <!-- Scope Switcher -->
+      <div class="scope-selector">
+        <button class="scope-btn wine active" onclick="switchScope('Wine')">🍷 와인 (12잔)</button>
+        <button class="scope-btn whisky" onclick="switchScope('Whiskey')">🥃 위스키 (11잔)</button>
+        <button class="scope-btn combined" onclick="switchScope('Combined')">🌐 전체 통합 (23잔)</button>
+      </div>
+
+      <!-- Preset Selector -->
+      <div class="preset-section">
+        <div class="preset-title">
+          <span>대시보드 추천 유형 프리셋</span>
+          <span style="cursor: pointer; color: var(--whisky-accent);" onclick="toggleCustomizer()">⚙️ 위젯 커스텀</span>
+        </div>
+        <div class="preset-chips">
+          <button class="preset-chip active" onclick="applyPreset('A')">🎯 A. 취향·감각 중심</button>
+          <button class="preset-chip" onclick="applyPreset('B')">💳 B. 소비·습관 중심</button>
+          <button class="preset-chip" onclick="applyPreset('C')">🏆 C. 컬렉터·명예의 전당</button>
+          <button class="preset-chip" onclick="applyPreset('D')">🧩 D. 올인원 위젯 모음</button>
+        </div>
+
+        <!-- Customizer Checkboxes -->
+        <div class="customizer-box" id="customizerBox">
+          <div class="widget-toggles">
+            <label class="toggle-label"><input type="checkbox" id="chk-hero" checked onchange="toggleWidget('w-hero')"> 취향 정체성</label>
+            <label class="toggle-label"><input type="checkbox" id="chk-radar" checked onchange="toggleWidget('w-radar')"> 5축 레이더 차트</label>
+            <label class="toggle-label"><input type="checkbox" id="chk-count" checked onchange="toggleWidget('w-count')"> 이번 달 음주 빈도</label>
+            <label class="toggle-label"><input type="checkbox" id="chk-spend" checked onchange="toggleWidget('w-spend')"> 이번 달 총 지출</label>
+            <label class="toggle-label"><input type="checkbox" id="chk-top" checked onchange="toggleWidget('w-top')"> 인생술 갤러리</label>
+            <label class="toggle-label"><input type="checkbox" id="chk-repurchase" checked onchange="toggleWidget('w-repurchase')"> 재구매율 1위</label>
+            <label class="toggle-label"><input type="checkbox" id="chk-contrast" checked onchange="toggleWidget('w-contrast')"> 라벨 선호 대조</label>
+            <label class="toggle-label"><input type="checkbox" id="chk-spendchart" checked onchange="toggleWidget('w-spendchart')"> 월간 소비 추이</label>
+            <label class="toggle-label"><input type="checkbox" id="chk-gap" checked onchange="toggleWidget('w-gap')"> 테이스팅 갭 안내</label>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Widget Grid -->
+    <main class="dashboard-grid" id="dashboardGrid">
+      
+      <!-- Widget 1: Hero Identity (2x1) -->
+      <div class="widget-card col-2 identity-hero" id="w-hero">
+        <div class="card-header" style="margin-bottom: 4px;">
+          <span class="identity-type-badge" id="heroCode">DFRE · 판정 완료</span>
+          <span class="card-badge">✨ 나의 술 정체성</span>
+        </div>
+        <div class="identity-headline" id="heroHeadline">드라이하고 묵직한 취향</div>
+        <div class="identity-sentence" id="heroSentence">
+          드라이하고 탄닌이 묵직하며 산미가 산뜻해요. 여운이 길게 남는 스타일을 가장 만족스러워하셨어요.
+        </div>
+      </div>
+
+      <!-- Widget 2: 5-Axis Taste Radar (2x2) -->
+      <div class="widget-card col-2" id="w-radar">
+        <div class="card-header">
+          <div class="card-title"><span class="card-icon">🕸️</span> 5축 테이스팅 레이더</div>
+          <span class="card-badge" id="radarSub">와인 12잔 평균</span>
+        </div>
+        <div class="radar-container">
+          <canvas id="radarCanvas" width="340" height="260"></canvas>
+        </div>
+        <div class="radar-legend" id="radarLegend">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- Widget 3: Monthly Count Stat (1x1) -->
+      <div class="widget-card col-1" id="w-count">
+        <div class="card-header">
+          <div class="card-title"><span class="card-icon">🍷</span> 8월 마신 잔</div>
+          <span class="card-badge">월간</span>
+        </div>
+        <div class="stat-number" id="statCount">8잔</div>
+        <div class="stat-delta up">
+          <span>▲ 2잔</span>
+          <span style="color: var(--text-muted); font-weight: normal;">(지난달 대비)</span>
+        </div>
+        <div class="mini-bar-track">
+          <div class="mini-bar-fill" style="width: 75%;"></div>
+        </div>
+      </div>
+
+      <!-- Widget 4: Monthly Spending Stat (1x1) -->
+      <div class="widget-card col-1" id="w-spend">
+        <div class="card-header">
+          <div class="card-title"><span class="card-icon">💳</span> 8월 총 지출</div>
+          <span class="card-badge">소비</span>
+        </div>
+        <div class="stat-number" id="statSpend">34.8만</div>
+        <div class="stat-delta gold">
+          <span>잔당 4.3만원</span>
+        </div>
+        <div class="mini-bar-track">
+          <div class="mini-bar-fill" style="width: 60%; background: var(--accent-gold);"></div>
+        </div>
+      </div>
+
+      <!-- Widget 5: Top Rated Highlights Carousel (2x1) -->
+      <div class="widget-card col-2" id="w-top">
+        <div class="card-header">
+          <div class="card-title"><span class="card-icon">🏆</span> 인생술 명예의 전당 (★ 5.0)</div>
+          <span class="card-badge">TOP RATED</span>
+        </div>
+        <div class="highlight-card-row" id="highlightRow">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- Widget 6: Repurchase Rate Stat (1x1) -->
+      <div class="widget-card col-1" id="w-repurchase">
+        <div class="card-header">
+          <div class="card-title"><span class="card-icon">🔄</span> 재구매 의사</div>
+          <span class="card-badge">선호도</span>
+        </div>
+        <div class="stat-number" style="color: var(--accent-green);" id="statRepurchase">75%</div>
+        <div class="stat-delta up">
+          <span>12잔 중 9잔 '또 살래요'</span>
+        </div>
+      </div>
+
+      <!-- Widget 7: Top Place Stat (1x1) -->
+      <div class="widget-card col-1" id="w-place">
+        <div class="card-header">
+          <div class="card-title"><span class="card-icon">📍</span> 최애 음용 장소</div>
+          <span class="card-badge">라이프</span>
+        </div>
+        <div class="stat-number" style="font-size: 18px;" id="statPlace">바틀샵·홈술</div>
+        <div class="stat-delta neutral">
+          <span>전체의 58% 기록</span>
+        </div>
+      </div>
+
+      <!-- Widget 8: Label Contrast (2x1) -->
+      <div class="widget-card col-2" id="w-contrast">
+        <div class="card-header">
+          <div class="card-title"><span class="card-icon">⚖️</span> 라벨로 본 선호 대조</div>
+          <span class="card-badge">FACT PREFERENCE</span>
+        </div>
+        <div class="contrast-row" id="contrastList">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- Widget 9: Monthly Trend Chart (2x1) -->
+      <div class="widget-card col-2" id="w-spendchart">
+        <div class="card-header">
+          <div class="card-title"><span class="card-icon">📊</span> 최근 6개월 음용 및 지출 추이</div>
+          <span class="card-badge">TREND</span>
+        </div>
+        <div class="bar-chart-container" id="barChart">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- Widget 10: Tasting Gap Card (2x1) -->
+      <div class="widget-card col-2 gap-card" id="w-gap">
+        <div class="card-header" style="margin-bottom: 6px;">
+          <div class="card-title" style="color: var(--accent-blue);">
+            <span class="card-icon">💡</span> 미개척 영역 탐색 가이드
+          </div>
+          <span class="card-badge" style="background: rgba(92, 157, 245, 0.15); color: var(--accent-blue);">GAP</span>
+        </div>
+        <div class="gap-content" id="gapSentence">
+          <span class="gap-highlight">프랑스 와인은 5잔</span>이나 남기셨지만, <span class="gap-highlight">스페인·독일</span>은 아직 기록이 없어요. 새로운 산지에 도전해보세요!
+        </div>
+      </div>
+
+    </main>
+
+    <!-- Floating Info Bar -->
+    <div class="bottom-cta">
+      <div class="cta-text" id="ctaSummary">위젯 프리셋 A (취향·감각 중심) 활성화됨</div>
+      <button class="cta-btn" onclick="alert('이 대시보드 구성을 안드로이드 앱 구현에 적용하시겠습니까?')">선택하기</button>
+    </div>
+
+  </div>
+
+  <script>
+    // Data Models for 5 Axes & 5 Levels
+    const dataStore = {
+      Wine: {
+        traits: ['당도', '산미', '탄닌', '바디감', '여운'],
+        scores: [1.6, 4.2, 4.4, 4.1, 4.6], // 1~5 scale averages
+        identityCode: 'DFRE · 성숙한 클래식파',
+        headline: '드라이하고 탄닌이 묵직한 취향',
+        sentence: '산미가 산뜻하며 탄닌감이 풍부하고 여운이 길어요. 보르도 레드와 샤블리 화이트에서 최고점을 주셨어요.',
+        monthlyCount: '8잔',
+        monthlySpend: '34.8만',
+        repurchaseRate: '75%',
+        topPlace: '바틀샵·홈술 (58%)',
+        highlights: [
+          { name: '샤또 마고 2018', meta: '프랑스 · 레드', rating: '★ 5.0', price: '120만', color: '#4A0E17', emoji: '🍷' },
+          { name: '로마네 꽁띠 2017', meta: '프랑스 · 레드', rating: '★ 5.0', price: '250만', color: '#58111A', emoji: '🍷' },
+          { name: '돔 페리뇽 2013', meta: '프랑스 · 스파클링', rating: '★ 5.0', price: '35만', color: '#384030', emoji: '🍾' },
+          { name: 'BDM 2016', meta: '이탈리아 · 레드', rating: '★ 4.8', price: '14만', color: '#50141E', emoji: '🍷' }
+        ],
+        contrasts: [
+          { name: '프랑스 (5잔)', score: '4.8점', otherName: '칠레 (1잔)', otherScore: '2.5점', ratio: '85%' },
+          { name: '레드 와인 (6잔)', score: '4.5점', otherName: '내추럴 (1잔)', otherScore: '3.8점', ratio: '72%' }
+        ],
+        gap: '<strong>프랑스 와인은 5잔</strong>이나 남기셨지만, <strong>스페인·독일</strong>은 아직 기록이 없어요. 새로운 산지에 도전해보세요!'
+      },
+      Whiskey: {
+        traits: ['단맛', '바디감', '스모키·피트', '알코올감', '여운'],
+        scores: [3.8, 4.3, 3.2, 3.6, 4.5], // 1~5 scale averages
+        identityCode: 'SFPE · 묵직한 몰트 애호가',
+        headline: '달콤하고 여운이 길며 묵직한 취향',
+        sentence: '다크초콜릿 같은 셰리 단맛과 50도 이상의 고도수 타격감을 즐기며, 피트 스모크에도 높은 만족도를 보이셨어요.',
+        monthlyCount: '6잔',
+        monthlySpend: '42.5만',
+        repurchaseRate: '82%',
+        topPlace: '몰트바·바틀샵 (67%)',
+        highlights: [
+          { name: '글렌알라키 10 CS', meta: '스코틀랜드 · 싱글몰트', rating: '★ 5.0', price: '16.5만', color: '#5A251D', emoji: '🥃' },
+          { name: '카발란 비노바리끄', meta: '대만 · 싱글몰트', rating: '★ 4.9', price: '28만', color: '#631D27', emoji: '🥃' },
+          { name: '라프로익 10년', meta: '스코틀랜드 · 피트', rating: '★ 4.8', price: '9.5만', color: '#243E36', emoji: '🥃' },
+          { name: '와일드터키 레어브리드', meta: '미국 · 버번', rating: '★ 4.7', price: '8.9만', color: '#8C4722', emoji: '🥃' }
+        ],
+        contrasts: [
+          { name: '싱글몰트 (5잔)', score: '4.7점', otherName: '블렌디드 (1잔)', otherScore: '4.2점', ratio: '78%' },
+          { name: '스코틀랜드 (6잔)', score: '4.5점', otherName: '미국 버번 (2잔)', otherScore: '4.2점', ratio: '70%' }
+        ],
+        gap: '<strong>싱글몰트는 6잔</strong>이나 즐기셨지만, <strong>라이(Rye) 위스키</strong>는 아직 1잔뿐이에요. 산뜻한 호밀의 세계를 더 탐색해보세요!'
+      },
+      Combined: {
+        traits: ['단맛/당도', '바디감', '산미/피트', '알코올/탄닌', '여운'],
+        scores: [2.7, 4.2, 3.7, 4.0, 4.5],
+        identityCode: 'ALL-ROUNDER · 풍미 탐험가',
+        headline: '깊은 풍미와 긴 여운을 중시하는 취향',
+        sentence: '와인과 위스키 모두에서 바디감이 탄탄하고 피니시가 긴 술을 선호하시며, 누적 23잔의 아카이브가 쌓였습니다.',
+        monthlyCount: '14잔',
+        monthlySpend: '77.3만',
+        repurchaseRate: '78%',
+        topPlace: '홈술 & 바틀샵 (62%)',
+        highlights: [
+          { name: '샤또 마고 2018', meta: '와인 · 프랑스', rating: '★ 5.0', price: '120만', color: '#4A0E17', emoji: '🍷' },
+          { name: '글렌알라키 10 CS', meta: '위스키 · 스코틀랜드', rating: '★ 5.0', price: '16.5만', color: '#5A251D', emoji: '🥃' },
+          { name: '로마네 꽁띠 2017', meta: '와인 · 프랑스', rating: '★ 5.0', price: '250만', color: '#58111A', emoji: '🍷' },
+          { name: '카발란 비노바리끄', meta: '위스키 · 대만', rating: '★ 4.9', price: '28만', color: '#631D27', emoji: '🥃' }
+        ],
+        contrasts: [
+          { name: '위스키 (11잔)', score: '4.5점', otherName: '와인 (12잔)', otherScore: '4.3점', ratio: '52%' },
+          { name: '5만원 이상 (18잔)', score: '4.6점', otherName: '5만원 미만 (5잔)', otherScore: '3.6점', ratio: '82%' }
+        ],
+        gap: '이번 달은 <strong>와인 지출이 60%</strong>로 우세해요. 계절에 어울리는 새로운 위스키를 라인업에 추가해보세요!'
+      }
+    };
+
+    let currentScope = 'Wine';
+    let currentPreset = 'A';
+
+    function switchScope(scope) {
+      currentScope = scope;
+      document.body.className = scope === 'Wine' ? 'wine-theme' : (scope === 'Whiskey' ? 'whisky-theme' : '');
+      
+      document.querySelectorAll('.scope-btn').forEach(b => b.classList.remove('active'));
+      if (scope === 'Wine') document.querySelector('.scope-btn.wine').classList.add('active');
+      else if (scope === 'Whiskey') document.querySelector('.scope-btn.whisky').classList.add('active');
+      else document.querySelector('.scope-btn.combined').classList.add('active');
+
+      renderData();
+    }
+
+    function renderData() {
+      const data = dataStore[currentScope];
+
+      // Hero
+      document.getElementById('heroCode').textContent = data.identityCode;
+      document.getElementById('heroHeadline').textContent = data.headline;
+      document.getElementById('heroSentence').textContent = data.sentence;
+
+      // Stats
+      document.getElementById('statCount').textContent = data.monthlyCount;
+      document.getElementById('statSpend').textContent = data.monthlySpend;
+      document.getElementById('statRepurchase').textContent = data.repurchaseRate;
+      document.getElementById('statPlace').textContent = data.topPlace;
+      document.getElementById('radarSub').textContent = `${currentScope === 'Wine' ? '와인 12잔' : (currentScope === 'Whiskey' ? '위스키 11잔' : '통합 23잔')} 평균`;
+
+      // Radar Legend
+      const legend = document.getElementById('radarLegend');
+      legend.innerHTML = data.traits.map((t, idx) => `
+        <div class="legend-item">
+          <span class="legend-trait">${t}</span>
+          <span class="legend-val">${data.scores[idx].toFixed(1)}</span>
+        </div>
+      `).join('');
+
+      // Highlights
+      const highlightRow = document.getElementById('highlightRow');
+      highlightRow.innerHTML = data.highlights.map(h => `
+        <div class="highlight-item">
+          <div class="highlight-thumb" style="background: linear-gradient(135deg, ${h.color}, #111);">${h.emoji}</div>
+          <div class="highlight-name">${h.name}</div>
+          <div class="highlight-meta">${h.meta}</div>
+          <div class="highlight-rating">${h.rating} <span style="font-size:9px; color:var(--text-muted); margin-left:auto;">${h.price}</span></div>
+        </div>
+      `).join('');
+
+      // Contrast
+      const contrastList = document.getElementById('contrastList');
+      contrastList.innerHTML = data.contrasts.map(c => `
+        <div class="contrast-item">
+          <div class="contrast-labels">
+            <span>${c.name} <strong style="color:var(--accent-green);">${c.score}</strong></span>
+            <span style="color:var(--text-muted);">${c.otherName} ${c.otherScore}</span>
+          </div>
+          <div class="contrast-track">
+            <div class="contrast-fill" style="width: ${c.ratio}; background: ${currentScope === 'Wine' ? 'var(--wine-accent)' : 'var(--whisky-primary)'};"></div>
+          </div>
+        </div>
+      `).join('');
+
+      // Gap
+      document.getElementById('gapSentence').innerHTML = data.gap;
+
+      // Draw Radar
+      drawRadar(data.traits, data.scores);
+      drawBarChart();
+    }
+
+    function drawRadar(labels, values) {
+      const canvas = document.getElementById('radarCanvas');
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+      const centerX = w / 2;
+      const centerY = h / 2;
+      const radius = 80;
+      const numAxes = labels.length;
+
+      ctx.clearRect(0, 0, w, h);
+
+      // Background web circles (1 to 5 levels)
+      for (let level = 1; level <= 5; level++) {
+        const r = (radius / 5) * level;
+        ctx.beginPath();
+        for (let i = 0; i < numAxes; i++) {
+          const angle = (Math.PI * 2 / numAxes) * i - Math.PI / 2;
+          const x = centerX + r * Math.cos(angle);
+          const y = centerY + r * Math.sin(angle);
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.strokeStyle = level === 5 ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.05)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+
+      // Spoke Lines & Labels
+      ctx.font = '11px Pretendard';
+      ctx.fillStyle = '#A0A0B0';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      for (let i = 0; i < numAxes; i++) {
+        const angle = (Math.PI * 2 / numAxes) * i - Math.PI / 2;
+        const x = centerX + radius * Math.cos(angle);
+        const y = centerY + radius * Math.sin(angle);
+
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.lineTo(x, y);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+        ctx.stroke();
+
+        // Label position
+        const labelR = radius + 22;
+        const lx = centerX + labelR * Math.cos(angle);
+        const ly = centerY + labelR * Math.sin(angle);
+        ctx.fillText(labels[i], lx, ly);
+      }
+
+      // Data polygon (Values scaled 0~5)
+      ctx.beginPath();
+      for (let i = 0; i < numAxes; i++) {
+        const val = values[i];
+        const r = (radius / 5) * val;
+        const angle = (Math.PI * 2 / numAxes) * i - Math.PI / 2;
+        const x = centerX + r * Math.cos(angle);
+        const y = centerY + r * Math.sin(angle);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+
+      // Fill style based on scope
+      const isWine = currentScope === 'Wine';
+      ctx.fillStyle = isWine ? 'rgba(224, 83, 117, 0.35)' : 'rgba(212, 140, 70, 0.35)';
+      ctx.fill();
+      ctx.strokeStyle = isWine ? '#E05375' : '#F4B266';
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+
+      // Point dots
+      for (let i = 0; i < numAxes; i++) {
+        const val = values[i];
+        const r = (radius / 5) * val;
+        const angle = (Math.PI * 2 / numAxes) * i - Math.PI / 2;
+        const x = centerX + r * Math.cos(angle);
+        const y = centerY + r * Math.sin(angle);
+
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = '#FFF';
+        ctx.fill();
+        ctx.strokeStyle = isWine ? '#E05375' : '#D48C46';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+    }
+
+    function drawBarChart() {
+      const months = ['3월', '4월', '5월', '6월', '7월', '8월'];
+      const amounts = [18, 25, 40, 32, 55, 75]; // % heights
+      const barContainer = document.getElementById('barChart');
+      barContainer.innerHTML = months.map((m, i) => `
+        <div class="bar-col">
+          <div class="bar-body ${i === 5 ? 'active' : ''}" style="height: ${amounts[i]}%;"></div>
+          <span class="bar-label">${m}</span>
+        </div>
+      `).join('');
+    }
+
+    // Preset Switching Engine
+    const presets = {
+      A: {
+        title: '위젯 프리셋 A (취향·감각 중심)',
+        widgets: ['w-hero', 'w-radar', 'w-count', 'w-repurchase', 'w-contrast', 'w-gap']
+      },
+      B: {
+        title: '위젯 프리셋 B (소비·습관 중심)',
+        widgets: ['w-count', 'w-spend', 'w-spendchart', 'w-place', 'w-hero', 'w-contrast']
+      },
+      C: {
+        title: '위젯 프리셋 C (컬렉터·명예의 전당)',
+        widgets: ['w-top', 'w-hero', 'w-repurchase', 'w-count', 'w-contrast', 'w-gap']
+      },
+      D: {
+        title: '위젯 프리셋 D (올인원 위젯 모음)',
+        widgets: ['w-hero', 'w-radar', 'w-count', 'w-spend', 'w-top', 'w-repurchase', 'w-place', 'w-contrast', 'w-spendchart', 'w-gap']
+      }
+    };
+
+    function applyPreset(presetKey) {
+      currentPreset = presetKey;
+      document.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
+      event.target.classList.add('active');
+
+      const preset = presets[presetKey];
+      document.getElementById('ctaSummary').textContent = `${preset.title} 활성화됨`;
+
+      const allWidgetIds = ['w-hero', 'w-radar', 'w-count', 'w-spend', 'w-top', 'w-repurchase', 'w-place', 'w-contrast', 'w-spendchart', 'w-gap'];
+      allWidgetIds.forEach(id => {
+        const el = document.getElementById(id);
+        const chk = document.getElementById('chk-' + id.replace('w-', ''));
+        if (preset.widgets.includes(id)) {
+          el.style.display = 'flex';
+          if (chk) chk.checked = true;
+        } else {
+          el.style.display = 'none';
+          if (chk) chk.checked = false;
+        }
+      });
+    }
+
+    function toggleCustomizer() {
+      const box = document.getElementById('customizerBox');
+      box.classList.toggle('open');
+    }
+
+    function toggleWidget(widgetId) {
+      const el = document.getElementById(widgetId);
+      if (el.style.display === 'none') {
+        el.style.display = 'flex';
+      } else {
+        el.style.display = 'none';
+      }
+      document.getElementById('ctaSummary').textContent = '사용자 맞춤 위젯 구성 중...';
+    }
+
+    // Init
+    window.onload = function() {
+      renderData();
+      applyPreset('A');
+    };
+  </script>
+</body>
+</html>
