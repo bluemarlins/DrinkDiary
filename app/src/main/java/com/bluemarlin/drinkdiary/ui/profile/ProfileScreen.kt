@@ -1,4 +1,4 @@
-﻿package com.bluemarlin.drinkdiary.ui.profile
+package com.bluemarlin.drinkdiary.ui.profile
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -273,31 +273,34 @@ private fun computeRadarAxes(state: ProfileUiState): List<RadarAxisData> {
         when (state.scope) {
             TypeScope.Whiskey ->
                 listOf(
-                    Trait.Sweetness to 5,
-                    Trait.Smokiness to 5,
-                    Trait.AlcoholFeel to 5,
-                    Trait.Body to 5,
-                    Trait.Finish to 5,
+                    Trait.Sweetness,
+                    Trait.Peat,
+                    Trait.AlcoholBurn,
+                    Trait.Body,
+                    Trait.Aftertaste,
                 )
             TypeScope.Wine, TypeScope.Combined ->
                 listOf(
-                    Trait.Sweetness to 5,
-                    Trait.Acidity to 5,
-                    Trait.Tannin to 5,
-                    Trait.Body to 5,
-                    Trait.Finish to 5,
+                    Trait.Sweetness,
+                    Trait.Acidity,
+                    Trait.Tannin,
+                    Trait.Body,
+                    Trait.Aftertaste,
                 )
         }
 
-    val prefs = state.traitPreferences.associateBy { it.trait }
+    val prefs =
+        state.profile
+            ?.preferences
+            ?.associateBy { it.trait }
+            .orEmpty()
 
-    return traitOrder.map { (trait, maxScale) ->
+    return traitOrder.map { trait ->
         val pref = prefs[trait]
-        val value = pref?.averageLevel ?: 0.0f
+        val value = pref?.averageLevel ?: 0.0
         RadarAxisData(
             label = DrinkLabels.trait(trait),
             value = value,
-            maxScale = maxScale,
         )
     }
 }
