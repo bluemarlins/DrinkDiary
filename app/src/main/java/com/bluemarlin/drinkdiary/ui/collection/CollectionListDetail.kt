@@ -27,12 +27,14 @@ fun CollectionListDetail(
     onDelete: (Long) -> Unit,
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
+    onToggleViewMode: () -> Unit = {},
 ) {
     Row(modifier = modifier.fillMaxSize()) {
         CollectionScreen(
             state = state,
             onOpen = onSelect,
             onToggleSelect = onToggleSelect,
+            onToggleViewMode = onToggleViewMode,
             contentPadding = contentPadding,
             modifier = Modifier.weight(0.4f),
         )

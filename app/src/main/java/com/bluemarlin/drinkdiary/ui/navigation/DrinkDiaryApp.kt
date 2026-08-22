@@ -555,6 +555,7 @@ private fun ScreenContent(
                         collectionViewModel.delete(it)
                         onNavigate(Screen.Collection)
                     },
+                    onToggleViewMode = collectionViewModel::toggleViewMode,
                     contentPadding = padding,
                     modifier = modifier,
                 )
@@ -563,6 +564,7 @@ private fun ScreenContent(
                     state = collection,
                     onOpen = { onNavigate(Screen.Detail(it)) },
                     onToggleSelect = collectionViewModel::toggleSelection,
+                    onToggleViewMode = collectionViewModel::toggleViewMode,
                     contentPadding = padding,
                     modifier = modifier,
                 )

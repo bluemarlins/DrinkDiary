@@ -18,6 +18,11 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+enum class CollectionViewMode {
+    Grid,
+    List,
+}
+
 // null 이면 두 주종을 한 목록에 섞어 보여준다 — PRD F1 "두 주종이 하나의 컬렉션에 쌓인다".
 //
 // `selectionMode`는 저장하지 않고 `selected`에서 파생시킨다. 둘을 따로 들면 "선택 모드인데
@@ -33,6 +38,7 @@ data class CollectionUiState(
     val error: String? = null,
     val selectionMode: Boolean = false,
     val selected: Set<Long> = emptySet(),
+    val viewMode: CollectionViewMode = CollectionViewMode.Grid,
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -46,15 +52,24 @@ class CollectionViewModel(
     private val filter = MutableStateFlow<DrinkType?>(null)
     private val selection = MutableStateFlow<Set<Long>>(emptySet())
     private val error = MutableStateFlow<String?>(null)
+    private val viewMode = MutableStateFlow(CollectionViewMode.Grid)
 
-    val uiState: StateFlow<CollectionUiState> =
+    private val recordsFlow =
         combine(
             filter,
             filter.flatMapLatest { repository.observeRecords(it) },
             repository.observeRecords(null),
+        ) { selectedFilter, records, all ->
+            Triple(selectedFilter, records, all)
+        }
+
+    val uiState: StateFlow<CollectionUiState> =
+        combine(
+            recordsFlow,
             selection,
             error,
-        ) { selectedFilter, records, all, selectedIds, message ->
+            viewMode,
+        ) { (selectedFilter, records, all), selectedIds, message, currentViewMode ->
             CollectionUiState(
                 filter = selectedFilter,
                 records = records,
@@ -63,8 +78,17 @@ class CollectionViewModel(
                 error = message,
                 selectionMode = selectedIds.isNotEmpty(),
                 selected = selectedIds,
+                viewMode = currentViewMode,
             )
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), CollectionUiState())
+
+    fun toggleViewMode() {
+        viewMode.update { if (it == CollectionViewMode.Grid) CollectionViewMode.List else CollectionViewMode.Grid }
+    }
+
+    fun setViewMode(mode: CollectionViewMode) {
+        viewMode.value = mode
+    }
 
     fun selectFilter(type: DrinkType?) {
         // 안 보이는 기록이 선택된 채 남으면 사용자는 무엇을 지우는지 알 수 없다. 되돌리기가
