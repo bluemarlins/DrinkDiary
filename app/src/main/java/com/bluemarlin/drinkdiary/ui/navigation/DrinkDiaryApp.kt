@@ -311,7 +311,7 @@ fun DrinkDiaryApp(modifier: Modifier = Modifier) {
                 }
                 inCollection -> {
                     {
-                        // 컬렉션에서도 주종 필터를 상단 More 메뉴(와인/위스키/통합)로 제공한다.
+                        // 컬렉션에서도 주종 필터를 상단 More 메뉴(전체/위스키/와인)로 제공한다.
                         DDCollectionFilterOverflowMenu(
                             selected = collection.filter,
                             onSelect = collectionViewModel::selectFilter,
@@ -429,7 +429,7 @@ fun DrinkDiaryApp(modifier: Modifier = Modifier) {
     }
 }
 
-// 대시보드의 주종 스코프 선택(와인 / 위스키 / 통합).
+// 대시보드의 주종 스코프 선택(전체 / 위스키 / 와인).
 //
 // **선택된 값을 아이콘 옆에 적지 않는다.** 적으면 알약이 그만큼 길어져 콘텐츠를 더 가리는데,
 // 지금 무엇을 보고 있는지는 화면 내용 자체가 이미 말하고 있다. 메뉴를 열면 체크로 보인다.
@@ -449,9 +449,9 @@ private fun DDScopeOverflowMenu(
         }
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             listOf(
-                TypeScope.Wine to "와인",
+                TypeScope.Combined to "전체",
                 TypeScope.Whiskey to "위스키",
-                TypeScope.Combined to "통합",
+                TypeScope.Wine to "와인",
             ).forEach { (scope, label) ->
                 DropdownMenuItem(
                     text = { Text(label) },
@@ -476,7 +476,7 @@ private fun DDScopeOverflowMenu(
     }
 }
 
-// 컬렉션의 주종 필터 선택(와인 / 위스키 / 통합).
+// 컬렉션의 주종 필터 선택(전체 / 위스키 / 와인).
 @Composable
 private fun DDCollectionFilterOverflowMenu(
     selected: DrinkType?,
@@ -493,9 +493,9 @@ private fun DDCollectionFilterOverflowMenu(
         }
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             listOf(
-                DrinkType.Wine to "와인",
+                null to "전체",
                 DrinkType.Whiskey to "위스키",
-                null to "통합",
+                DrinkType.Wine to "와인",
             ).forEach { (type, label) ->
                 DropdownMenuItem(
                     text = { Text(label) },

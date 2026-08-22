@@ -1,4 +1,4 @@
-﻿package com.bluemarlin.drinkdiary.ui.collection
+package com.bluemarlin.drinkdiary.ui.collection
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
@@ -53,7 +53,7 @@ fun CollectionScreen(
             val filtered = state.filter != null
             DDEmptyContent(
                 title = if (filtered) "이 주종으로 남긴 기록이 없어요" else "아직 기록이 없어요",
-                description = if (filtered) "상단 메뉴에서 '통합'을 눌러보세요." else "오른쪽 아래 + 를 눌러 한 잔 기록해 보세요.",
+                description = if (filtered) "상단 메뉴에서 '전체'를 눌러보세요." else "오른쪽 아래 + 를 눌러 한 잔 기록해 보세요.",
                 modifier = Modifier.fillMaxSize(),
             )
             return@Column
