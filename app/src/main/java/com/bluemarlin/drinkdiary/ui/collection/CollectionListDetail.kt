@@ -1,4 +1,4 @@
-package com.bluemarlin.drinkdiary.ui.collection
+﻿package com.bluemarlin.drinkdiary.ui.collection
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -27,14 +27,12 @@ fun CollectionListDetail(
     onDelete: (Long) -> Unit,
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
-    onToggleViewMode: () -> Unit = {},
 ) {
     Row(modifier = modifier.fillMaxSize()) {
         CollectionScreen(
             state = state,
             onOpen = onSelect,
             onToggleSelect = onToggleSelect,
-            onToggleViewMode = onToggleViewMode,
             contentPadding = contentPadding,
             modifier = Modifier.weight(0.4f),
         )

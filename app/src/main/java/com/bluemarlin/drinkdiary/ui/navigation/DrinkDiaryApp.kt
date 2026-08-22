@@ -41,6 +41,7 @@ import com.bluemarlin.drinkdiary.ui.DrinkLabels
 import com.bluemarlin.drinkdiary.ui.collection.CollectionListDetail
 import com.bluemarlin.drinkdiary.ui.collection.CollectionScreen
 import com.bluemarlin.drinkdiary.ui.collection.CollectionUiState
+import com.bluemarlin.drinkdiary.ui.collection.CollectionViewMode
 import com.bluemarlin.drinkdiary.ui.collection.CollectionViewModel
 import com.bluemarlin.drinkdiary.ui.collection.RecordDetailScreen
 import com.bluemarlin.drinkdiary.ui.collection.SearchScreen
@@ -311,6 +312,25 @@ fun DrinkDiaryApp(modifier: Modifier = Modifier) {
                 }
                 inCollection -> {
                     {
+                        // 그리드 / 리스트 뷰 모드 전환 버튼 (More 메뉴 좌측)
+                        DDIconButton(
+                            onClick = collectionViewModel::toggleViewMode,
+                            contentDescription =
+                                if (collection.viewMode == CollectionViewMode.Grid) "리스트로 보기" else "그리드로 보기",
+                        ) {
+                            Icon(
+                                painter =
+                                    painterResource(
+                                        if (collection.viewMode == CollectionViewMode.Grid) {
+                                            R.drawable.ic_view_list
+                                        } else {
+                                            R.drawable.ic_view_grid
+                                        },
+                                    ),
+                                contentDescription = null,
+                            )
+                        }
+
                         // 컬렉션에서도 주종 필터를 상단 More 메뉴(전체/위스키/와인)로 제공한다.
                         DDCollectionFilterOverflowMenu(
                             selected = collection.filter,
@@ -551,7 +571,6 @@ private fun ScreenContent(
                         collectionViewModel.delete(it)
                         onNavigate(Screen.Collection)
                     },
-                    onToggleViewMode = collectionViewModel::toggleViewMode,
                     contentPadding = padding,
                     modifier = modifier,
                 )
@@ -560,7 +579,6 @@ private fun ScreenContent(
                     state = collection,
                     onOpen = { onNavigate(Screen.Detail(it)) },
                     onToggleSelect = collectionViewModel::toggleSelection,
-                    onToggleViewMode = collectionViewModel::toggleViewMode,
                     contentPadding = padding,
                     modifier = modifier,
                 )
